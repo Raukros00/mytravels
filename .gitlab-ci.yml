@@ -4,32 +4,46 @@ stages:
   - deploy
 
 variables:
-  DOCKER_IMAGE_BE: "app1-backend:latest"
   DOCKER_IMAGE_FE: "app1-frontend:latest"
 
+# 1. Test e Lint
 test:
   stage: test
+  image: node:alpine:3.23
+  script:
+    - cd frontend
+    - npm ci
+    - npm run lint
+    - npm run test -- --watch=false --browsers=ChromeHeadless
+  tags:
+    - raspberry
+
+# 2. Build (Compilazione Angular)
+# Qui generiamo il codice compilato che finirà dentro l'immagine Docker
+build_angular:
+  stage: build
   image: node:20-alpine
   script:
-    - echo "Running tests..."
-    # - npm install && npm test
+    - cd frontend
+    - npm ci
+    - npm run build -- --configuration=production
+  artifacts:
+    paths:
+      - frontend/dist/ # Salviamo il risultato per il prossimo step
+    expire_in: 1 hour
   tags:
-    - raspberry-runner
+    - raspberry
 
-build_and_deploy:
+# 3. Deploy (Creazione immagine e avvio)
+deploy:
   stage: deploy
   image: docker:latest
   services:
     - docker:dind
   script:
-    - echo "Building and updating services on Raspberry..."
-    # 1. Build Backend
-    - docker build -t $DOCKER_IMAGE_BE ./backend
-    # 2. Build Frontend (Angular)
-    - docker build -t $DOCKER_IMAGE_FE ./frontend
-    # 3. Riavvia i container
-    - cd /home/alessandrodominici/stacks/app1
-    - docker-compose up -d --no-deps backend frontend
+    - echo "Creazione immagine Docker usando la build compilata..."
+    - docker build -t $DOCKER_IMAGE_FE .
+    - docker-compose up -d --no-deps frontend
   only:
     - main
   tags:

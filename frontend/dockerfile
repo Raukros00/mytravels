@@ -1,0 +1,24 @@
+# --- FASE 1: Build dell'applicazione Angular ---
+FROM nginx:alpine AS build
+WORKDIR /app
+
+COPY frontend/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+
+# Copia i file di dipendenze
+COPY package*.json ./
+RUN npm ci
+
+# Copia il resto del codice sorgente e compila in produzione
+COPY . .
+RUN npm run build -- --configuration=production
+
+# --- FASE 2: Server Nginx per servire i file statici ---
+FROM nginx:alpine
+# Copia la build di Angular nella cartella pubblica di Nginx
+COPY --from=build /app/dist/*/browser /usr/share/nginx/html
+
+# Espone la porta 80 del container
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
