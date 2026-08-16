@@ -14,7 +14,7 @@ test:
     - echo "Running tests..."
     # - npm install && npm test
   tags:
-    - raspberry
+    - raspberry-runner
 
 build_and_deploy:
   stage: deploy
