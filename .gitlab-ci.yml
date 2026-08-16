@@ -1,0 +1,36 @@
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  DOCKER_IMAGE_BE: "app1-backend:latest"
+  DOCKER_IMAGE_FE: "app1-frontend:latest"
+
+test:
+  stage: test
+  image: node:20-alpine
+  script:
+    - echo "Running tests..."
+    # - npm install && npm test
+  tags:
+    - raspberry
+
+build_and_deploy:
+  stage: deploy
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - echo "Building and updating services on Raspberry..."
+    # 1. Build Backend
+    - docker build -t $DOCKER_IMAGE_BE ./backend
+    # 2. Build Frontend (Angular)
+    - docker build -t $DOCKER_IMAGE_FE ./frontend
+    # 3. Riavvia i container
+    - cd /home/alessandrodominici/stacks/app1
+    - docker-compose up -d --no-deps backend frontend
+  only:
+    - main
+  tags:
+    - raspberry

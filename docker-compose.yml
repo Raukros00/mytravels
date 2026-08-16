@@ -1,0 +1,47 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb_app1
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: Az-10694@\-.
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - app1-net
+
+  redis:
+    image: redis:alpine
+    container_name: redis_app1
+    restart: always
+    networks:
+      - app1-net
+
+  # Il backend verrà aggiornato dalla pipeline
+  backend:
+    image: app1-backend:latest
+    container_name: spring_backend_app1
+    restart: always
+    environment:
+      - MONGO_URI=mongodb://admin:secure_password_mongo@mongodb:27017/app1db?authSource=admin
+      - REDIS_HOST=redis
+    networks:
+      - app1-net
+
+  # Il frontend servito da Nginx
+  frontend:
+    image: app1-frontend:latest
+    container_name: angular_fe_app1
+    restart: always
+    ports:
+      - "8081:80" # Mappato su 8081, Cloudflare punterà qui
+    networks:
+      - app1-net
+
+networks:
+  app1-net:
+    driver: bridge
+
+volumes:
+  mongo_data:
