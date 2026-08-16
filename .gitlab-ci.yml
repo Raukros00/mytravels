@@ -47,4 +47,4 @@ deploy:
   only:
     - main
   tags:
-    - raspberry-runner
+    - raspberry
