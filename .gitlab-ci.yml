@@ -9,7 +9,7 @@ variables:
 # 1. Test e Lint
 test:
   stage: test
-  image: node:alpine:3.23
+  image: node:20-alpine
   script:
     - cd frontend
     - npm ci
