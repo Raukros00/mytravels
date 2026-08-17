@@ -1,0 +1,138 @@
+.map-wrapper {
+  position: relative;
+  width: 100%;
+  height: 340px;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-md);
+  background: var(--slate-100);
+}
+
+@media (min-width: 768px) {
+  .map-wrapper {
+    height: 420px;
+  }
+}
+
+.leaflet-map-container {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.map-floating-bar {
+  position: absolute;
+  bottom: 0.85rem;
+  left: 0.85rem;
+  right: 0.85rem;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 500;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.stops-count {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--slate-900);
+}
+
+.route-hint {
+  font-size: 0.72rem;
+  color: var(--primary-600);
+  font-weight: 600;
+}
+
+.map-empty-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  text-align: center;
+  z-index: 500;
+  color: var(--slate-500);
+  font-size: 0.9rem;
+}
+
+/* Custom Marker Styling injected into Leaflet DOM */
+:host ::ng-deep .custom-map-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2.5px solid var(--primary-600);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+:host ::ng-deep .custom-map-marker:hover {
+  transform: scale(1.2);
+}
+
+:host ::ng-deep .marker-hotel {
+  border-color: #4f46e5;
+  background: #eef2ff;
+}
+
+:host ::ng-deep .marker-activity {
+  border-color: #0284c7;
+  background: #f0f9ff;
+}
+
+:host ::ng-deep .marker-food {
+  border-color: #f97316;
+  background: #fff7ed;
+}
+
+:host ::ng-deep .leaflet-popup-content-wrapper {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  padding: 0.25rem;
+}
+
+:host ::ng-deep .map-popup-card {
+  padding: 0.5rem;
+}
+
+:host ::ng-deep .popup-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+}
+
+:host ::ng-deep .popup-address {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+}
+
+:host ::ng-deep .popup-btn-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: #4f46e5;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  text-decoration: none;
+  margin-top: 0.25rem;
+}

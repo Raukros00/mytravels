@@ -1,0 +1,164 @@
+<div class="page-wrapper">
+  <div class="app-container">
+    <!-- Hero Header -->
+    <div class="trips-header animate-fade-in">
+      <div class="header-left">
+        @if (groupService.activeGroup(); as grp) {
+          <div class="group-context-pill">
+            <span class="grp-emoji">{{ grp.icon }}</span>
+            <span>Gruppo: <strong>{{ grp.name }}</strong></span>
+          </div>
+        }
+        <h1 class="page-title">I Nostri Viaggi & Itinerari</h1>
+        <p class="page-desc">Pianifica le giornate, programma le visite e prenota le migliori tappe gastronomiche.</p>
+      </div>
+
+      <div class="header-actions">
+        <a routerLink="/trips/new" class="btn btn-sunset btn-lg w-full-mobile shadow-hover">
+          <span>➕</span>
+          <span>Crea Nuovo Viaggio</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Filter & Search Toolbar (Mobile Horizontal Scroll Chips) -->
+    <div class="toolbar-card card-glass animate-fade-in">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery" 
+          placeholder="Cerca per destinazione o tag..." 
+          class="search-input">
+        @if (searchQuery) {
+          <button type="button" class="btn-clear" (click)="searchQuery = ''">✕</button>
+        }
+      </div>
+
+      <div class="filter-pills-scroll">
+        <button 
+          type="button" 
+          class="filter-pill" 
+          [class.active]="selectedStatus() === 'all'"
+          (click)="selectedStatus.set('all')">
+          Tutti ({{ tripService.activeGroupTrips().length }})
+        </button>
+        <button 
+          type="button" 
+          class="filter-pill" 
+          [class.active]="selectedStatus() === 'upcoming'"
+          (click)="selectedStatus.set('upcoming')">
+          In Arrivo
+        </button>
+        <button 
+          type="button" 
+          class="filter-pill" 
+          [class.active]="selectedStatus() === 'planning'"
+          (click)="selectedStatus.set('planning')">
+          In Pianificazione
+        </button>
+        <button 
+          type="button" 
+          class="filter-pill" 
+          [class.active]="selectedStatus() === 'completed'"
+          (click)="selectedStatus.set('completed')">
+          Passati
+        </button>
+      </div>
+    </div>
+
+    <!-- Trips Grid -->
+    @if (filteredTrips().length > 0) {
+      <div class="trips-grid">
+        @for (trip of filteredTrips(); track trip.id) {
+          <div class="trip-card card animate-fade-in">
+            <!-- Cover Image & Badges -->
+            <div class="trip-cover-wrapper">
+              <img [src]="trip.coverUrl" [alt]="trip.title" class="trip-cover-img" loading="lazy">
+              <div class="trip-cover-overlay"></div>
+              
+              <div class="cover-top-badges">
+                <span class="badge badge-country">
+                  📍 {{ trip.destination }}, {{ trip.country }}
+                </span>
+                
+                @switch (trip.status) {
+                  @case ('upcoming') {
+                    <span class="badge badge-emerald">In Arrivo</span>
+                  }
+                  @case ('planning') {
+                    <span class="badge badge-amber">In Pianificazione</span>
+                  }
+                  @case ('completed') {
+                    <span class="badge badge-slate">Concluso</span>
+                  }
+                  @default {
+                    <span class="badge badge-indigo">{{ trip.status }}</span>
+                  }
+                }
+              </div>
+
+              <div class="cover-bottom-info">
+                <span class="trip-duration">
+                  ⏳ {{ calculateDuration(trip.startDate, trip.endDate) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Trip Content -->
+            <div class="trip-body">
+              <h3 class="trip-title">
+                <a [routerLink]="['/trips', trip.id]">{{ trip.title }}</a>
+              </h3>
+
+              <div class="trip-dates">
+                <span class="date-icon">🗓️</span>
+                <span>{{ formatDateRange(trip.startDate, trip.endDate) }}</span>
+              </div>
+
+              @if (trip.notes) {
+                <p class="trip-snippet">{{ trip.notes }}</p>
+              }
+
+              <!-- Tags (Food / Style) -->
+              <div class="trip-tags">
+                @for (tag of trip.tags; track tag) {
+                  <span class="tag-pill">#{{ tag }}</span>
+                }
+              </div>
+            </div>
+
+            <!-- Trip Footer -->
+            <div class="trip-footer">
+              <div class="budget-box">
+                <span class="budget-label">Budget stimato:</span>
+                <strong class="budget-amount">{{ trip.budgetEstimate || 0 }} {{ trip.currency }}</strong>
+              </div>
+
+              <div class="trip-actions">
+                <button 
+                  type="button" 
+                  class="btn-delete" 
+                  (click)="deleteTrip(trip.id, trip.title, $event)" 
+                  title="Elimina viaggio">
+                  🗑️
+                </button>
+                <a [routerLink]="['/trips', trip.id]" class="btn btn-primary btn-sm">
+                  Dettagli & Pasti ➔
+                </a>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <app-empty-state
+        icon="🎒"
+        title="Nessun viaggio trovato"
+        [description]="searchQuery ? 'Nessun risultato corrisponde alla tua ricerca.' : 'Non ci sono ancora viaggi per questo gruppo. Creane subito uno!'"
+        actionLabel="Crea un Nuovo Viaggio"
+        (action)="goToNewTrip()">
+      </app-empty-state>
+    }
+  </div>
+</div>

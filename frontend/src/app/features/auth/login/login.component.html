@@ -1,0 +1,67 @@
+<div class="auth-page">
+  <div class="auth-card card-glass animate-slide-up">
+    <!-- Brand Header -->
+    <div class="auth-header">
+      <div class="brand-badge">
+        <span>✈️ 🍕</span>
+      </div>
+      <h1 class="auth-title">Bentornato su Wander<span class="brand-highlight">Bite</span></h1>
+      <p class="auth-subtitle">Accedi per organizzare i viaggi e le soste gastronomiche con i tuoi compagni di avventura.</p>
+    </div>
+
+    <!-- Quick Demo Login Banner -->
+    <div class="demo-banner">
+      <div class="demo-info">
+        <span class="demo-icon">⚡</span>
+        <div>
+          <strong>Vuoi provare subito?</strong>
+          <p>Entra con l'account demo preconfigurato</p>
+        </div>
+      </div>
+      <button type="button" class="btn btn-sunset btn-sm" (click)="onDemoLogin()">
+        Demo Login Rapido
+      </button>
+    </div>
+
+    <div class="auth-divider">
+      <span>oppure con le tue credenziali</span>
+    </div>
+
+    <!-- Login Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label class="form-label" for="email">Email</label>
+        <input 
+          type="email" 
+          id="email" 
+          formControlName="email" 
+          class="form-input" 
+          placeholder="alessandro@example.com">
+        @if (loginForm.get('email')?.touched && loginForm.get('email')?.invalid) {
+          <span class="form-error">Inserisci un indirizzo email valido.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input 
+          type="password" 
+          id="password" 
+          formControlName="password" 
+          class="form-input" 
+          placeholder="••••••••">
+      </div>
+
+      <button 
+        type="submit" 
+        class="btn btn-primary w-full btn-lg mt-2" 
+        [disabled]="loginForm.invalid">
+        Accedi a WanderBite
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Non hai ancora un account? <a routerLink="/register">Registrati ora</a></p>
+    </div>
+  </div>
+</div>

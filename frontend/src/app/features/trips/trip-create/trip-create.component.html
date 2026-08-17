@@ -1,0 +1,181 @@
+<div class="page-wrapper">
+  <div class="app-container max-w-form">
+    <!-- Header -->
+    <div class="form-header animate-fade-in">
+      <a routerLink="/trips" class="btn btn-ghost btn-sm back-link">
+        <span>←</span> Torna ai Viaggi
+      </a>
+      <h1 class="page-title">Pianifica un Nuovo Viaggio</h1>
+      <p class="page-desc">Imposta le date, la destinazione e crea l'itinerario con le soste per colazioni, pranzi e cene.</p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card card-glass form-card animate-slide-up">
+      <form [formGroup]="tripForm" (ngSubmit)="onSubmit()">
+        
+        <!-- Group Selector -->
+        <div class="form-group">
+          <label class="form-label" for="groupId">Gruppo di Viaggio *</label>
+          <select id="groupId" formControlName="groupId" class="form-select">
+            @for (group of groupService.userGroups(); track group.id) {
+              <option [value]="group.id">{{ group.icon }} {{ group.name }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Title -->
+        <div class="form-group">
+          <label class="form-label" for="title">Titolo del Viaggio *</label>
+          <input 
+            type="text" 
+            id="title" 
+            formControlName="title" 
+            class="form-input" 
+            placeholder="Es. Tour a Napoli: Pizza, Musei & Sfogliatella">
+          @if (tripForm.get('title')?.touched && tripForm.get('title')?.invalid) {
+            <span class="form-error">Il titolo del viaggio è obbligatorio.</span>
+          }
+        </div>
+
+        <!-- Destination & Country -->
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="destination">Città / Destinazione *</label>
+            <input 
+              type="text" 
+              id="destination" 
+              formControlName="destination" 
+              class="form-input" 
+              placeholder="Es. Napoli, Barcellona, Tokyo...">
+            @if (tripForm.get('destination')?.touched && tripForm.get('destination')?.invalid) {
+              <span class="form-error">La destinazione è obbligatoria.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="country">Nazione *</label>
+            <input 
+              type="text" 
+              id="country" 
+              formControlName="country" 
+              class="form-input" 
+              placeholder="Es. Italia, Spagna, Giappone...">
+          </div>
+        </div>
+
+        <!-- Date Range -->
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="startDate">Data di Inizio *</label>
+            <input 
+              type="date" 
+              id="startDate" 
+              formControlName="startDate" 
+              class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="endDate">Data di Fine *</label>
+            <input 
+              type="date" 
+              id="endDate" 
+              formControlName="endDate" 
+              class="form-input">
+          </div>
+        </div>
+
+        <!-- Budget & Tags -->
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="budgetEstimate">Budget Stimato a Persona (€)</label>
+            <input 
+              type="number" 
+              id="budgetEstimate" 
+              formControlName="budgetEstimate" 
+              class="form-input" 
+              placeholder="Es. 450">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="tagInput">Tag / Esperienze (premi Invio per aggiungere)</label>
+            <div class="tag-input-container">
+              <input 
+                type="text" 
+                id="tagInput"
+                [(ngModel)]="currentTag" 
+                [ngModelOptions]="{standalone: true}"
+                (keydown.enter)="addTag($event)"
+                class="form-input" 
+                placeholder="Es. Street food, Musei, Relax...">
+              <button type="button" class="btn btn-secondary btn-sm" (click)="addTag()">Aggiungi</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Tags List -->
+        @if (tagsList.length > 0) {
+          <div class="tags-badge-list">
+            @for (tag of tagsList; track tag) {
+              <span class="tag-badge">
+                #{{ tag }}
+                <button type="button" class="tag-remove" (click)="removeTag(tag)">✕</button>
+              </span>
+            }
+          </div>
+        }
+
+        <!-- Cover Presets Selection -->
+        <div class="form-group mt-3">
+          <label class="form-label">Scegli una Copertina Iconica</label>
+          <div class="presets-grid">
+            @for (preset of coverPresets; track preset.url) {
+              <div 
+                class="preset-item" 
+                [class.selected]="tripForm.get('coverUrl')?.value === preset.url"
+                (click)="tripForm.patchValue({ coverUrl: preset.url })">
+                <img [src]="preset.url" [alt]="preset.title" class="preset-img">
+                <span class="preset-title">{{ preset.title }}</span>
+                @if (tripForm.get('coverUrl')?.value === preset.url) {
+                  <div class="preset-check">✓</div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Custom URL Input as fallback -->
+        <div class="form-group">
+          <label class="form-label" for="coverUrl">O inserisci URL immagine personalizzata</label>
+          <input 
+            type="url" 
+            id="coverUrl" 
+            formControlName="coverUrl" 
+            class="form-input" 
+            placeholder="https://images.unsplash.com/...">
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group">
+          <label class="form-label" for="notes">Note & Idee Culinarie di Viaggio</label>
+          <textarea 
+            id="notes" 
+            formControlName="notes" 
+            class="form-textarea" 
+            rows="3" 
+            placeholder="Es. Trattorie tipiche consigliate, orari di apertura dei musei, posti imperdibili per il tramonto..."></textarea>
+        </div>
+
+        <!-- Submit buttons -->
+        <div class="form-actions">
+          <a routerLink="/trips" class="btn btn-secondary flex-1">Annulla</a>
+          <button 
+            type="submit" 
+            class="btn btn-sunset btn-lg flex-1" 
+            [disabled]="tripForm.invalid">
+            <span>🚀</span> Crea Viaggio
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

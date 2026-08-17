@@ -1,0 +1,145 @@
+<div class="page-wrapper">
+  <div class="app-container">
+    <!-- Header & Action Bar -->
+    <div class="page-header animate-fade-in">
+      <div class="header-left">
+        <span class="badge badge-indigo">I Tuoi Gruppi di Viaggio</span>
+        <h1 class="page-title">Gestione Gruppi & Compagni</h1>
+        <p class="page-desc">Condividi la pianificazione dei viaggi, vota i ristoranti e organizza le tappe con gli amici.</p>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" class="btn btn-outline flex-1" (click)="isJoinModalOpen.set(true)">
+          <span>🔑</span> Unisciti con Codice
+        </button>
+        <button type="button" class="btn btn-sunset flex-1" (click)="isCreateModalOpen.set(true)">
+          <span>➕</span> Crea Gruppo
+        </button>
+      </div>
+    </div>
+
+    <!-- Groups Grid -->
+    @if (groupService.userGroups().length > 0) {
+      <div class="groups-grid">
+        @for (group of groupService.userGroups(); track group.id) {
+          <div 
+            class="group-card card animate-fade-in" 
+            [class.is-active]="group.id === groupService.activeGroupId()">
+            
+            <!-- Card Header with Icon & Active Tag -->
+            <div class="group-card-header">
+              <div class="group-icon-bubble" [style.background-color]="group.color + '22'" [style.border-color]="group.color">
+                <span class="group-emoji">{{ group.icon }}</span>
+              </div>
+
+              @if (group.id === groupService.activeGroupId()) {
+                <span class="badge badge-emerald active-badge">
+                  <span>✓</span> Attivo Ora
+                </span>
+              } @else {
+                <button 
+                  type="button" 
+                  class="btn btn-secondary btn-sm select-active-btn" 
+                  (click)="selectActiveGroup(group.id)">
+                  Imposta Attivo
+                </button>
+              }
+            </div>
+
+            <!-- Content -->
+            <div class="group-card-body">
+              <h3 class="group-name">{{ group.name }}</h3>
+              <p class="group-desc">{{ group.description || 'Nessuna descrizione specificata.' }}</p>
+              
+              <!-- Invite Code Pill -->
+              <div class="invite-code-box">
+                <div class="code-details">
+                  <span class="code-label">Codice Invito:</span>
+                  <strong class="code-val">{{ group.inviteCode }}</strong>
+                </div>
+                <button 
+                  type="button" 
+                  class="btn-copy" 
+                  (click)="copyCode(group.inviteCode)" 
+                  title="Copia codice negli appunti">
+                  📋 Copia
+                </button>
+              </div>
+            </div>
+
+            <!-- Footer: Members Stack & Trip Link -->
+            <div class="group-card-footer">
+              <div class="members-section">
+                <span class="section-label">Membri ({{ group.members.length }})</span>
+                <div class="avatar-group">
+                  @for (member of group.members; track member.id) {
+                    <div 
+                      class="avatar avatar-sm" 
+                      [style.background-color]="member.color" 
+                      [title]="member.name + ' (' + member.role + ')'">
+                      {{ member.avatar }}
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <a 
+                routerLink="/trips" 
+                (click)="selectActiveGroup(group.id)" 
+                class="btn btn-outline btn-sm">
+                Vedi Viaggi ➔
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <app-empty-state
+        icon="👥"
+        title="Non fai ancora parte di nessun gruppo"
+        description="Crea il tuo primo gruppo di viaggio per iniziare a pianificare insieme ai tuoi amici."
+        actionLabel="Crea il tuo primo gruppo"
+        (action)="isCreateModalOpen.set(true)">
+      </app-empty-state>
+    }
+  </div>
+</div>
+
+<!-- Modals -->
+<app-group-create-modal 
+  [isOpen]="isCreateModalOpen()" 
+  (closeModal)="isCreateModalOpen.set(false)">
+</app-group-create-modal>
+
+<!-- Join Group Modal -->
+<app-modal 
+  [isOpen]="isJoinModalOpen()" 
+  title="Unisciti a un Gruppo con Codice" 
+  icon="🔑" 
+  (close)="isJoinModalOpen.set(false)">
+  
+  <div class="join-modal-content">
+    <p class="modal-info">Inserisci il codice di invito fornito dal creatore del gruppo (es. <code>FOODIE-2026</code>).</p>
+    
+    <div class="form-group mt-3">
+      <label class="form-label" for="inviteCodeInput">Codice Gruppo</label>
+      <input 
+        type="text" 
+        id="inviteCodeInput"
+        [(ngModel)]="inviteCodeInput" 
+        class="form-input text-uppercase" 
+        placeholder="GRP-XXXXX">
+    </div>
+  </div>
+
+  <div modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="isJoinModalOpen.set(false)">Annulla</button>
+    <button 
+      type="button" 
+      class="btn btn-primary" 
+      [disabled]="!inviteCodeInput.trim()" 
+      (click)="onJoinGroup()">
+      Unisciti Ora
+    </button>
+  </div>
+</app-modal>

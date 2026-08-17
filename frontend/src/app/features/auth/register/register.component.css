@@ -1,0 +1,139 @@
+.auth-page {
+  min-height: calc(100vh - 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 520px;
+  padding: 1.75rem 1.25rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-xl);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+@media (min-width: 640px) {
+  .auth-card {
+    padding: 2.5rem;
+  }
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  width: 58px;
+  height: 58px;
+  background: var(--primary-50);
+  border-radius: var(--radius-full);
+  margin-bottom: 0.85rem;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.auth-title {
+  font-size: 1.45rem;
+  color: var(--slate-900);
+  margin-bottom: 0.35rem;
+}
+
+.brand-highlight {
+  color: var(--sunset-500);
+}
+
+.auth-subtitle {
+  font-size: 0.875rem;
+  color: var(--slate-500);
+  line-height: 1.4;
+}
+
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+@media (min-width: 480px) {
+  .avatar-grid {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
+
+.avatar-select-btn {
+  font-size: 1.4rem;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--slate-200);
+  background: var(--slate-50);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.avatar-select-btn:active {
+  transform: scale(0.95);
+}
+
+.avatar-select-btn.selected {
+  background: var(--primary-100);
+  border-color: var(--primary-600);
+  box-shadow: 0 0 0 2px var(--primary-600);
+}
+
+.color-grid {
+  display: flex;
+  gap: 0.65rem;
+}
+
+.color-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  border: 2px solid #ffffff;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: bold;
+  transition: transform var(--transition-fast);
+}
+
+.color-btn.selected {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px var(--slate-800);
+}
+
+.mt-3 {
+  margin-top: 1.25rem;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--slate-100);
+}
+
+.auth-footer p {
+  font-size: 0.875rem;
+  color: var(--slate-600);
+}
+
+.auth-footer a {
+  font-weight: 700;
+  color: var(--primary-600);
+}

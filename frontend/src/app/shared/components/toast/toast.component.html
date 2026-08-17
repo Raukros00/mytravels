@@ -1,0 +1,20 @@
+<div class="toast-container" aria-live="polite">
+  @for (toast of toastService.toasts(); track toast.id) {
+    <div class="toast-item toast-{{ toast.type }} animate-slide-in" role="alert">
+      <div class="toast-icon">
+        @switch (toast.type) {
+          @case ('success') { <span>✨</span> }
+          @case ('error') { <span>⚠️</span> }
+          @case ('warning') { <span>⚡</span> }
+          @default { <span>ℹ️</span> }
+        }
+      </div>
+      <div class="toast-content">
+        <p class="toast-message">{{ toast.message }}</p>
+      </div>
+      <button type="button" class="toast-close" (click)="toastService.remove(toast.id)" aria-label="Chiudi notifica">
+        ✕
+      </button>
+    </div>
+  }
+</div>

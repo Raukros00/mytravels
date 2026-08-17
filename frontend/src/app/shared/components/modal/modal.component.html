@@ -1,0 +1,27 @@
+@if (isOpen) {
+  <div class="modal-overlay animate-fade-in" (click)="onBackdropClick($event)">
+    <div class="modal-container animate-sheet-up" [style.max-width]="maxWidth" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          @if (icon) {
+            <span class="modal-icon">{{ icon }}</span>
+          }
+          <h3 class="modal-title">{{ title }}</h3>
+        </div>
+        <button type="button" class="btn-close" (click)="onClose()" aria-label="Chiudi modale">
+          ✕
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <ng-content></ng-content>
+      </div>
+
+      @if (hasFooter) {
+        <div class="modal-footer">
+          <ng-content select="[modal-footer]"></ng-content>
+        </div>
+      }
+    </div>
+  </div>
+}

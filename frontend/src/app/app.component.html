@@ -1,5 +1,20 @@
-<main class="main">
-  <h1>Ciao momina sono vivo test3!</h1>
+<!-- WanderBite App Shell -->
+<app-navbar></app-navbar>
+
+<main class="main-content">
+  <router-outlet></router-outlet>
 </main>
 
-<router-outlet />
+<app-toast></app-toast>
+
+<footer class="app-footer">
+  <div class="app-container footer-inner">
+    <div class="footer-brand">
+      <span class="footer-logo">✈️ 🍕 WanderBite</span>
+      <p class="footer-tagline">Organizza itinerari di viaggio, giornate e tappe gastronomiche con i tuoi amici.</p>
+    </div>
+    <div class="footer-copyright">
+      <span>© 2026 WanderBite • Realizzato per viaggiatori & amanti del buon cibo.</span>
+    </div>
+  </div>
+</footer>

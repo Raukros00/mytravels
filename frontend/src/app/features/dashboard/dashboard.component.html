@@ -1,0 +1,99 @@
+<div class="page-wrapper">
+  <div class="app-container">
+    <!-- Hero Welcome -->
+    <div class="dashboard-hero card-glass animate-fade-in">
+      <div class="hero-left">
+        <span class="badge badge-sunset">👋 Benvenuto Viaggiatore Gourmet</span>
+        <h1 class="hero-title">Ciao, {{ authService.currentUser()?.name || 'Amico' }}!</h1>
+        <p class="hero-desc">
+          Ecco la panoramica dei tuoi viaggi in corso e in programma con il gruppo 
+          <strong>{{ groupName() }}</strong>.
+        </p>
+      </div>
+      <div class="hero-cta-buttons">
+        <a routerLink="/trips/new" class="btn btn-sunset">
+          <span>➕</span> Nuovo Viaggio
+        </a>
+        <a routerLink="/groups" class="btn btn-secondary">
+          <span>👥</span> I Tuoi Gruppi
+        </a>
+      </div>
+    </div>
+
+    <!-- Metric Stat Cards -->
+    <div class="metrics-grid animate-slide-up">
+      <div class="card metric-card">
+        <div class="metric-icon-bubble bg-indigo">
+          <span>🗺️</span>
+        </div>
+        <div class="metric-details">
+          <span class="metric-label">Viaggi nel Gruppo</span>
+          <strong class="metric-value">{{ tripService.activeGroupTrips().length }}</strong>
+        </div>
+      </div>
+
+      <div class="card metric-card">
+        <div class="metric-icon-bubble bg-emerald">
+          <span>✈️</span>
+        </div>
+        <div class="metric-details">
+          <span class="metric-label">Prossimi Viaggi</span>
+          <strong class="metric-value">{{ tripService.stats().upcoming }}</strong>
+        </div>
+      </div>
+
+      <div class="card metric-card">
+        <div class="metric-icon-bubble bg-sunset">
+          <span>📍</span>
+        </div>
+        <div class="metric-details">
+          <span class="metric-label">Nazioni Esplorate</span>
+          <strong class="metric-value">{{ tripService.stats().uniqueCountries }}</strong>
+        </div>
+      </div>
+
+      <div class="card metric-card">
+        <div class="metric-icon-bubble bg-amber">
+          <span>👥</span>
+        </div>
+        <div class="metric-details">
+          <span class="metric-label">Membri nel Gruppo</span>
+          <strong class="metric-value">{{ membersCount() }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Trips Showcase -->
+    <div class="section-container mt-4 animate-fade-in">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">🎒 Viaggi in Primo Piano</h2>
+          <p class="section-subtitle">Esplora gli itinerari e le tappe culinarie programmate</p>
+        </div>
+        <a routerLink="/trips" class="btn btn-outline btn-sm">Vedi Tutti ➔</a>
+      </div>
+
+      <div class="featured-trips-grid">
+        @for (trip of tripService.activeGroupTrips().slice(0, 2); track trip.id) {
+          <div class="card trip-preview-card">
+            <div class="preview-img-wrap">
+              <img [src]="trip.coverUrl" [alt]="trip.title" class="preview-img" loading="lazy">
+              <span class="badge badge-country preview-badge">📍 {{ trip.destination }}</span>
+            </div>
+            <div class="preview-content">
+              <h3 class="preview-title">{{ trip.title }}</h3>
+              <p class="preview-notes">{{ trip.notes || 'Itinerario e tappe in fase di definizione.' }}</p>
+              
+              <div class="preview-footer">
+                <span class="preview-dates">🗓️ {{ trip.startDate }} - {{ trip.endDate }}</span>
+                <a [routerLink]="['/trips', trip.id]" class="btn btn-primary btn-sm">
+                  Apri Dettaglio ➔
+                </a>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
