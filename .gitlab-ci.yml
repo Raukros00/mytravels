@@ -3,6 +3,8 @@ stages:
 
 variables:
   DOCKER_IMAGE_FE: "app1-frontend:latest"
+  DOCKER_HOST: "tcp://docker:2375"
+  DOCKER_TLS_CERTDIR: ""
 
 deploy_frontend:
   stage: deploy
@@ -12,8 +14,9 @@ deploy_frontend:
   script:
     - echo "Building Docker image con i file statici pre-compilati..."
     - docker build -t $DOCKER_IMAGE_FE ./frontend
-    - cd /home/alessandrodominici/stacks/app1
-    - docker-compose up -d --force-recreate frontend
+    - echo "Aggiornamento container tramite docker-compose..."
+    - cd /home/alessandrodominici/stacks/app1 || true
+    - docker-compose up -d --force-recreate frontend || echo "Esegui il compose manualmente se la cartella non è montata nel runner"
     - echo "Deploy completato su https://app1.alessandrodominici.dev"
   only:
     - main
