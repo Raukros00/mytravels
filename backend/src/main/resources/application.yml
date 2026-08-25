@@ -1,0 +1,13 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: trip-planner-backend
+  data:
+    mongodb:
+      uri: mongodb://${SPRING_DATA_MONGODB_HOST:localhost}:${SPRING_DATA_MONGODB_PORT:27017}/${SPRING_DATA_MONGODB_DATABASE:tripplanner}
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  expiration: 86400000 # 24 hours in ms
