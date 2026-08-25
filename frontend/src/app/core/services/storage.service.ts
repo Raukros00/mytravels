@@ -8,7 +8,8 @@ const STORAGE_KEYS = {
   CURRENT_USER: 'wb_current_user',
   GROUPS: 'wb_groups',
   ACTIVE_GROUP_ID: 'wb_active_group_id',
-  TRIPS: 'wb_trips'
+  TRIPS: 'wb_trips',
+  JWT: 'wb_jwt'
 };
 
 @Injectable({
@@ -87,6 +88,19 @@ export class StorageService {
 
   public getTrips(): Trip[] {
     return this.getItem<Trip[]>(STORAGE_KEYS.TRIPS) || [];
+  }
+
+  // JWT handling
+  public getJwt(): string | null {
+    return this.getItem<string>(STORAGE_KEYS.JWT);
+  }
+
+  public setJwt(token: string): void {
+    this.setItem<string>(STORAGE_KEYS.JWT, token);
+  }
+
+  public clearJwt(): void {
+    this.removeItem(STORAGE_KEYS.JWT);
   }
 
   public setTrips(trips: Trip[]): void {
@@ -469,5 +483,7 @@ export class StorageService {
     this.setActiveGroupId('grp_1');
     this.setTrips(trips);
     this.setCurrentUser(defaultUser);
+    // Initialize JWT storage as empty
+    this.clearJwt();
   }
 }

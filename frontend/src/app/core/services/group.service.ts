@@ -1,7 +1,8 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
 import { AuthService } from './auth.service';
+import { ApiService } from './api.service';
 import { CreateGroupDto, Group } from '../models/group.model';
 
 @Injectable({
@@ -11,6 +12,7 @@ export class GroupService {
   private storageService = inject(StorageService);
   private toastService = inject(ToastService);
   private authService = inject(AuthService);
+  private apiService = inject(ApiService);
 
   private groupsSignal = signal<Group[]>(this.storageService.getGroups());
   private activeGroupIdSignal = signal<string | null>(this.storageService.getActiveGroupId());
@@ -31,8 +33,35 @@ export class GroupService {
     const user = this.authService.currentUser();
     const all = this.groupsSignal();
     if (!user) return [];
-    return all.filter(g => g.members.some(m => m.id === user.id) || g.creatorId === user.id);
+    return all.filter(g => g.members && g.members.some(m => m.id === user.id || m.id === user.email) || g.creatorId === user.id);
   });
+
+  constructor() {
+    // When user authenticates or changes, load groups from backend
+    effect(() => {
+      const user = this.authService.currentUser();
+      if (user) {
+        this.loadGroups();
+      }
+    });
+  }
+
+  public loadGroups(): void {
+    this.apiService.get<Group[]>('/api/v1/groups').subscribe({
+      next: (groups) => {
+        if (groups && groups.length > 0) {
+          this.groupsSignal.set(groups);
+          this.storageService.setGroups(groups);
+          if (!this.activeGroupIdSignal() || !groups.find(g => g.id === this.activeGroupIdSignal())) {
+            this.setActiveGroup(groups[0].id);
+          }
+        }
+      },
+      error: (err) => {
+        console.warn('Backend unavailable, using cached groups:', err);
+      }
+    });
+  }
 
   public setActiveGroup(groupId: string): void {
     this.activeGroupIdSignal.set(groupId);
@@ -47,7 +76,7 @@ export class GroupService {
     const user = this.authService.currentUser();
     const code = 'GRP-' + Math.random().toString(36).substring(2, 7).toUpperCase();
 
-    const newGroup: Group = {
+    const localGroup: Group = {
       id: 'grp_' + Date.now(),
       name: dto.name.trim(),
       description: dto.description.trim(),
@@ -67,13 +96,33 @@ export class GroupService {
       ] : []
     };
 
-    const updated = [...this.groupsSignal(), newGroup];
+    // Optimistic local update
+    const updated = [...this.groupsSignal(), localGroup];
     this.groupsSignal.set(updated);
     this.storageService.setGroups(updated);
-    this.setActiveGroup(newGroup.id);
+    this.setActiveGroup(localGroup.id);
 
-    this.toastService.success(`Gruppo "${newGroup.name}" creato con successo! 🎉`);
-    return newGroup;
+    // Backend sync
+    this.apiService.post<Group>('/api/v1/groups', {
+      name: dto.name.trim(),
+      description: dto.description.trim(),
+      icon: dto.icon || '✈️',
+      color: dto.color || '#4f46e5',
+      creatorId: user?.id
+    }).subscribe({
+      next: (created) => {
+        const synced = this.groupsSignal().map(g => g.id === localGroup.id ? created : g);
+        this.groupsSignal.set(synced);
+        this.storageService.setGroups(synced);
+        this.setActiveGroup(created.id);
+      },
+      error: (err) => {
+        console.error('Error creating group on backend:', err);
+      }
+    });
+
+    this.toastService.success(`Gruppo "${dto.name}" creato con successo! 🎉`);
+    return localGroup;
   }
 
   public getGroupById(id: string): Group | undefined {
@@ -85,37 +134,32 @@ export class GroupService {
     if (!user) return false;
 
     const trimmed = code.trim().toUpperCase();
-    const found = this.groupsSignal().find(g => g.inviteCode.toUpperCase() === trimmed);
 
-    if (!found) {
-      this.toastService.error('Codice gruppo non valido o inesistente.');
-      return false;
-    }
-
-    if (found.members.some(m => m.id === user.id)) {
-      this.toastService.info('Fai già parte di questo gruppo!');
-      this.setActiveGroup(found.id);
-      return true;
-    }
-
-    const updatedMembers = [
-      ...found.members,
-      {
-        id: user.id,
-        name: user.name,
-        avatar: user.avatar,
-        role: 'member' as const,
-        color: user.color
+    // Backend call
+    this.apiService.post<Group>('/api/v1/groups/join', {
+      inviteCode: trimmed,
+      userId: user.id,
+      userName: user.name,
+      avatar: user.avatar,
+      color: user.color
+    }).subscribe({
+      next: (joinedGroup) => {
+        const exists = this.groupsSignal().some(g => g.id === joinedGroup.id);
+        const updated = exists 
+          ? this.groupsSignal().map(g => g.id === joinedGroup.id ? joinedGroup : g)
+          : [...this.groupsSignal(), joinedGroup];
+        
+        this.groupsSignal.set(updated);
+        this.storageService.setGroups(updated);
+        this.setActiveGroup(joinedGroup.id);
+        this.toastService.success(`Ti sei unito al gruppo "${joinedGroup.name}"! 🎊`);
+      },
+      error: (err) => {
+        const msg = err.error?.message || 'Codice gruppo non valido o inesistente.';
+        this.toastService.error(msg);
       }
-    ];
+    });
 
-    const updatedGroup = { ...found, members: updatedMembers };
-    const updatedAll = this.groupsSignal().map(g => g.id === found.id ? updatedGroup : g);
-
-    this.groupsSignal.set(updatedAll);
-    this.storageService.setGroups(updatedAll);
-    this.setActiveGroup(found.id);
-    this.toastService.success(`Ti sei unito al gruppo "${found.name}"! 🎊`);
     return true;
   }
 }

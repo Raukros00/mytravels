@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
+import { ApiService } from './api.service';
 import { User } from '../models/user.model';
 import { LoginDto, RegisterDto } from '../models/auth.model';
 
@@ -12,75 +13,72 @@ export class AuthService {
   private storageService = inject(StorageService);
   private toastService = inject(ToastService);
   private router = inject(Router);
+  private apiService = inject(ApiService);
 
   private currentUserSignal = signal<User | null>(this.storageService.getCurrentUser());
   public readonly currentUser = this.currentUserSignal.asReadonly();
   public readonly isAuthenticated = computed(() => !!this.currentUserSignal());
 
-  public login(dto: LoginDto): boolean {
-    const users = this.storageService.getUsers();
-    const foundUser = users.find(u => u.email.toLowerCase() === dto.email.toLowerCase());
-
-    if (!foundUser) {
-      this.toastService.error('Nessun account trovato con questa email. Effettua la registrazione.');
-      return false;
+  constructor() {
+    // If we have a JWT token on startup, verify / refresh current user
+    const token = this.storageService.getJwt();
+    if (token) {
+      this.apiService.get<User>('/auth/me').subscribe({
+        next: (user) => {
+          this.currentUserSignal.set(user);
+          this.storageService.setCurrentUser(user);
+        },
+        error: () => {
+          // Token expired or invalid
+          this.logout();
+        }
+      });
     }
-
-    this.currentUserSignal.set(foundUser);
-    this.storageService.setCurrentUser(foundUser);
-    this.toastService.success(`Bentornato, ${foundUser.name}! 👋`);
-    this.router.navigate(['/trips']);
-    return true;
   }
 
-  public register(dto: RegisterDto): boolean {
-    const users = this.storageService.getUsers();
-    const existing = users.find(u => u.email.toLowerCase() === dto.email.toLowerCase());
+  public login(dto: LoginDto): void {
+    this.apiService.post<{ token: string; user: User }>('/auth/login', dto).subscribe({
+      next: (res) => {
+        this.storageService.setJwt(res.token);
+        this.currentUserSignal.set(res.user);
+        this.storageService.setCurrentUser(res.user);
+        this.toastService.success(`Bentornato, ${res.user.name}! 👋`);
+        this.router.navigate(['/trips']);
+      },
+      error: (err) => {
+        const msg = err.error?.message || 'Email o password non validi.';
+        this.toastService.error(msg);
+      }
+    });
+  }
 
-    if (existing) {
-      this.toastService.error('Questa email è già registrata. Effettua il login.');
-      return false;
-    }
-
-    const newUser: User = {
-      id: 'usr_' + Date.now(),
-      name: dto.name.trim(),
-      email: dto.email.trim(),
-      avatar: dto.avatar || '✈️',
-      color: dto.color || '#4f46e5',
-      joinedDate: new Date().toISOString().split('T')[0]
-    };
-
-    const updatedUsers = [...users, newUser];
-    this.storageService.setUsers(updatedUsers);
-    this.currentUserSignal.set(newUser);
-    this.storageService.setCurrentUser(newUser);
-
-    this.toastService.success(`Benvenuto su WanderBite, ${newUser.name}! 🚀`);
-    this.router.navigate(['/trips']);
-    return true;
+  public register(dto: RegisterDto): void {
+    this.apiService.post<{ token: string; user: User }>('/auth/register', dto).subscribe({
+      next: (res) => {
+        this.storageService.setJwt(res.token);
+        this.currentUserSignal.set(res.user);
+        this.storageService.setCurrentUser(res.user);
+        this.toastService.success(`Benvenuto su WanderBite, ${res.user.name}! 🚀`);
+        this.router.navigate(['/trips']);
+      },
+      error: (err) => {
+        const msg = err.error?.message || 'Errore durante la registrazione.';
+        this.toastService.error(msg);
+      }
+    });
   }
 
   public quickDemoLogin(): void {
-    const users = this.storageService.getUsers();
-    const demoUser = users[0] || {
-      id: 'usr_demo_1',
-      name: 'Alessandro Dominici',
-      email: 'alessandro@example.com',
-      avatar: '👨‍🍳',
-      color: '#4f46e5',
-      joinedDate: '2026-01-10'
-    };
-
-    this.currentUserSignal.set(demoUser);
-    this.storageService.setCurrentUser(demoUser);
-    this.toastService.success(`Accesso effettuato come ${demoUser.name} (Demo)`);
-    this.router.navigate(['/trips']);
+    this.login({
+      email: 'admin@example.com',
+      password: 'admin123'
+    });
   }
 
   public logout(): void {
     this.currentUserSignal.set(null);
     this.storageService.setCurrentUser(null);
+    this.storageService.clearJwt();
     this.toastService.info('Disconnessione effettuata. A presto!');
     this.router.navigate(['/login']);
   }

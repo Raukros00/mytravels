@@ -1,0 +1,14 @@
+# Build outputs
+frontend/dist/
+frontend/.angular/
+frontend/node_modules/
+backend/target/
+backend/.mvn/
+
+# OS and IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.log
