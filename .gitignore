@@ -1,5 +1,4 @@
 # Build outputs
-frontend/dist/
 frontend/.angular/
 frontend/node_modules/
 backend/target/

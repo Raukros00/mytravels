@@ -11,11 +11,14 @@ services:
       MONGO_INITDB_DATABASE: tripplanner
     volumes:
       - mongo_data:/data/db
+    networks:
+      - app1-network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: app1-backend:latest
     container_name: tripplanner-backend
     restart: unless-stopped
     ports:
@@ -26,6 +29,26 @@ services:
       SPRING_DATA_MONGODB_DATABASE: tripplanner
     depends_on:
       - mongodb
+    networks:
+      - app1-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: app1-frontend:latest
+    container_name: app1-frontend
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
+    networks:
+      - app1-network
+
+networks:
+  app1-network:
+    driver: bridge
 
 volumes:
   mongo_data:
