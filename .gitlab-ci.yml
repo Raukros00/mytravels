@@ -1,20 +1,43 @@
 stages:
+  - test
   - deploy
 
 variables:
   DOCKER_IMAGE_FE: "app1-frontend:latest"
+  DOCKER_IMAGE_BE: "app1-backend:latest"
+
+test_backend:
+  stage: test
+  image: maven:3.9.6-eclipse-temurin-21
+  script:
+    - echo "Esecuzione test automatici backend Spring Boot..."
+    - cd backend
+    - mvn test
+  rules:
+    - changes:
+        - backend/**/*
+  tags:
+    - raspberry
+
+deploy_backend:
+  stage: deploy
+  image: docker:latest
+  script:
+    - echo "Building e deploy dei servizi MongoDB e Backend..."
+    - docker compose up -d --build mongodb backend
+    - echo "Deploy del backend completato con successo!"
+  only:
+    - main
+  tags:
+    - raspberry
 
 deploy_frontend:
   stage: deploy
   image: docker:latest
   script:
-    - echo "Building Docker image con i file statici pre-compilati..."
-    - docker build -t $DOCKER_IMAGE_FE ./frontend
-    - echo "Aggiornamento container tramite docker-compose..."
-    - docker stop app1-frontend || true
-    - docker rm app1-frontend || true
-    - docker run -d --name app1-frontend --restart always -p 8081:80 $DOCKER_IMAGE_FE
-    - echo "Deploy completato con successo su https://app1.alessandrodominici.dev"
+    - echo "Building e deploy del servizio Frontend..."
+    - docker compose up -d --build frontend
+    - echo "Deploy frontend completato con successo su https://app1.alessandrodominici.dev"
   only:
     - main
   tags:
