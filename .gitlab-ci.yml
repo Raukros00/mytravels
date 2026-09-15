@@ -5,14 +5,19 @@ stages:
 variables:
   DOCKER_IMAGE_FE: "app1-frontend:latest"
   DOCKER_IMAGE_BE: "app1-backend:latest"
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dmaven.wagon.http.retryHandler.count=3 -Dmaven.wagon.http.pool=false"
 
 test_backend:
   stage: test
   image: maven:3.9.6-eclipse-temurin-21
+  cache:
+    key: "maven-deps"
+    paths:
+      - .m2/repository/
   script:
     - echo "Esecuzione test automatici backend Spring Boot..."
     - cd backend
-    - mvn test
+    - mvn test --batch-mode
   rules:
     - changes:
         - backend/**/*
@@ -24,7 +29,7 @@ deploy_backend:
   image: docker:latest
   script:
     - echo "Building e deploy dei servizi MongoDB e Backend..."
-    - docker compose up -d --build mongodb backend
+    - docker compose up -d --build --force-recreate mongodb backend
     - echo "Deploy del backend completato con successo!"
   only:
     - main
@@ -36,9 +41,10 @@ deploy_frontend:
   image: docker:latest
   script:
     - echo "Building e deploy del servizio Frontend..."
-    - docker compose up -d --build frontend
+    - docker compose up -d --build --force-recreate frontend
     - echo "Deploy frontend completato con successo su https://app1.alessandrodominici.dev"
   only:
     - main
   tags:
     - raspberry
+
