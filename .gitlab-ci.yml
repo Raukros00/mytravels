@@ -24,32 +24,19 @@ test_backend:
   tags:
     - raspberry
 
-deploy_backend:
+deploy:
   stage: deploy
   image: docker:latest
   script:
-    - echo "Pulizia eventuali container precedenti sulle porte 8082 e 27017..."
-    - docker rm -f tripplanner-backend $(docker ps -aq --filter "publish=8082") 2>/dev/null || true
-    - echo "Building e deploy dei servizi MongoDB e Backend..."
-    - docker compose up -d --build --force-recreate mongodb backend
-    - echo "Deploy del backend completato con successo!"
+    - echo "Pulizia eventuali container precedenti sulle porte 8081, 8082 e 27017..."
+    - docker rm -f app1-frontend tripplanner-backend tripplanner-mongodb $(docker ps -aq --filter "publish=8081" --filter "publish=8082" --filter "publish=27017") 2>/dev/null || true
+    - echo "Building e deploy di tutti i servizi (MongoDB, Backend, Frontend)..."
+    - docker compose up -d --build --force-recreate
+    - echo "Deploy completato con successo su https://app1.alessandrodominici.dev"
   only:
     - main
   tags:
     - raspberry
 
-deploy_frontend:
-  stage: deploy
-  image: docker:latest
-  script:
-    - echo "Pulizia eventuali container precedenti sulla porta 8081..."
-    - docker rm -f app1-frontend $(docker ps -aq --filter "publish=8081") 2>/dev/null || true
-    - echo "Building e deploy del servizio Frontend..."
-    - docker compose up -d --build --force-recreate frontend
-    - echo "Deploy frontend completato con successo su https://app1.alessandrodominici.dev"
-  only:
-    - main
-  tags:
-    - raspberry
 
 
