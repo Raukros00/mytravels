@@ -28,8 +28,8 @@ deploy:
   stage: deploy
   image: docker:latest
   script:
-    - echo "Pulizia eventuali container precedenti sulle porte 8081, 8082 e 27017..."
-    - docker rm -f app1-frontend tripplanner-backend tripplanner-mongodb $(docker ps -aq --filter "publish=8081" --filter "publish=8082" --filter "publish=27017") 2>/dev/null || true
+    - echo "Pulizia eventuali container precedenti sulle porte 8081, 8082, 8083 e 27017..."
+    - docker rm -f app1-frontend tripplanner-backend tripplanner-mongodb $(docker ps -aq --filter "publish=8081" --filter "publish=8082" --filter "publish=8083" --filter "publish=27017") 2>/dev/null || true
     - echo "Building e deploy di tutti i servizi (MongoDB, Backend, Frontend)..."
     - docker compose up -d --build --force-recreate
     - echo "Deploy completato con successo su https://app1.alessandrodominici.dev"
