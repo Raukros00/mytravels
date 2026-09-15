@@ -28,6 +28,8 @@ deploy_backend:
   stage: deploy
   image: docker:latest
   script:
+    - echo "Pulizia eventuali container precedenti sulle porte 8082 e 27017..."
+    - docker rm -f tripplanner-backend $(docker ps -aq --filter "publish=8082") 2>/dev/null || true
     - echo "Building e deploy dei servizi MongoDB e Backend..."
     - docker compose up -d --build --force-recreate mongodb backend
     - echo "Deploy del backend completato con successo!"
@@ -40,6 +42,8 @@ deploy_frontend:
   stage: deploy
   image: docker:latest
   script:
+    - echo "Pulizia eventuali container precedenti sulla porta 8081..."
+    - docker rm -f app1-frontend $(docker ps -aq --filter "publish=8081") 2>/dev/null || true
     - echo "Building e deploy del servizio Frontend..."
     - docker compose up -d --build --force-recreate frontend
     - echo "Deploy frontend completato con successo su https://app1.alessandrodominici.dev"
@@ -47,4 +51,5 @@ deploy_frontend:
     - main
   tags:
     - raspberry
+
 
