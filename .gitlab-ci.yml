@@ -8,7 +8,7 @@ variables:
 
 test_backend:
   stage: test
-  image: maven:3.9.6-eclipse-temurin-21-alpine
+  image: maven:3.9.6-eclipse-temurin-21
   script:
     - echo "Esecuzione test automatici backend Spring Boot..."
     - cd backend
