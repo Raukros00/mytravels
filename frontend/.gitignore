@@ -3,6 +3,7 @@
 /.vscode/
 
 # --- Build & Output ---
+/dist/
 /tmp/
 /.angular/
 
