@@ -69,23 +69,6 @@
   --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Font theme: Serif editorial (Playfair Display + Lora) */
-[data-font="serif"] {
-  --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --font-body: 'Lora', Georgia, serif;
-}
-
-/* Font theme: Expressive sans (Syne + DM Sans) */
-[data-font="expressive"] {
-  --font-heading: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-/* Font theme: Modern default (Outfit + Plus Jakarta Sans) — explicit selector */
-[data-font="modern"] {
-  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-
   /* Mobile-first Radius */
   --radius-sm: 10px;
   --radius-md: 14px;
