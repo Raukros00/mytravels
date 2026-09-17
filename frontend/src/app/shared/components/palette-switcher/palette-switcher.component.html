@@ -1,0 +1,27 @@
+<div class="palette-switcher">
+  <button class="switcher-trigger" (click)="toggle()" title="Cambia palette">
+    <span class="trigger-swatch" [style.background]="activeOption().primary"></span>
+    <span class="trigger-swatch" [style.background]="activeOption().accent"></span>
+  </button>
+
+  @if (isOpen()) {
+    <div class="switcher-panel">
+      <p class="panel-label">Anteprima palette</p>
+      @for (opt of options; track opt.key) {
+        <button
+          class="palette-option"
+          [class.active]="active() === opt.key"
+          (click)="select(opt.key)">
+          <span class="swatches">
+            <span class="swatch" [style.background]="opt.primary"></span>
+            <span class="swatch" [style.background]="opt.accent"></span>
+          </span>
+          <span class="option-info">
+            <span class="option-name">{{ opt.label }}</span>
+            <span class="option-detail">{{ opt.description }}</span>
+          </span>
+        </button>
+      }
+    </div>
+  }
+</div>
