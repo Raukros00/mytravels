@@ -6,13 +6,13 @@
 
 :root {
   /* Brand & Palette Tokens */
-  --primary-50: #eef2ff;
-  --primary-100: #e0e7ff;
-  --primary-200: #c7d2fe;
-  --primary-500: #6366f1;
-  --primary-600: #4f46e5;
-  --primary-700: #4338ca;
-  --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --primary-50: #f5f3ff;
+  --primary-100: #ede9fe;
+  --primary-200: #ddd6fe;
+  --primary-500: #8b5cf6;
+  --primary-600: #7c3aed;
+  --primary-700: #6d28d9;
+  --primary-gradient: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
   
   --sunset-50: #fff7ed;
   --sunset-100: #ffedd5;
@@ -207,7 +207,7 @@ a:hover {
 .btn-primary {
   background: var(--primary-gradient);
   color: #ffffff;
-  box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.35);
+  box-shadow: 0 4px 14px 0 rgba(124, 58, 237, 0.35);
 }
 
 .btn-sunset {
