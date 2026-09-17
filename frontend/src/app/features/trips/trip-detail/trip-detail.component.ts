@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TripService } from '../../../core/services/trip.service';
 import { GroupService } from '../../../core/services/group.service';
@@ -49,6 +49,7 @@ export interface TimelineItem {
 })
 export class TripDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   public tripService = inject(TripService);
   public groupService = inject(GroupService);
   private fb = inject(FormBuilder);
@@ -659,6 +660,6 @@ export class TripDetailComponent implements OnInit {
   }
 
   public goToTrips(): void {
-    //
+    this.router.navigate(['/trips']);
   }
 }
