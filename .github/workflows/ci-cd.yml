@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ develop, main ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ develop, main ]
   workflow_dispatch:
     inputs:
       target_env:
@@ -69,11 +69,16 @@ jobs:
         id: tags
         run: |
           TAGS="${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:${{ github.sha }}"
+          
           if [ "${{ github.event_name }}" != "pull_request" ]; then
-            TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:latest"
-            TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:test"
-            TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:prod"
+            if [ "${{ github.ref_name }}" == "develop" ]; then
+              TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:test"
+            elif [ "${{ github.ref_name }}" == "main" ]; then
+              TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:prod"
+              TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:latest"
+            fi
           fi
+          
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
 
       - name: Build and Push Backend Docker Image
@@ -124,11 +129,16 @@ jobs:
         id: tags
         run: |
           TAGS="${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }}"
+          
           if [ "${{ github.event_name }}" != "pull_request" ]; then
-            TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:latest"
-            TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:test"
-            TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:prod"
+            if [ "${{ github.ref_name }}" == "develop" ]; then
+              TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:test"
+            elif [ "${{ github.ref_name }}" == "main" ]; then
+              TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:prod"
+              TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:latest"
+            fi
           fi
+          
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
 
       - name: Build and Push Frontend Docker Image
