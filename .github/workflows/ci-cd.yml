@@ -6,6 +6,16 @@ on:
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
+    inputs:
+      target_env:
+        description: 'Target environment tag to publish (all, prod, test)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - prod
+          - test
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -55,6 +65,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Determine Docker Image Tags
+        id: tags
+        run: |
+          TAGS="${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:${{ github.sha }}"
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:latest"
+            TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:test"
+            TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:prod"
+          fi
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+
       - name: Build and Push Backend Docker Image
         uses: docker/build-push-action@v5
         with:
@@ -62,9 +83,7 @@ jobs:
           file: ./backend/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:latest
-            ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:${{ github.sha }}
+          tags: ${{ steps.tags.outputs.tags }}
 
   frontend-ci-cd:
     name: Frontend Test & Build
@@ -101,6 +120,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Determine Docker Image Tags
+        id: tags
+        run: |
+          TAGS="${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }}"
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:latest"
+            TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:test"
+            TAGS="${TAGS},${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:prod"
+          fi
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+
       - name: Build and Push Frontend Docker Image
         uses: docker/build-push-action@v5
         with:
@@ -108,6 +138,4 @@ jobs:
           file: ./frontend/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:latest
-            ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }}
+          tags: ${{ steps.tags.outputs.tags }}

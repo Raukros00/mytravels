@@ -1,12 +1,12 @@
 {
   "/api": {
-    "target": "https://app1.alessandrodominici.dev",
+    "target": "https://test.alessandrodominici.dev",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
   },
   "/auth": {
-    "target": "https://app1.alessandrodominici.dev",
+    "target": "https://test.alessandrodominici.dev",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
