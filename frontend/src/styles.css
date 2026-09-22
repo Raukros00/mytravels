@@ -1,5 +1,9 @@
 @import "leaflet/dist/leaflet.css";
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ==========================================================================
    WanderBite Design System - Mobile-First Travel & Food UX
    ========================================================================== */
@@ -71,7 +75,6 @@
   /* Typography */
   --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
 
   /* Mobile-first Radius */
   --radius-sm: 10px;
@@ -509,4 +512,32 @@ a:hover {
   --bg-app: #f8fafc;
   --bg-glow-primary: rgba(13, 148, 136, 0.07);
   --bg-glow-accent: rgba(244, 63, 94, 0.05);
+}
+
+/* Utility classes for WanderBite design */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-underline {
+  text-decoration: none !important;
+}
+
+.font-mono {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+.d-flex {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* WanderBite color palette overrides on body */
+body.wb-theme {
+  background: #fcf9f4;
+  color: #1c1c19;
 }

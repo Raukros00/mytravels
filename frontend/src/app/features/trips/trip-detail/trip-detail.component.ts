@@ -56,6 +56,7 @@ export class TripDetailComponent implements OnInit {
 
   public trip = signal<Trip | undefined>(undefined);
   public activeTab = signal<DetailTab>('itinerary');
+  public activeLogisticsTab = signal<'flights' | 'hotel' | 'transfers'>('flights');
   public selectedDay = signal<number>(1);
   public selectedFoodFilter = signal<FoodCategory | 'all'>('all');
 
