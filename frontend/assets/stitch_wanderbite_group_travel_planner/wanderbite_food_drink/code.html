@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><title>WanderBite</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: 'class', theme: { extend: { colors: { 'error-container': '#ffdad6', 'tertiary': '#795600', 'primary-container': '#cd4722', 'primary-fixed-dim': '#ffb4a1', 'surface-tint': '#ae310d', 'on-primary-fixed-variant': '#881f00', 'background': '#fcf9f4', 'primary-fixed': '#ffdbd2', 'outline': '#8d7169', 'on-primary-container': '#fffbff', 'surface-container-lowest': '#ffffff', 'outline-variant': '#e1bfb7', 'surface-dim': '#dcdad5', 'secondary': '#3a674f', 'surface-bright': '#fcf9f4', 'on-secondary-fixed-variant': '#224f39', 'surface-container-low': '#f6f3ee', 'on-surface': '#1c1c19', 'on-background': '#1c1c19', 'tertiary-container': '#986d00', 'surface-container-high': '#ebe8e3', 'on-tertiary-fixed-variant': '#5e4200', 'on-error': '#ffffff', 'on-tertiary': '#ffffff', 'on-error-container': '#93000a', 'tertiary-fixed-dim': '#ffba20', 'on-secondary': '#ffffff', 'error': '#ba1a1a', 'on-secondary-container': '#406d55', 'on-secondary-fixed': '#002112', 'secondary-fixed-dim': '#a1d1b4', 'on-primary': '#ffffff', 'primary': '#ab2f0a', 'inverse-primary': '#ffb4a1', 'tertiary-fixed': '#ffdea8', 'surface-container': '#f0ede9', 'surface-variant': '#e5e2dd', 'on-tertiary-container': '#fffbff', 'inverse-surface': '#31302d', 'surface': '#fcf9f4', 'surface-container-highest': '#e5e2dd', 'on-primary-fixed': '#3c0800', 'inverse-on-surface': '#f3f0eb', 'secondary-container': '#bceecf', 'on-surface-variant': '#59413b', 'on-tertiary-fixed': '#271900', 'secondary-fixed': '#bceecf' }, borderRadius: { 'DEFAULT': '0.25rem', 'lg': '0.5rem', 'xl': '0.75rem', 'full': '9999px' }, spacing: { 'gutter': '1rem', 'space-xs': '0.25rem', 'margin': '1rem', 'space-xl': '2.5rem', 'space-lg': '1.5rem', 'space-md': '1rem', 'margin-desktop': '2.5rem', 'space-sm': '0.5rem', 'gutter-desktop': '1.5rem' }, fontFamily: { 'label-lg': ['Plus Jakarta Sans'], 'body-sm': ['Plus Jakarta Sans'], 'body-md': ['Plus Jakarta Sans'], 'headline-sm': ['Plus Jakarta Sans'], 'body-lg': ['Plus Jakarta Sans'], 'headline-xl': ['Plus Jakarta Sans'], 'label-md': ['Plus Jakarta Sans'], 'label-sm': ['Plus Jakarta Sans'], 'headline-md': ['Plus Jakarta Sans'], 'headline-lg-mobile': ['Plus Jakarta Sans'], 'headline-lg': ['Plus Jakarta Sans'], 'headline-xl-mobile': ['Plus Jakarta Sans'] }, fontSize: { 'label-lg': ['14px', { lineHeight: '18px', fontWeight: '700' }], 'body-sm': ['12px', { lineHeight: '18px', fontWeight: '400' }], 'body-md': ['14px', { lineHeight: '22px', fontWeight: '400' }], 'headline-sm': ['18px', { lineHeight: '24px', fontWeight: '700' }], 'body-lg': ['16px', { lineHeight: '26px', fontWeight: '500' }], 'headline-xl': ['40px', { lineHeight: '48px', fontWeight: '800' }], 'label-md': ['12px', { lineHeight: '16px', fontWeight: '600' }], 'label-sm': ['11px', { lineHeight: '14px', fontWeight: '700' }], 'headline-md': ['22px', { lineHeight: '28px', fontWeight: '700' }], 'headline-lg-mobile': ['24px', { lineHeight: '32px', fontWeight: '700' }], 'headline-lg': ['32px', { lineHeight: '40px', fontWeight: '700' }], 'headline-xl-mobile': ['30px', { lineHeight: '38px', fontWeight: '800' }] } } } }</script><style>@layer base { html, body { width: 100vw; margin: 0; padding: 0; } body { overscroll-behavior-y: none; } .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); } .pt-safe { padding-top: env(safe-area-inset-top, 0px); } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style></head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl shadow-[0_2px_12px_rgba(78,42,29,0.05)] pt-safe"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="WanderBite Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1U0Aa9SjXiLldZgIfGnH9moXkxyn6Hm6frbK4F_ks0eRJhCp96dq7grju5VGsyY90r4eC0wEtmgZ0SFuvleI_frEzBbBzADb_m3mWxCImchoHErJFRksSzO_AFrQFbw3xnQ-qoBcnQ41CPUGynJU3KgJt5jglfnay3fS9mnA5gdKVDk8inXl8A3fhfHSUjemSpS8tOZxfs7X8ZYrFil2Bf8jjLny-SsIeTHQBoAFoV8Qax-8H6pz41lrA"/><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight">WanderBite</span></div><div class="flex items-center gap-space-sm"><div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-fixed-variant"><span class="material-symbols-outlined text-[16px]">group</span><span class="font-label-sm text-label-sm">Tokyo Crew (5)</span></div><a class="min-h-[44px] min-w-[44px] flex items-center justify-center" data-path="profile-settings" href="#"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTaFOS2yNxqbRKMa5h5rvRtbAkowGcP4Wb3ZCb7_XG-z7aovMtx2w4ymnzC34ggFGaCO5lxG0C9LMTdWe_CYqIAJNEFgzQJpf_La4URo7h275dCqqRZu9QpDerbW0tX-MGFlfWlfNjz9oMyeQGcF-5EHesJIbcCjskwgMAmmRCkJ6WZR0J7OHaeYnHN2JPCHVIJFwxXMGmcyhVUYQFw2ior96tGcuN3IRYmIckT6RgL5gtqoFIWU-U"/></a></div></div></header><main class="flex flex-col relative w-full pt-16 pb-20 bg-surface min-h-screen"><div class="flex flex-col w-full pb-28">
+<!-- Search & Filter Bar -->
+<div class="px-gutter pt-space-md pb-space-sm flex items-center gap-space-sm">
+<div class="flex-1 flex items-center gap-space-xs bg-surface-container px-space-md py-2.5 rounded-full shadow-sm focus-within:bg-surface-container-lowest transition-colors">
+<span class="material-symbols-outlined text-outline text-[20px]">search</span>
+<input class="bg-transparent border-none outline-none font-body-md text-body-md text-on-surface placeholder:text-outline w-full" placeholder="Search restaurants, dishes, or spots..." type="text"/>
+<button aria-label="Clear or voice search" class="flex items-center justify-center text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">mic</span>
+</button>
+</div>
+<button aria-label="Filters" class="w-11 h-11 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center shrink-0 active:scale-95 transition-transform shadow-sm relative">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+<span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary"></span>
+</button>
+</div>
+<!-- Segmented Wishlist vs Visited Switcher -->
+<div class="px-gutter py-space-xs">
+<div class="bg-surface-container-high p-1 rounded-full flex items-center shadow-inner">
+<button class="flex-1 py-2 px-space-sm rounded-full bg-surface-container-lowest text-primary shadow-sm font-label-md text-label-md flex items-center justify-center gap-1.5 transition-all" id="tab-wishlist">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span>Group Wishlist (12)</span>
+</button>
+<button class="flex-1 py-2 px-space-sm rounded-full text-on-surface-variant font-label-md text-label-md flex items-center justify-center gap-1.5 transition-all hover:text-on-surface" id="tab-visited">
+<span class="material-symbols-outlined text-[16px]">task_alt</span>
+<span>Visited &amp; Reviewed (6)</span>
+</button>
+</div>
+</div>
+<!-- Meal Category Horizontal Scroll Pills -->
+<div class="pt-space-sm pb-space-xs">
+<div class="flex items-center gap-space-xs overflow-x-auto px-gutter no-scrollbar py-1">
+<button class="shrink-0 px-3.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm active:scale-95 transition-all">
+        All (18)
+      </button>
+<button class="shrink-0 px-3.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm active:scale-95 transition-all">
+        Breakfast (3)
+      </button>
+<!-- Selected State -->
+<button class="shrink-0 px-4 py-1.5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm shadow-sm flex items-center gap-1 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[14px]">restaurant</span>
+        Lunch (5)
+      </button>
+<button class="shrink-0 px-3.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm active:scale-95 transition-all">
+        Aperitivo (4)
+      </button>
+<button class="shrink-0 px-3.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm active:scale-95 transition-all">
+        Dinner (6)
+      </button>
+<button class="shrink-0 px-3.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm active:scale-95 transition-all">
+        Late Night / Street (4)
+      </button>
+</div>
+</div>
+<!-- Quick Filter Bar: Price & Context -->
+<div class="px-gutter py-space-xs flex items-center justify-between">
+<div class="flex items-center gap-1.5 bg-surface-container-low p-1 rounded-full">
+<button class="px-3 py-0.5 rounded-full font-label-sm text-label-sm bg-surface-container-lowest text-on-surface shadow-xs active:scale-95 transition-transform">$</button>
+<button class="px-3 py-0.5 rounded-full font-label-sm text-label-sm bg-secondary text-on-secondary shadow-xs active:scale-95 transition-transform">$$</button>
+<button class="px-3 py-0.5 rounded-full font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors">$$$</button>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-tertiary">near_me</span>
+<span>Ginza &amp; Shinjuku focus</span>
+</div>
+</div>
+<!-- Food Cards Feed -->
+<div class="px-gutter pt-space-sm flex flex-col gap-space-md">
+<!-- Card 1: Kagari Ginza -->
+<article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm transition-all duration-200 hover:shadow-md">
+<div class="relative w-full h-44 rounded-lg overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Steaming golden chicken broth ramen Tori Paitan in an artisanal ceramic bowl topped with tender sous-vide chicken slices, seasonal fresh baby greens, and fragrant black truffle oil shimmer. Ambient warm Japanese restaurant lantern lighting, macro food photography with depth of field." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAo5tKmbRSdwcB9UWnAME7WK49sNMxNfBXi2us2uGT_zGWkMARZoEGeEpXOpoWo25T9OnH2CVcxJDPav7j3Poa3YW7ZbQWu9uaOfdfmbhL1ioQmUFpvUexhuRPb7YZzf8b2Pa3iNpqEp3SwzVCpgzF5fUvlzQ0NXFVNY2fZrQq79lZLn-IAsDOoH-gQ3xK9NBsJ301R8XgYpbDmJ08-XqztfiIYwQ2BelpY8yveRqv33kh1onqwhqsa"/>
+<div class="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+<span class="px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-fixed-variant font-label-sm text-label-sm shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">ramen_dining</span> Lunch • Ramen
+          </span>
+<span class="px-2 py-1 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm shadow-sm font-bold">
+            $$
+          </span>
+</div>
+<div class="absolute top-2.5 right-2.5">
+<span class="px-2.5 py-1 rounded-full bg-primary text-on-primary font-label-sm text-label-sm shadow-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">local_fire_department</span> Must Try (5 votes)
+          </span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="min-w-0">
+<h2 class="font-headline-md text-headline-md text-on-surface truncate">Kagari Ginza</h2>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[15px] text-primary">location_on</span>
+<span class="truncate">Ginza 6-Chome • 4 min walk</span>
+</div>
+</div>
+<!-- Voter stack -->
+<div class="flex items-center -space-x-2 shrink-0 pt-1">
+<div class="w-6 h-6 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-[10px] flex items-center justify-center font-bold">L</div>
+<div class="w-6 h-6 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[10px] flex items-center justify-center font-bold">M</div>
+<div class="w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-[10px] flex items-center justify-center font-bold">S</div>
+<div class="w-6 h-6 rounded-full bg-surface-container-high text-on-surface font-label-sm text-[9px] flex items-center justify-center font-bold">+2</div>
+</div>
+</div>
+<!-- Signature Dish Pill Box -->
+<div class="mt-1 p-2.5 rounded-lg bg-surface-container-low flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">star</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Signature Dish</span>
+<span class="font-body-md text-body-md text-on-surface leading-tight font-medium">Tori Paitan (Rich Chicken Broth Ramen) with truffle oil essence</span>
+</div>
+</div>
+</div>
+<div class="pt-space-xs flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-body-sm text-body-sm">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>Rec by <strong class="text-on-surface font-semibold">Leo</strong></span>
+</div>
+<div class="flex items-center gap-2">
+<button class="vote-action-btn px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1 active:scale-95 transition-transform" data-active="false">
+<span class="material-symbols-outlined text-[16px] text-primary">thumb_up</span>
+<span>I want this</span>
+</button>
+<button class="visited-action-btn px-3 py-1.5 rounded-full bg-secondary-container text-on-secondary-fixed-variant font-label-sm text-label-sm flex items-center gap-1 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>Visited</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 2: Tonkatsu Tonki -->
+<article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm transition-all duration-200 hover:shadow-md">
+<div class="relative w-full h-44 rounded-lg overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Golden crisp deep-fried pork cutlet tonkatsu perfectly sliced on a traditional bamboo mat, accompanied by a mountain of freshly shredded green cabbage, hot Japanese yellow mustard dollop, and savory dark tonkatsu sauce. Authentic open kitchen warmth with cedar counter." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsQfnjJTkiCL6lZsCiuawI9TA9Z2sAKp8Mav-mkfMAgEamR9UyjZEqlL7g67MpkyYjTasl80g97-mBhlTHpxGkyeVJ5XNDbJaVIvOVZKjcsg91PGkld09_xFaOuuU2K65YjqL-UDLoKA4ukuPsndYE-QeXDzzRh39LEhY-xwktMI_feR6K7CnMzoC1qyfr6IfoAuOipNd1hKKHyzz965x9TLdnTvqkbA567Bz5L6iD0sCt_jKzcomY"/>
+<div class="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+<span class="px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-fixed-variant font-label-sm text-label-sm shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">dinner_dining</span> Lunch • Classic
+          </span>
+<span class="px-2 py-1 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm shadow-sm font-bold">
+            $$
+          </span>
+</div>
+<div class="absolute top-2.5 right-2.5">
+<span class="px-2.5 py-1 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm shadow-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">event_available</span> Confirmed for 6
+          </span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="min-w-0">
+<h2 class="font-headline-md text-headline-md text-on-surface truncate">Tonkatsu Tonki</h2>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[15px] text-primary">location_on</span>
+<span class="truncate">Meguro 1-Chome • 12:45 PM Tomorrow</span>
+</div>
+</div>
+<div class="flex items-center -space-x-2 shrink-0 pt-1">
+<div class="w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-[10px] flex items-center justify-center font-bold">M</div>
+<div class="w-6 h-6 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-[10px] flex items-center justify-center font-bold">K</div>
+<div class="w-6 h-6 rounded-full bg-surface-container-high text-on-surface font-label-sm text-[9px] flex items-center justify-center font-bold">+4</div>
+</div>
+</div>
+<div class="mt-1 p-2.5 rounded-lg bg-surface-container-low flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">star</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Signature Dish</span>
+<span class="font-body-md text-body-md text-on-surface leading-tight font-medium">Rosu Katsu with shredded cabbage &amp; hot mustard</span>
+</div>
+</div>
+</div>
+<div class="pt-space-xs flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-body-sm text-body-sm">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>Rec by <strong class="text-on-surface font-semibold">Maya</strong></span>
+</div>
+<div class="flex items-center gap-2">
+<button class="vote-action-btn px-3 py-1.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm flex items-center gap-1 active:scale-95 transition-transform" data-active="true">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span>Locked In</span>
+</button>
+<button class="visited-action-btn px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>Mark Visited</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 3: Fuunji (Shinjuku) -->
+<article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm transition-all duration-200 hover:shadow-md">
+<div class="relative w-full h-44 rounded-lg overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Artisanal tsukemen ramen set with thick springy dipping noodles topped with nori seaweed, beside an intensely rich steaming bowl of concentrated seafood and poultry reduction with bonito powder. Moody neon Japanese back-alley izakaya vibe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5eF6yfMJjdbGz74mv3YwhhgXbotIUNajTFaramKv35wppxYevJC9-cBwOvpJbrZMqHiLMd2AzmA3ZKuNdxhVsuN6rOg7ncTYvvVf5BhUCer2nmq5MKj7uv9klGUCMBhSiffV-z8cgFrb-aD0NGHIoPCrY1gGa5yplqsJ7HqO7Y9Sh1e75GR_lwehtWwon9mbsQ4BW7nEqIasOnulr2bffNFKUr_djVUwZCjGHL3akhiKIK7P0iD5c"/>
+<div class="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+<span class="px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-fixed-variant font-label-sm text-label-sm shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">ramen_dining</span> Lunch • Tsukemen
+          </span>
+<span class="px-2 py-1 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm shadow-sm font-bold">
+            $
+          </span>
+</div>
+<div class="absolute top-2.5 right-2.5">
+<span class="px-2.5 py-1 rounded-full bg-tertiary text-on-tertiary font-label-sm text-label-sm shadow-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">hourglass_top</span> Walk-in queued
+          </span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="min-w-0">
+<h2 class="font-headline-md text-headline-md text-on-surface truncate">Fuunji (Shinjuku)</h2>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[15px] text-primary">location_on</span>
+<span class="truncate">Yoyogi 2-Chome • 15 min wait estimated</span>
+</div>
+</div>
+<div class="flex items-center -space-x-2 shrink-0 pt-1">
+<div class="w-6 h-6 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[10px] flex items-center justify-center font-bold">S</div>
+<div class="w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-[10px] flex items-center justify-center font-bold">A</div>
+<div class="w-6 h-6 rounded-full bg-surface-container-high text-on-surface font-label-sm text-[9px] flex items-center justify-center font-bold">+1</div>
+</div>
+</div>
+<div class="mt-1 p-2.5 rounded-lg bg-surface-container-low flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">star</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Signature Dish</span>
+<span class="font-body-md text-body-md text-on-surface leading-tight font-medium">Special Dipping Noodles with thick fish &amp; poultry broth</span>
+</div>
+</div>
+</div>
+<div class="pt-space-xs flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-body-sm text-body-sm">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>Rec by <strong class="text-on-surface font-semibold">Sam</strong></span>
+</div>
+<div class="flex items-center gap-2">
+<button class="vote-action-btn px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1 active:scale-95 transition-transform" data-active="false">
+<span class="material-symbols-outlined text-[16px] text-primary">thumb_up</span>
+<span>I want this</span>
+</button>
+<button class="visited-action-btn px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>Mark Visited</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 4: Tempura Kondo -->
+<article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm transition-all duration-200 hover:shadow-md">
+<div class="relative w-full h-44 rounded-lg overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Exquisite ultra-light golden battered tempura sweet potato tower and seasonal kuruma prawn placed on crisp calligraphy paper in an elegant Michelin starred Tokyo dining salon. Soft sun-drenched minimalist aesthetic with hinoki wood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJKyavu3a5h418K6tNSAbUIwL-2TgnBFVkSQ5mWCsoiQREGDBAuhygRxx_rNI_P2fVKGhs37OBkM8-h_AtleWQufs9lHZeOcEIT6dazhpoKijwxNyUpsTxHggBaWenwpgEZ2WjOMZYr_lSWqSi5JKyUQ-mXLRak-QK65czpcumQNq2M_t-w4x2SZzU4rlQ5OgASY4Q8AYoDELvwndml7-isbnt1khT6AxNhohIuVR9b9-sBoFzTAts"/>
+<div class="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+<span class="px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-fixed-variant font-label-sm text-label-sm shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">lunch_dining</span> Lunch • High-End
+          </span>
+<span class="px-2 py-1 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm shadow-sm font-bold">
+            $$$
+          </span>
+</div>
+<div class="absolute top-2.5 right-2.5">
+<span class="px-2.5 py-1 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm shadow-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">update</span> Waitlisted
+          </span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="min-w-0">
+<h2 class="font-headline-md text-headline-md text-on-surface truncate">Tempura Kondo</h2>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[15px] text-primary">location_on</span>
+<span class="truncate">Ginza 5-Chome • 2-star Michelin</span>
+</div>
+</div>
+<div class="flex items-center -space-x-2 shrink-0 pt-1">
+<div class="w-6 h-6 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-[10px] flex items-center justify-center font-bold">L</div>
+<div class="w-6 h-6 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[10px] flex items-center justify-center font-bold">M</div>
+</div>
+</div>
+<div class="mt-1 p-2.5 rounded-lg bg-surface-container-low flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">star</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Signature Dish</span>
+<span class="font-body-md text-body-md text-on-surface leading-tight font-medium">Sweet potato &amp; seasonal seafood tempura</span>
+</div>
+</div>
+</div>
+<div class="pt-space-xs flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-body-sm text-body-sm">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span>Chef selection highlight</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="vote-action-btn px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1 active:scale-95 transition-transform" data-active="false">
+<span class="material-symbols-outlined text-[16px] text-primary">thumb_up</span>
+<span>I want this</span>
+</button>
+<button class="visited-action-btn px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>Mark Visited</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+<!-- Sticky 'Propose a Food Spot' Floating FAB/Dock -->
+<div class="fixed bottom-20 inset-x-0 px-gutter pointer-events-none flex justify-center z-40">
+<button class="pointer-events-auto bg-primary text-on-primary px-space-lg py-3 rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all flex items-center gap-2 font-label-lg text-label-lg">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+<span>Propose a Food Spot</span>
+</button>
+</div>
+</div>
+<script>
+  // Simple micro-interactions for wishlisting and segmented switchers
+  document.querySelectorAll('.vote-action-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const active = this.getAttribute('data-active') === 'true';
+      if (!active) {
+        this.setAttribute('data-active', 'true');
+        this.classList.remove('bg-surface-container-high', 'text-on-surface');
+        this.classList.add('bg-primary-fixed', 'text-on-primary-fixed-variant');
+        const icon = this.querySelector('.material-symbols-outlined');
+        if (icon) {
+          icon.textContent = 'favorite';
+          icon.style.fontVariationSettings = "'FILL' 1";
+        }
+        const text = this.querySelector('span:last-child');
+        if (text) text.textContent = 'I want this!';
+      } else {
+        this.setAttribute('data-active', 'false');
+        this.classList.remove('bg-primary-fixed', 'text-on-primary-fixed-variant');
+        this.classList.add('bg-surface-container-high', 'text-on-surface');
+        const icon = this.querySelector('.material-symbols-outlined');
+        if (icon) {
+          icon.textContent = 'thumb_up';
+          icon.style.fontVariationSettings = "'FILL' 0";
+        }
+        const text = this.querySelector('span:last-child');
+        if (text) text.textContent = 'I want this';
+      }
+    });
+  });
+
+  const tabWishlist = document.getElementById('tab-wishlist');
+  const tabVisited = document.getElementById('tab-visited');
+
+  if (tabWishlist && tabVisited) {
+    tabWishlist.addEventListener('click', () => {
+      tabWishlist.className = 'flex-1 py-2 px-space-sm rounded-full bg-surface-container-lowest text-primary shadow-sm font-label-md text-label-md flex items-center justify-center gap-1.5 transition-all';
+      tabVisited.className = 'flex-1 py-2 px-space-sm rounded-full text-on-surface-variant font-label-md text-label-md flex items-center justify-center gap-1.5 transition-all hover:text-on-surface';
+    });
+
+    tabVisited.addEventListener('click', () => {
+      tabVisited.className = 'flex-1 py-2 px-space-sm rounded-full bg-surface-container-lowest text-secondary shadow-sm font-label-md text-label-md flex items-center justify-center gap-1.5 transition-all';
+      tabWishlist.className = 'flex-1 py-2 px-space-sm rounded-full text-on-surface-variant font-label-md text-label-md flex items-center justify-center gap-1.5 transition-all hover:text-on-surface';
+    });
+  }
+</script></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_16px_rgba(78,42,29,0.06)]" data-active-classes="text-primary font-label-md"><div class="h-16 px-gutter flex items-center justify-around"><a class="min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 text-on-surface-variant transition-colors" data-path="trips" href="#"><span class="material-symbols-outlined text-[24px]">explore</span><span class="font-label-sm text-label-sm">Trips</span></a><a class="min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 text-on-surface-variant transition-colors" data-path="itinerary" href="#"><span class="material-symbols-outlined text-[24px]">calendar_month</span><span class="font-label-sm text-label-sm">Itinerary</span></a><a aria-current="page" class="min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 transition-colors text-primary font-label-md" data-path="food" href="#"><span class="material-symbols-outlined text-[24px]">restaurant</span><span class="font-label-sm text-label-sm">Food</span></a><a class="min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 text-on-surface-variant transition-colors" data-path="logistics" href="#"><span class="material-symbols-outlined text-[24px]">flight</span><span class="font-label-sm text-label-sm">Logistics</span></a></div></nav></body></html>

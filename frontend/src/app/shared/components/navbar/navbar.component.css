@@ -410,3 +410,34 @@
 .bottom-nav-fab:active {
   transform: scale(0.92);
 }
+
+/* WanderBite bottom nav items */
+.wb-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  flex: 1;
+  height: 100%;
+  color: #59413b;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 600;
+  transition: color 150ms;
+}
+
+.wb-nav-item.active-nav {
+  color: #ab2f0a;
+}
+
+.no-underline {
+  text-decoration: none;
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}

@@ -1,180 +1,148 @@
-<!-- Top Sticky Header -->
-<header class="navbar-root">
-  <div class="app-container navbar-inner">
-    <!-- Logo & Brand -->
-    <div class="navbar-left">
-      <a routerLink="/trips" class="brand-logo">
-        <div class="brand-icon">
-          <span>✈️</span>
+<!-- WanderBite Top Header -->
+<header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl shadow-[0_2px_12px_rgba(78,42,29,0.05)]">
+  <div class="h-16 px-gutter flex items-center justify-between">
+    <!-- Logo -->
+    <a routerLink="/trips" class="flex items-center gap-space-sm no-underline">
+      <span class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Wander<span class="text-primary">Bite</span></span>
+    </a>
+
+    <!-- Group Pill + User -->
+    @if (authService.isAuthenticated()) {
+      <div class="flex items-center gap-space-sm">
+        <!-- Active Group Pill -->
+        @if (groupService.activeGroup(); as activeGroup) {
+          <button
+            type="button"
+            class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-fixed-variant font-label-sm text-label-sm transition-all active:scale-95"
+            (click)="toggleGroupMenu($event)"
+            [attr.aria-expanded]="isGroupMenuOpen()">
+            <span class="material-symbols-outlined text-[16px]">group</span>
+            <span>{{ activeGroup.name }} ({{ activeGroup.members.length }})</span>
+            <span class="material-symbols-outlined text-[14px]">expand_more</span>
+          </button>
+        }
+
+        <!-- User Avatar -->
+        <button
+          type="button"
+          class="w-9 h-9 rounded-full flex items-center justify-center font-label-lg text-label-lg text-white overflow-hidden min-w-[36px] min-h-[36px] active:scale-95 transition-transform"
+          [style.background-color]="authService.currentUser()?.color || '#ab2f0a'"
+          (click)="toggleUserMenu($event)"
+          [title]="authService.currentUser()?.name || 'Utente'">
+          {{ authService.currentUser()?.name?.charAt(0)?.toUpperCase() || 'U' }}
+        </button>
+      </div>
+    } @else {
+      <div class="flex items-center gap-space-sm">
+        <a routerLink="/login" class="px-3 py-1.5 rounded-full font-label-md text-label-md text-on-surface-variant border border-outline-variant transition-colors hover:text-on-surface no-underline">Accedi</a>
+        <a routerLink="/register" class="px-3 py-1.5 rounded-full font-label-md text-label-md bg-primary text-on-primary no-underline transition-all active:scale-95">Registrati</a>
+      </div>
+    }
+  </div>
+
+  <!-- Group Dropdown -->
+  @if (isGroupMenuOpen() && authService.isAuthenticated()) {
+    <div class="absolute top-16 left-gutter right-gutter bg-surface-container-lowest rounded-xl shadow-[0_16px_36px_rgba(45,30,24,0.14)] border border-outline-variant/40 overflow-hidden z-50 animate-fade-in" (click)="$event.stopPropagation()">
+      <div class="px-space-md pt-space-md pb-space-sm">
+        <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">I Tuoi Gruppi</span>
+      </div>
+      <div class="flex flex-col pb-space-sm">
+        @for (group of groupService.userGroups(); track group.id) {
+          <button
+            type="button"
+            class="flex items-center justify-between px-space-md py-2.5 hover:bg-surface-container transition-colors"
+            [class.bg-surface-container-low]="group.id === groupService.activeGroupId()"
+            (click)="selectGroup(group.id)">
+            <div class="flex items-center gap-space-sm">
+              <span class="w-2 h-2 rounded-full" [class.bg-primary]="group.id === groupService.activeGroupId()" [class.bg-outline-variant]="group.id !== groupService.activeGroupId()"></span>
+              <div class="flex flex-col text-left">
+                <span class="font-label-md text-label-md text-on-surface">{{ group.name }}</span>
+                <span class="font-body-sm text-body-sm text-on-surface-variant">{{ group.members.length }} membri</span>
+              </div>
+            </div>
+            @if (group.id === groupService.activeGroupId()) {
+              <span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+            }
+          </button>
+        }
+      </div>
+      <div class="border-t border-outline-variant/30 px-space-md py-space-sm">
+        <button type="button" class="flex items-center gap-space-sm font-label-md text-label-md text-primary w-full py-1" (click)="openCreateGroupModal()">
+          <span class="material-symbols-outlined text-[18px]">add</span>
+          Nuovo Gruppo
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- User Dropdown -->
+  @if (isUserMenuOpen() && authService.isAuthenticated()) {
+    <div class="absolute top-16 right-gutter w-64 bg-surface-container-lowest rounded-xl shadow-[0_16px_36px_rgba(45,30,24,0.14)] border border-outline-variant/40 overflow-hidden z-50 animate-fade-in" (click)="$event.stopPropagation()">
+      <div class="px-space-md py-space-md flex items-center gap-space-sm border-b border-outline-variant/30">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center font-label-lg text-label-lg text-white"
+          [style.background-color]="authService.currentUser()?.color || '#ab2f0a'">
+          {{ authService.currentUser()?.name?.charAt(0)?.toUpperCase() || 'U' }}
         </div>
-        <div class="brand-text">
-          <span class="brand-title">Wander<span class="brand-highlight">Bite</span></span>
-          <span class="brand-sub">Travel & Food</span>
+        <div class="flex flex-col min-w-0">
+          <span class="font-label-lg text-label-lg text-on-surface truncate">{{ authService.currentUser()?.name }}</span>
+          <span class="font-body-sm text-body-sm text-on-surface-variant truncate">{{ authService.currentUser()?.email }}</span>
+        </div>
+      </div>
+      <div class="py-space-sm">
+        <a routerLink="/groups" class="flex items-center gap-space-sm px-space-md py-2.5 hover:bg-surface-container transition-colors no-underline text-on-surface" (click)="isUserMenuOpen.set(false)">
+          <span class="material-symbols-outlined text-[20px] text-on-surface-variant">group</span>
+          <span class="font-body-md text-body-md">I Miei Gruppi</span>
+        </a>
+      </div>
+      <div class="border-t border-outline-variant/30 py-space-sm">
+        <button type="button" class="flex items-center gap-space-sm px-space-md py-2.5 hover:bg-surface-container transition-colors w-full text-error" (click)="logout()">
+          <span class="material-symbols-outlined text-[20px]">logout</span>
+          <span class="font-body-md text-body-md">Disconnetti</span>
+        </button>
+      </div>
+    </div>
+  }
+</header>
+
+<!-- Mobile Bottom Navigation -->
+@if (authService.isAuthenticated()) {
+  <nav class="fixed bottom-0 inset-x-0 z-50 bg-surface/95 backdrop-blur-xl border-t border-outline-variant/30 pb-safe shadow-[0_-4px_20px_rgba(78,42,29,0.06)]">
+    <div class="flex items-stretch h-16">
+      <a routerLink="/trips" routerLinkActive="active-nav" [routerLinkActiveOptions]="{exact: false}" class="wb-nav-item" #tripsLink="routerLinkActive">
+        <span class="material-symbols-outlined text-[24px]" [style.font-variation-settings]="tripsLink.isActive ? '\'FILL\' 1' : '\'FILL\' 0'">luggage</span>
+        <span>Viaggi</span>
+      </a>
+
+      <a routerLink="/groups" routerLinkActive="active-nav" class="wb-nav-item" #groupsLink="routerLinkActive">
+        <span class="material-symbols-outlined text-[24px]" [style.font-variation-settings]="groupsLink.isActive ? '\'FILL\' 1' : '\'FILL\' 0'">group</span>
+        <span>Gruppi</span>
+      </a>
+
+      <!-- FAB: Nuovo Viaggio -->
+      <a routerLink="/trips/new" class="flex-1 flex items-center justify-center">
+        <div class="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md shadow-primary/30 active:scale-95 transition-transform">
+          <span class="material-symbols-outlined text-[22px]">add</span>
         </div>
       </a>
 
-      <!-- Active Group Selector Pill -->
-      @if (authService.isAuthenticated() && groupService.activeGroup(); as activeGroup) {
-        <div class="group-selector-wrapper">
-          <button 
-            type="button" 
-            class="group-selector-btn" 
-            (click)="toggleGroupMenu($event)"
-            [attr.aria-expanded]="isGroupMenuOpen()">
-            <span class="group-icon">{{ activeGroup.icon }}</span>
-            <span class="group-name">{{ activeGroup.name }}</span>
-            <span class="chevron-icon">▾</span>
-          </button>
+      <a routerLink="/dashboard" routerLinkActive="active-nav" class="wb-nav-item" #dashLink="routerLinkActive">
+        <span class="material-symbols-outlined text-[24px]" [style.font-variation-settings]="dashLink.isActive ? '\'FILL\' 1' : '\'FILL\' 0'">bar_chart</span>
+        <span>Stats</span>
+      </a>
 
-          @if (isGroupMenuOpen()) {
-            <div class="dropdown-menu animate-slide-down group-dropdown" (click)="$event.stopPropagation()">
-              <div class="dropdown-header">
-                <span>I tuoi gruppi</span>
-              </div>
-
-              <div class="dropdown-list">
-                @for (group of groupService.userGroups(); track group.id) {
-                  <button 
-                    type="button" 
-                    class="dropdown-item" 
-                    [class.active]="group.id === groupService.activeGroupId()"
-                    (click)="selectGroup(group.id)">
-                    <span class="item-icon">{{ group.icon }}</span>
-                    <div class="item-info">
-                      <span class="item-title">{{ group.name }}</span>
-                      <span class="item-meta">{{ group.members.length }} membri</span>
-                    </div>
-                    @if (group.id === groupService.activeGroupId()) {
-                      <span class="check-icon">✓</span>
-                    }
-                  </button>
-                }
-              </div>
-
-              <div class="dropdown-divider"></div>
-
-              <button type="button" class="dropdown-item action-item" (click)="openCreateGroupModal()">
-                <span class="item-icon">➕</span>
-                <span>Crea nuovo gruppo</span>
-              </button>
-            </div>
-          }
+      <button type="button" class="wb-nav-item" (click)="toggleUserMenu($event)">
+        <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
+          [style.background-color]="authService.currentUser()?.color || '#ab2f0a'">
+          {{ authService.currentUser()?.name?.charAt(0)?.toUpperCase() || 'U' }}
         </div>
-      }
+        <span>Profilo</span>
+      </button>
     </div>
-
-    <!-- Desktop Navigation Links -->
-    @if (authService.isAuthenticated()) {
-      <nav class="navbar-center desktop-nav">
-        <a routerLink="/trips" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" class="nav-link">
-          <span class="nav-icon">🗺️</span>
-          <span>Viaggi</span>
-        </a>
-        <a routerLink="/groups" routerLinkActive="active" class="nav-link">
-          <span class="nav-icon">👥</span>
-          <span>Gruppi</span>
-        </a>
-        <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
-          <span class="nav-icon">📊</span>
-          <span>Panoramica</span>
-        </a>
-      </nav>
-    }
-
-    <!-- Right Side: User & Desktop CTA -->
-    <div class="navbar-right">
-      @if (authService.isAuthenticated()) {
-        <a routerLink="/trips/new" class="btn btn-sunset btn-sm desktop-nav">
-          <span>➕</span>
-          <span>Nuovo Viaggio</span>
-        </a>
-
-        <!-- User Profile Dropdown -->
-        <div class="user-menu-wrapper">
-          <button 
-            type="button" 
-            class="user-avatar-btn" 
-            (click)="toggleUserMenu($event)"
-            [style.background-color]="authService.currentUser()?.color || '#4f46e5'"
-            [title]="authService.currentUser()?.name || 'Utente'">
-            <span>{{ authService.currentUser()?.avatar || '👤' }}</span>
-          </button>
-
-          @if (isUserMenuOpen()) {
-            <div class="dropdown-menu animate-slide-down user-dropdown" (click)="$event.stopPropagation()">
-              <div class="user-dropdown-profile">
-                <div class="avatar avatar-md" [style.background-color]="authService.currentUser()?.color || '#4f46e5'">
-                  {{ authService.currentUser()?.avatar || '👤' }}
-                </div>
-                <div class="user-profile-meta">
-                  <span class="profile-name">{{ authService.currentUser()?.name }}</span>
-                  <span class="profile-email">{{ authService.currentUser()?.email }}</span>
-                </div>
-              </div>
-
-              <div class="dropdown-divider"></div>
-
-              <a routerLink="/dashboard" class="dropdown-item" (click)="isUserMenuOpen.set(false)">
-                <span class="item-icon">📊</span>
-                <span>Panoramica Dashboard</span>
-              </a>
-
-              <a routerLink="/groups" class="dropdown-item" (click)="isUserMenuOpen.set(false)">
-                <span class="item-icon">👥</span>
-                <span>I Miei Gruppi</span>
-              </a>
-
-              <div class="dropdown-divider"></div>
-
-              <button type="button" class="dropdown-item logout-item" (click)="logout()">
-                <span class="item-icon">🚪</span>
-                <span>Disconnetti</span>
-              </button>
-            </div>
-          }
-        </div>
-      } @else {
-        <div class="auth-buttons">
-          <a routerLink="/login" class="btn btn-ghost btn-sm">Accedi</a>
-          <a routerLink="/register" class="btn btn-primary btn-sm">Registrati</a>
-        </div>
-      }
-    </div>
-  </div>
-</header>
-
-<!-- Native-like Mobile Bottom Navigation Bar -->
-@if (authService.isAuthenticated()) {
-  <nav class="mobile-bottom-nav">
-    <a routerLink="/trips" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" class="bottom-nav-item">
-      <span class="bottom-nav-icon">🗺️</span>
-      <span class="bottom-nav-label">Viaggi</span>
-    </a>
-
-    <a routerLink="/groups" routerLinkActive="active" class="bottom-nav-item">
-      <span class="bottom-nav-icon">👥</span>
-      <span class="bottom-nav-label">Gruppi</span>
-    </a>
-
-    <!-- Center Floating Action Button -->
-    <a routerLink="/trips/new" class="bottom-nav-fab" aria-label="Crea nuovo viaggio">
-      <span>➕</span>
-    </a>
-
-    <a routerLink="/dashboard" routerLinkActive="active" class="bottom-nav-item">
-      <span class="bottom-nav-icon">📊</span>
-      <span class="bottom-nav-label">Dashboard</span>
-    </a>
-
-    <button type="button" class="bottom-nav-item btn-profile-tab" (click)="toggleUserMenu($event)">
-      <span class="bottom-nav-icon">{{ authService.currentUser()?.avatar || '👤' }}</span>
-      <span class="bottom-nav-label">Profilo</span>
-    </button>
   </nav>
 }
 
-<!-- Create Group Modal Trigger -->
-<app-group-create-modal 
-  [isOpen]="isCreateGroupModalOpen()" 
+<!-- Create Group Modal -->
+<app-group-create-modal
+  [isOpen]="isCreateGroupModalOpen()"
   (closeModal)="isCreateGroupModalOpen.set(false)">
 </app-group-create-modal>

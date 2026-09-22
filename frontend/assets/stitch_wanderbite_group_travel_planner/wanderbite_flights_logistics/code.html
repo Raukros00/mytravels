@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><title>WanderBite</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: 'class', theme: { extend: { colors: { 'error-container': '#ffdad6', 'tertiary': '#795600', 'primary-container': '#cd4722', 'primary-fixed-dim': '#ffb4a1', 'surface-tint': '#ae310d', 'on-primary-fixed-variant': '#881f00', 'background': '#fcf9f4', 'primary-fixed': '#ffdbd2', 'outline': '#8d7169', 'on-primary-container': '#fffbff', 'surface-container-lowest': '#ffffff', 'outline-variant': '#e1bfb7', 'surface-dim': '#dcdad5', 'secondary': '#3a674f', 'surface-bright': '#fcf9f4', 'on-secondary-fixed-variant': '#224f39', 'surface-container-low': '#f6f3ee', 'on-surface': '#1c1c19', 'on-background': '#1c1c19', 'tertiary-container': '#986d00', 'surface-container-high': '#ebe8e3', 'on-tertiary-fixed-variant': '#5e4200', 'on-error': '#ffffff', 'on-tertiary': '#ffffff', 'on-error-container': '#93000a', 'tertiary-fixed-dim': '#ffba20', 'on-secondary': '#ffffff', 'error': '#ba1a1a', 'on-secondary-container': '#406d55', 'on-secondary-fixed': '#002112', 'secondary-fixed-dim': '#a1d1b4', 'on-primary': '#ffffff', 'primary': '#ab2f0a', 'inverse-primary': '#ffb4a1', 'tertiary-fixed': '#ffdea8', 'surface-container': '#f0ede9', 'surface-variant': '#e5e2dd', 'on-tertiary-container': '#fffbff', 'inverse-surface': '#31302d', 'surface': '#fcf9f4', 'surface-container-highest': '#e5e2dd', 'on-primary-fixed': '#3c0800', 'inverse-on-surface': '#f3f0eb', 'secondary-container': '#bceecf', 'on-surface-variant': '#59413b', 'on-tertiary-fixed': '#271900', 'secondary-fixed': '#bceecf' }, borderRadius: { 'DEFAULT': '0.25rem', 'lg': '0.5rem', 'xl': '0.75rem', 'full': '9999px' }, spacing: { 'gutter': '1rem', 'space-xs': '0.25rem', 'margin': '1rem', 'space-xl': '2.5rem', 'space-lg': '1.5rem', 'space-md': '1rem', 'margin-desktop': '2.5rem', 'space-sm': '0.5rem', 'gutter-desktop': '1.5rem' }, fontFamily: { 'label-lg': ['Plus Jakarta Sans'], 'body-sm': ['Plus Jakarta Sans'], 'body-md': ['Plus Jakarta Sans'], 'headline-sm': ['Plus Jakarta Sans'], 'body-lg': ['Plus Jakarta Sans'], 'headline-xl': ['Plus Jakarta Sans'], 'label-md': ['Plus Jakarta Sans'], 'label-sm': ['Plus Jakarta Sans'], 'headline-md': ['Plus Jakarta Sans'], 'headline-lg-mobile': ['Plus Jakarta Sans'], 'headline-lg': ['Plus Jakarta Sans'], 'headline-xl-mobile': ['Plus Jakarta Sans'] }, fontSize: { 'label-lg': ['14px', { lineHeight: '18px', fontWeight: '700' }], 'body-sm': ['12px', { lineHeight: '18px', fontWeight: '400' }], 'body-md': ['14px', { lineHeight: '22px', fontWeight: '400' }], 'headline-sm': ['18px', { lineHeight: '24px', fontWeight: '700' }], 'body-lg': ['16px', { lineHeight: '26px', fontWeight: '500' }], 'headline-xl': ['40px', { lineHeight: '48px', fontWeight: '800' }], 'label-md': ['12px', { lineHeight: '16px', fontWeight: '600' }], 'label-sm': ['11px', { lineHeight: '14px', fontWeight: '700' }], 'headline-md': ['22px', { lineHeight: '28px', fontWeight: '700' }], 'headline-lg-mobile': ['24px', { lineHeight: '32px', fontWeight: '700' }], 'headline-lg': ['32px', { lineHeight: '40px', fontWeight: '700' }], 'headline-xl-mobile': ['30px', { lineHeight: '38px', fontWeight: '800' }] } } } }</script><style>@layer base { html, body { width: 100vw; margin: 0; padding: 0; } body { overscroll-behavior-y: none; } .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); } .pt-safe { padding-top: env(safe-area-inset-top, 0px); } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style></head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl shadow-[0_2px_12px_rgba(78,42,29,0.05)] pt-safe"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="WanderBite Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1U0Aa9SjXiLldZgIfGnH9moXkxyn6Hm6frbK4F_ks0eRJhCp96dq7grju5VGsyY90r4eC0wEtmgZ0SFuvleI_frEzBbBzADb_m3mWxCImchoHErJFRksSzO_AFrQFbw3xnQ-qoBcnQ41CPUGynJU3KgJt5jglfnay3fS9mnA5gdKVDk8inXl8A3fhfHSUjemSpS8tOZxfs7X8ZYrFil2Bf8jjLny-SsIeTHQBoAFoV8Qax-8H6pz41lrA"/><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight">WanderBite</span></div><div class="flex items-center gap-space-sm"><div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-fixed-variant"><span class="material-symbols-outlined text-[16px]">group</span><span class="font-label-sm text-label-sm">Tokyo Crew (5)</span></div><a class="min-h-[44px] min-w-[44px] flex items-center justify-center" data-path="profile-settings" href="#"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTaFOS2yNxqbRKMa5h5rvRtbAkowGcP4Wb3ZCb7_XG-z7aovMtx2w4ymnzC34ggFGaCO5lxG0C9LMTdWe_CYqIAJNEFgzQJpf_La4URo7h275dCqqRZu9QpDerbW0tX-MGFlfWlfNjz9oMyeQGcF-5EHesJIbcCjskwgMAmmRCkJ6WZR0J7OHaeYnHN2JPCHVIJFwxXMGmcyhVUYQFw2ior96tGcuN3IRYmIckT6RgL5gtqoFIWU-U"/></a></div></div></header><main class="flex flex-col relative w-full pt-16 pb-20 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<div class="px-gutter pt-space-md pb-space-sm flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">luggage</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary">Logistics &amp; Stays</span>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Tokyo &amp; Kyoto Food Odyssey Logistics</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Syncs, confirmation codes, and transit cheat-sheets for the crew.</p>
+</div>
+<div class="px-gutter py-space-sm flex items-center gap-space-sm overflow-x-auto no-scrollbar">
+<button class="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-transform active:scale-95" id="tab-flights" onclick="switchLogisticsTab('flights')">
+<span class="material-symbols-outlined text-[18px]">flight_takeoff</span>
+<span>Flights (2)</span>
+</button>
+<button class="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-surface-container text-on-surface font-label-md text-label-md shadow-sm transition-transform active:scale-95" id="tab-stays" onclick="switchLogisticsTab('stays')">
+<span class="material-symbols-outlined text-[18px]">hotel</span>
+<span>Accommodations (2)</span>
+</button>
+<button class="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-surface-container text-on-surface font-label-md text-label-md shadow-sm transition-transform active:scale-95" id="tab-budget" onclick="switchLogisticsTab('budget')">
+<span class="material-symbols-outlined text-[18px]">payments</span>
+<span>Split Pot</span>
+</button>
+</div>
+<div class="px-gutter flex flex-col gap-space-lg py-space-md">
+<section class="flex flex-col gap-space-md" id="section-flights">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[22px]">flight</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Flights (6 Passengers)</h2>
+</div>
+<span class="font-label-sm text-label-sm px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed-variant">All Confirmed</span>
+</div>
+<div class="flex flex-col bg-surface-container-lowest rounded-xl shadow-[0_2px_12px_rgba(78,42,29,0.06)] overflow-hidden">
+<div class="p-space-md flex flex-col gap-space-sm bg-gradient-to-r from-surface-container-low to-surface-container-lowest">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">Outbound</span>
+<span class="font-label-md text-label-md text-on-surface">ANA NH848</span>
+</div>
+<button class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm transition-colors active:bg-surface-variant" onclick="copyCode('W7KQ89', this)">
+<span>Ref: <strong>W7KQ89</strong></span>
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-on-surface">SFO</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">San Francisco</span>
+<span class="font-label-md text-label-md text-primary mt-1">Oct 14 • 11:30 AM</span>
+</div>
+<div class="flex flex-col items-center flex-1 px-3">
+<span class="font-body-sm text-body-sm text-on-surface-variant">11h 45m</span>
+<div class="relative w-full flex items-center my-1">
+<div class="h-[2px] w-full bg-outline-variant"></div>
+<span class="material-symbols-outlined text-primary text-[18px] absolute inset-x-0 mx-auto bg-surface-container-lowest px-1" style="font-variation-settings: 'FILL' 1;">flight</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">Non-stop</span>
+</div>
+<div class="flex flex-col items-end text-right">
+<span class="font-headline-md text-headline-md text-on-surface">NRT</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Tokyo Narita</span>
+<span class="font-label-md text-label-md text-primary mt-1">Oct 15 • 3:15 PM <span class="font-label-sm text-label-sm text-tertiary">(+1)</span></span>
+</div>
+</div>
+</div>
+<div class="p-space-md flex flex-col gap-space-xs bg-surface-container-lowest">
+<div class="grid grid-cols-2 gap-space-sm py-space-xs">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">airplane_ticket</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Terminal &amp; Gate</span>
+<span class="font-label-md text-label-md text-on-surface">Terminal 1 • Gate 42B</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-fixed-variant">
+<span class="material-symbols-outlined text-[18px]">group</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Party Size</span>
+<span class="font-label-md text-label-md text-on-surface">6 travelers confirmed</span>
+</div>
+</div>
+</div>
+<div class="mt-space-xs p-space-sm rounded-xl bg-tertiary-fixed/30 flex flex-col gap-1.5">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-tertiary text-[18px]">train</span>
+<span class="font-label-md text-label-md text-tertiary">Airport Transfer: Narita Express (N'EX)</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface">
+              Direct to <strong>Shinjuku Station</strong> in <strong>58 mins</strong> from <strong>Platform 1</strong>. Tickets cost <strong>¥3,250</strong>/person with Suica or Foreign Passport discount.
+            </p>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[14px] text-error">warning</span>
+<span>Taxis to Shibuya/Shinjuku run ~¥28,000. Skip the cab rank!</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col bg-surface-container-lowest rounded-xl shadow-[0_2px_12px_rgba(78,42,29,0.06)] overflow-hidden">
+<div class="p-space-md flex flex-col gap-space-sm bg-gradient-to-r from-surface-container-low to-surface-container-lowest">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm">Return Flight</span>
+<span class="font-label-md text-label-md text-on-surface">ANA NH847</span>
+</div>
+<button class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm transition-colors active:bg-surface-variant" onclick="copyCode('W7KQ89', this)">
+<span>Ref: <strong>W7KQ89</strong></span>
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-on-surface">HND</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Tokyo Haneda</span>
+<span class="font-label-md text-label-md text-primary mt-1">Oct 24 • 6:40 PM</span>
+</div>
+<div class="flex flex-col items-center flex-1 px-3">
+<span class="font-body-sm text-body-sm text-on-surface-variant">9h 30m</span>
+<div class="relative w-full flex items-center my-1">
+<div class="h-[2px] w-full bg-outline-variant"></div>
+<span class="material-symbols-outlined text-primary text-[18px] absolute inset-x-0 mx-auto bg-surface-container-lowest px-1" style="font-variation-settings: 'FILL' 1;">flight</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">Non-stop</span>
+</div>
+<div class="flex flex-col items-end text-right">
+<span class="font-headline-md text-headline-md text-on-surface">SFO</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">San Francisco</span>
+<span class="font-label-md text-label-md text-primary mt-1">Oct 24 • 12:10 PM</span>
+</div>
+</div>
+</div>
+<div class="px-space-md py-space-sm bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">info</span>
+<span class="font-label-sm text-label-sm">Departing Haneda Terminal 3 • Baggage check opens 3.5h early</span>
+</div>
+</div>
+</div>
+</section>
+<section class="flex flex-col gap-space-md" id="section-stays">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[22px]">domain</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Accommodations (9 Nights)</h2>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">2 Stays booked</span>
+</div>
+<div class="flex flex-col bg-surface-container-lowest rounded-xl shadow-[0_4px_16px_rgba(78,42,29,0.07)] overflow-hidden">
+<div class="relative h-44 w-full">
+<img class="w-full h-full object-cover" data-alt="Modern Japanese boutique hotel exterior with lush park greenery and warm terracotta ceramic architectural accents in Tomigaya Tokyo under soft golden hour sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYVNTPXvCbu12JlxNqFeAk8MVNwTVWFZcZbwejrZxZAulbdoO3RwXIqiiOH4ZtdZgRqsB4k5wguhQESYqrm5bNiszrNqF3z-_cp9BnnsrpXU6Tme7kINTRYLxhWXqyZXb7oTXKeCo5DRiB6u5CAmbRDlk4EksbQc4GfM0ZFfKsSLm-7ivEwu-YbKEptr9UBeCcW40W6d04wn7zMC4gyhzvCEzesoPxz0qZk3Mmd53GpiefFMO7qZxJ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
+<div class="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface/90 backdrop-blur-md text-primary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>Boutique Stay</span>
+</div>
+<div class="absolute bottom-3 left-3 right-3 flex flex-col text-on-primary">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm">Stay 1 • 5 Nights</span>
+<span class="font-label-sm text-label-sm opacity-90">Oct 15 – Oct 20</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mt-0.5">Trunk Hotel Yoyogi Park</h3>
+</div>
+</div>
+<div class="p-space-md flex flex-col gap-space-sm">
+<div class="grid grid-cols-2 gap-space-sm p-space-sm rounded-lg bg-surface-container-low">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Check-in</span>
+<span class="font-label-md text-label-md text-on-surface">Oct 15 • 3:00 PM</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Check-out</span>
+<span class="font-label-md text-label-md text-on-surface">Oct 20 • 11:00 AM</span>
+</div>
+</div>
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-lowest shadow-sm">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-primary text-[20px] flex-shrink-0">location_on</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Address (Shibuya-ku)</span>
+<span class="font-body-sm text-body-sm text-on-surface truncate">1-15-2 Tomigaya, Shibuya-ku, Tokyo</span>
+</div>
+</div>
+<button class="flex-shrink-0 px-2.5 py-1.5 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm active:bg-surface-variant flex items-center gap-1" onclick="copyCode('1-15-2 Tomigaya, Shibuya-ku, Tokyo', this)">
+<span>Copy</span>
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-space-sm">
+<div class="p-space-sm rounded-lg bg-primary-fixed/30 flex flex-col">
+<span class="font-label-sm text-label-sm text-on-primary-fixed-variant">Digital Keycode</span>
+<div class="flex items-center justify-between mt-0.5">
+<span class="font-headline-sm text-headline-sm text-primary tracking-widest font-mono">4829#</span>
+<button class="text-primary hover:opacity-75" onclick="copyCode('4829#', this)">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+</button>
+</div>
+</div>
+<a class="p-space-sm rounded-lg bg-secondary-container/40 flex flex-col justify-between" href="tel:+81357663210">
+<span class="font-label-sm text-label-sm text-on-secondary-fixed-variant">Front Desk</span>
+<div class="flex items-center gap-1 text-secondary mt-0.5">
+<span class="material-symbols-outlined text-[16px]">call</span>
+<span class="font-label-md text-label-md">+81 3-5766-3210</span>
+</div>
+</a>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container flex items-start gap-2">
+<span class="material-symbols-outlined text-tertiary text-[18px] mt-0.5">tips_and_updates</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Host &amp; Arrival Perks</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Early luggage drop available starting at 8:00 AM. Keycard includes free access to the heated rooftop pool overlooking Yoyogi canopy.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col bg-surface-container-lowest rounded-xl shadow-[0_4px_16px_rgba(78,42,29,0.07)] overflow-hidden">
+<div class="relative h-44 w-full">
+<img class="w-full h-full object-cover" data-alt="Traditional Kyoto Machiya wooden townhouse interior with warm tatami mats, paper shoji screens, small zen moss courtyard garden and soft lanterns" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_DeEfuyw45O5iLOga2d0UlFKNk-8RecLwUo48qN-5my4KJKL6cfOKSYrVC5OAdzMb6hrUErjaJmP-p5U5FWQT-_QZx0hoKBp2di2wEOmwrm5hoz_9sol8Fa8ilQs2jqhyu-HXCsvrQZEO2MEzrys6aFuxgEf_kLsCOQtj_kLhKfyJx95dIUAEP6SfbaFGJU-Afp3i_L_EFSq5Z_3c9PtELZl9rTAkBWPC1nn521NoqyJcAujhbnUX"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
+<div class="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface/90 backdrop-blur-md text-secondary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">cottage</span>
+<span>Historic Gion</span>
+</div>
+<div class="absolute bottom-3 left-3 right-3 flex flex-col text-on-primary">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded-full bg-tertiary text-on-tertiary font-label-sm text-label-sm">Stay 2 • 4 Nights</span>
+<span class="font-label-sm text-label-sm opacity-90">Oct 20 – Oct 24</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mt-0.5">Machiya Traditional Townhouse</h3>
+</div>
+</div>
+<div class="p-space-md flex flex-col gap-space-sm">
+<div class="grid grid-cols-2 gap-space-sm p-space-sm rounded-lg bg-surface-container-low">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Check-in</span>
+<span class="font-label-md text-label-md text-on-surface">Oct 20 • 4:00 PM</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Check-out</span>
+<span class="font-label-md text-label-md text-on-surface">Oct 24 • 10:00 AM</span>
+</div>
+</div>
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-lowest shadow-sm">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-primary text-[20px] flex-shrink-0">location_on</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Address (Gion District)</span>
+<span class="font-body-sm text-body-sm text-on-surface truncate">570-120 Gionmachi Minamigawa, Higashiyama</span>
+</div>
+</div>
+<button class="flex-shrink-0 px-2.5 py-1.5 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm active:bg-surface-variant flex items-center gap-1" onclick="copyCode('570-120 Gionmachi Minamigawa, Higashiyama, Kyoto', this)">
+<span>Copy</span>
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container flex flex-col gap-1.5">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined text-[18px]">door_front</span>
+<span class="font-label-md text-label-md">Tatami Etiquette &amp; Check-In Protocol</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface">
+              Remove street shoes at the genkan step. Slippers for wood corridors only; bare socks or clean feet on tatami. Host Kenji meets us on-site for key handover at 4:00 PM.
+            </p>
+</div>
+</div>
+</div>
+</section>
+<section class="flex flex-col gap-space-md" id="section-budget">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[22px]">account_balance_wallet</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Group Trip Budget Summary</h2>
+</div>
+<span class="font-label-sm text-label-sm px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed">6-Way Split</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-[0_2px_12px_rgba(78,42,29,0.06)] flex flex-col gap-space-md">
+<div class="flex items-center justify-between bg-surface-container-low p-space-md rounded-xl">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Shared Cost / Member</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-primary font-bold">$1,841<span class="font-body-sm text-body-sm text-on-surface-variant font-normal"> / person</span></span>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Total Pooled</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">$11,050</span>
+</div>
+</div>
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Expenses Distribution</span>
+<span>100% Calculated</span>
+</div>
+<div class="h-3 w-full rounded-full bg-surface-container overflow-hidden flex">
+<div class="h-full bg-primary" style="width: 43.4%;" title="Flights: $4,800"></div>
+<div class="h-full bg-secondary" style="width: 29.0%;" title="Stays: $3,200"></div>
+<div class="h-full bg-tertiary-container" style="width: 19.0%;" title="Food &amp; Drinks: $2,100"></div>
+<div class="h-full bg-tertiary-fixed-dim" style="width: 8.6%;" title="Activities: $950"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-sm pt-space-xs">
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Flights</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">ANA SFO ↔ TYO</span>
+</div>
+</div>
+<span class="font-label-md text-label-md text-on-surface">$4,800</span>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Stays</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tokyo + Kyoto</span>
+</div>
+</div>
+<span class="font-label-md text-label-md text-on-surface">$3,200</span>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-tertiary-container"></div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Food &amp; Drinks</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Izakaya + Ramen kitty</span>
+</div>
+</div>
+<span class="font-label-md text-label-md text-on-surface">$2,100</span>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-tertiary-fixed-dim"></div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Activities</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tea ceremony + passes</span>
+</div>
+</div>
+<span class="font-label-md text-label-md text-on-surface">$950</span>
+</div>
+</div>
+<button class="w-full py-3 px-4 rounded-xl bg-secondary text-on-secondary font-label-md text-label-md flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+<span>View Detailed Ledger &amp; Settle Up</span>
+</button>
+</div>
+</section>
+</div>
+<div class="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 opacity-0 pointer-events-none transition-opacity duration-200 bg-inverse-surface text-inverse-on-surface px-4 py-2 rounded-full font-label-sm text-label-sm flex items-center gap-2 shadow-lg" id="toast-pill">
+<span class="material-symbols-outlined text-secondary-container text-[16px]">check_circle</span>
+<span id="toast-text">Copied to clipboard!</span>
+</div>
+<script>
+    function copyCode(value, triggerElem) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(value);
+      }
+      var toast = document.getElementById('toast-pill');
+      var toastText = document.getElementById('toast-text');
+      if (toast && toastText) {
+        toastText.textContent = 'Copied: ' + value;
+        toast.classList.remove('opacity-0', 'pointer-events-none');
+        setTimeout(function() {
+          toast.classList.add('opacity-0', 'pointer-events-none');
+        }, 1800);
+      }
+    }
+
+    function switchLogisticsTab(tabKey) {
+      var secFlights = document.getElementById('section-flights');
+      var secStays = document.getElementById('section-stays');
+      var secBudget = document.getElementById('section-budget');
+
+      var tabFlights = document.getElementById('tab-flights');
+      var tabStays = document.getElementById('tab-stays');
+      var tabBudget = document.getElementById('tab-budget');
+
+      var activeClasses = ['bg-primary', 'text-on-primary'];
+      var inactiveClasses = ['bg-surface-container', 'text-on-surface'];
+
+      function setPillActive(btn, isActive) {
+        if (isActive) {
+          btn.classList.remove(...inactiveClasses);
+          btn.classList.add(...activeClasses);
+        } else {
+          btn.classList.remove(...activeClasses);
+          btn.classList.add(...inactiveClasses);
+        }
+      }
+
+      setPillActive(tabFlights, tabKey === 'flights');
+      setPillActive(tabStays, tabKey === 'stays');
+      setPillActive(tabBudget, tabKey === 'budget');
+
+      var targetElem = document.getElementById('section-' + tabKey);
+      if (targetElem) {
+        targetElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  </script>
+</div></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_16px_rgba(78,42,29,0.06)]" data-active-classes="text-primary font-label-md"><div class="h-16 px-gutter flex items-center justify-around"><a class="min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 text-on-surface-variant transition-colors" data-path="trips" href="#"><span class="material-symbols-outlined text-[24px]">explore</span><span class="font-label-sm text-label-sm">Trips</span></a><a class="min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 text-on-surface-variant transition-colors" data-path="itinerary" href="#"><span class="material-symbols-outlined text-[24px]">calendar_month</span><span class="font-label-sm text-label-sm">Itinerary</span></a><a class="min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 text-on-surface-variant transition-colors" data-path="food" href="#"><span class="material-symbols-outlined text-[24px]">restaurant</span><span class="font-label-sm text-label-sm">Food</span></a><a aria-current="page" class="min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 transition-colors text-primary font-label-md" data-path="logistics" href="#"><span class="material-symbols-outlined text-[24px]">flight</span><span class="font-label-sm text-label-sm">Logistics</span></a></div></nav></body></html>

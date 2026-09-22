@@ -1,164 +1,324 @@
-<div class="page-wrapper">
-  <div class="app-container">
-    <!-- Hero Header -->
-    <div class="trips-header animate-fade-in">
-      <div class="header-left">
-        @if (groupService.activeGroup(); as grp) {
-          <div class="group-context-pill">
-            <span class="grp-emoji">{{ grp.icon }}</span>
-            <span>Gruppo: <strong>{{ grp.name }}</strong></span>
+<div class="flex flex-col w-full pb-28">
+
+  <!-- Group Switcher & Invite Header -->
+  <section class="px-gutter pt-space-md pb-space-sm flex flex-col gap-space-sm">
+    <div class="flex items-center justify-between gap-space-sm">
+      <!-- Active Group Pill -->
+      @if (groupService.activeGroup(); as grp) {
+        <button class="flex items-center gap-space-xs bg-surface-container-high px-space-md py-2 rounded-full shadow-sm active:scale-95 transition-all text-left" type="button">
+          <span class="w-2.5 h-2.5 rounded-full bg-secondary animate-pulse"></span>
+          <div class="flex flex-col">
+            <span class="font-label-lg text-label-lg text-on-surface flex items-center gap-1">
+              {{ grp.name }}
+              <span class="material-symbols-outlined text-[18px] text-on-surface-variant">expand_more</span>
+            </span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant">{{ grp.members?.length ?? 0 }} viaggiatori</span>
           </div>
-        }
-        <h1 class="page-title">I Nostri Viaggi & Itinerari</h1>
-        <p class="page-desc">Pianifica le giornate, programma le visite e prenota le migliori tappe gastronomiche.</p>
-      </div>
+        </button>
+      } @else {
+        <div class="flex items-center gap-space-xs bg-surface-container-high px-space-md py-2 rounded-full">
+          <span class="font-label-lg text-label-lg text-on-surface-variant">Nessun gruppo attivo</span>
+        </div>
+      }
 
-      <div class="header-actions">
-        <a routerLink="/trips/new" class="btn btn-sunset btn-lg w-full-mobile shadow-hover">
-          <span>➕</span>
-          <span>Crea Nuovo Viaggio</span>
-        </a>
-      </div>
+      <!-- New Trip CTA -->
+      <a routerLink="/trips/new" class="flex items-center gap-1.5 bg-primary text-on-primary px-3 py-2 rounded-full shadow-sm active:scale-95 transition-transform no-underline">
+        <span class="material-symbols-outlined text-[16px]">add</span>
+        <span class="font-label-sm text-label-sm">Nuovo Viaggio</span>
+      </a>
     </div>
+  </section>
 
-    <!-- Filter & Search Toolbar (Mobile Horizontal Scroll Chips) -->
-    <div class="toolbar-card card-glass animate-fade-in">
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input 
-          type="text" 
-          [(ngModel)]="searchQuery" 
-          placeholder="Cerca per destinazione o tag..." 
-          class="search-input">
+  <!-- Active Trip Hero Card -->
+  @if (tripService.activeGroupTrips().length > 0) {
+    @for (trip of tripService.activeGroupTrips().slice(0, 1); track trip.id) {
+      @if (trip.status === 'ongoing' || trip.status === 'upcoming') {
+        <!-- Live Alert Banner -->
+        <section class="px-gutter my-space-xs">
+          <div class="bg-secondary-container text-on-secondary-fixed-variant rounded-xl p-3 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center text-secondary shrink-0 shadow-sm">
+                <span class="material-symbols-outlined text-[22px]">flight_takeoff</span>
+              </div>
+              <div class="flex flex-col min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
+                  <span class="font-label-sm text-label-sm uppercase tracking-wide text-secondary">
+                    {{ trip.status === 'ongoing' ? 'In Corso' : 'Prossimamente' }}
+                    • {{ formatDateRange(trip.startDate, trip.endDate) }}
+                  </span>
+                </div>
+                <p class="font-label-lg text-label-lg truncate text-on-surface">{{ trip.title }}</p>
+              </div>
+            </div>
+            <a [routerLink]="['/trips', trip.id]" class="flex items-center justify-center w-8 h-8 rounded-full bg-surface-container-lowest text-secondary shrink-0 ml-2 shadow-sm active:scale-95 transition-transform no-underline">
+              <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+            </a>
+          </div>
+        </section>
+      }
+
+      <!-- Hero Trip Card -->
+      <section class="px-gutter mt-space-sm flex flex-col gap-space-xs">
+        <div class="flex items-center justify-between">
+          <span class="font-label-sm text-label-sm text-on-surface-variant tracking-wider uppercase">Viaggio Attivo</span>
+          <span class="flex items-center gap-1 font-label-sm text-label-sm text-primary">
+            <span class="material-symbols-outlined text-[14px]">sensors</span> Live Sync
+          </span>
+        </div>
+        <div class="relative bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(78,42,29,0.08)] overflow-hidden flex flex-col">
+          <!-- Cover Image -->
+          <div class="relative w-full h-48 overflow-hidden bg-surface-container">
+            @if (trip.coverUrl) {
+              <img [alt]="trip.title" class="w-full h-full object-cover" [src]="trip.coverUrl">
+            } @else {
+              <div class="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                <span class="material-symbols-outlined text-[64px] text-primary/40">map</span>
+              </div>
+            }
+            <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent"></div>
+            <!-- Status Pill -->
+            <div class="absolute top-3 left-3 flex items-center gap-1.5 bg-primary text-on-primary px-3 py-1 rounded-full shadow-md">
+              <span class="material-symbols-outlined text-[14px]">
+                {{ trip.status === 'ongoing' ? 'timelapse' : 'schedule' }}
+              </span>
+              <span class="font-label-sm text-label-sm">
+                {{ trip.status === 'ongoing' ? 'In Corso' : 'In Arrivo' }}
+                • {{ calculateDuration(trip.startDate, trip.endDate) }}
+              </span>
+            </div>
+            <!-- Title overlay -->
+            <div class="absolute bottom-3 left-3 right-3 text-on-primary-container">
+              <div class="flex items-center gap-1.5 text-primary-fixed-dim text-xs font-label-md drop-shadow">
+                <span class="material-symbols-outlined text-[16px]">location_on</span>
+                <span>{{ trip.destination }}{{ trip.country ? ', ' + trip.country : '' }}</span>
+              </div>
+              <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-white tracking-tight drop-shadow-md">{{ trip.title }}</h2>
+            </div>
+          </div>
+          <!-- Card Body -->
+          <div class="p-space-md flex flex-col gap-space-md">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
+                <span class="material-symbols-outlined text-[18px] text-primary">calendar_today</span>
+                <span>{{ formatDateRange(trip.startDate, trip.endDate) }} • {{ calculateDuration(trip.startDate, trip.endDate) }}</span>
+              </div>
+            </div>
+
+            @if (trip.budgetEstimate) {
+              <div class="bg-surface-container-low rounded-lg p-3 flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <span class="font-label-md text-label-md text-on-surface flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[18px] text-tertiary">payments</span>
+                    Budget Stimato
+                  </span>
+                  <span class="font-label-lg text-label-lg text-primary">{{ trip.budgetEstimate }} {{ trip.currency || 'EUR' }}</span>
+                </div>
+              </div>
+            }
+
+            <!-- Tags -->
+            @if (trip.tags.length > 0) {
+              <div class="flex flex-wrap gap-1.5">
+                @for (tag of trip.tags.slice(0, 3); track tag) {
+                  <span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full">#{{ tag }}</span>
+                }
+              </div>
+            }
+
+            <div class="flex items-center justify-between pt-1">
+              <div class="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant">
+                <span class="material-symbols-outlined text-[16px]">group</span>
+                <span>{{ groupService.activeGroup()?.members?.length ?? 0 }} viaggiatori</span>
+              </div>
+              <a [routerLink]="['/trips', trip.id]" class="bg-primary text-on-primary font-label-md text-label-md px-4 py-2 rounded-full shadow-sm active:scale-95 transition-transform flex items-center gap-1 no-underline">
+                <span>Apri Viaggio</span>
+                <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    }
+  }
+
+  <!-- Search & Filter Bar -->
+  <section class="px-gutter pt-space-lg pb-space-sm">
+    <div class="flex items-center gap-space-sm">
+      <div class="flex-1 flex items-center gap-space-xs bg-surface-container px-space-md py-2.5 rounded-full shadow-sm">
+        <span class="material-symbols-outlined text-outline text-[20px]">search</span>
+        <input
+          class="bg-transparent border-none outline-none font-body-md text-body-md text-on-surface placeholder:text-outline w-full"
+          placeholder="Cerca per destinazione o tag..."
+          type="text"
+          [(ngModel)]="searchQuery">
         @if (searchQuery) {
-          <button type="button" class="btn-clear" (click)="searchQuery = ''">✕</button>
+          <button class="flex items-center justify-center text-outline hover:text-on-surface transition-colors" type="button" (click)="searchQuery = ''">
+            <span class="material-symbols-outlined text-[18px]">close</span>
+          </button>
         }
       </div>
-
-      <div class="filter-pills-scroll">
-        <button 
-          type="button" 
-          class="filter-pill" 
-          [class.active]="selectedStatus() === 'all'"
-          (click)="selectedStatus.set('all')">
-          Tutti ({{ tripService.activeGroupTrips().length }})
-        </button>
-        <button 
-          type="button" 
-          class="filter-pill" 
-          [class.active]="selectedStatus() === 'upcoming'"
-          (click)="selectedStatus.set('upcoming')">
-          In Arrivo
-        </button>
-        <button 
-          type="button" 
-          class="filter-pill" 
-          [class.active]="selectedStatus() === 'planning'"
-          (click)="selectedStatus.set('planning')">
-          In Pianificazione
-        </button>
-        <button 
-          type="button" 
-          class="filter-pill" 
-          [class.active]="selectedStatus() === 'completed'"
-          (click)="selectedStatus.set('completed')">
-          Passati
-        </button>
-      </div>
     </div>
+  </section>
 
-    <!-- Trips Grid -->
+  <!-- Status Filter Chips -->
+  <div class="pt-space-sm pb-space-xs">
+    <div class="flex items-center gap-space-xs overflow-x-auto px-gutter no-scrollbar py-1">
+      <button class="shrink-0 px-4 py-1.5 rounded-full font-label-sm text-label-sm active:scale-95 transition-all"
+        [class.bg-primary]="selectedStatus() === 'all'"
+        [class.text-on-primary]="selectedStatus() === 'all'"
+        [class.shadow-sm]="selectedStatus() === 'all'"
+        [class.bg-surface-container]="selectedStatus() !== 'all'"
+        [class.text-on-surface-variant]="selectedStatus() !== 'all'"
+        type="button" (click)="selectedStatus.set('all')">
+        Tutti ({{ tripService.activeGroupTrips().length }})
+      </button>
+      <button class="shrink-0 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm active:scale-95 transition-all"
+        [class.bg-primary]="selectedStatus() === 'upcoming'"
+        [class.text-on-primary]="selectedStatus() === 'upcoming'"
+        [class.shadow-sm]="selectedStatus() === 'upcoming'"
+        [class.bg-surface-container]="selectedStatus() !== 'upcoming'"
+        [class.text-on-surface-variant]="selectedStatus() !== 'upcoming'"
+        type="button" (click)="selectedStatus.set('upcoming')">
+        In Arrivo
+      </button>
+      <button class="shrink-0 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm active:scale-95 transition-all"
+        [class.bg-primary]="selectedStatus() === 'planning'"
+        [class.text-on-primary]="selectedStatus() === 'planning'"
+        [class.shadow-sm]="selectedStatus() === 'planning'"
+        [class.bg-surface-container]="selectedStatus() !== 'planning'"
+        [class.text-on-surface-variant]="selectedStatus() !== 'planning'"
+        type="button" (click)="selectedStatus.set('planning')">
+        In Pianificazione
+      </button>
+      <button class="shrink-0 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm active:scale-95 transition-all"
+        [class.bg-primary]="selectedStatus() === 'completed'"
+        [class.text-on-primary]="selectedStatus() === 'completed'"
+        [class.shadow-sm]="selectedStatus() === 'completed'"
+        [class.bg-surface-container]="selectedStatus() !== 'completed'"
+        [class.text-on-surface-variant]="selectedStatus() !== 'completed'"
+        type="button" (click)="selectedStatus.set('completed')">
+        Passati
+      </button>
+    </div>
+  </div>
+
+  <!-- Upcoming Trips Section -->
+  <section class="px-gutter mt-space-md mb-space-xl">
     @if (filteredTrips().length > 0) {
-      <div class="trips-grid">
+      <div class="flex items-center justify-between mb-space-sm">
+        <h3 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">
+          {{ selectedStatus() === 'all' ? 'Tutti i Viaggi' : 'Viaggi Filtrati' }}
+        </h3>
+        <span class="font-label-sm text-label-sm text-primary font-bold">{{ filteredTrips().length }} viaggi</span>
+      </div>
+
+      <div class="flex flex-col gap-space-sm">
         @for (trip of filteredTrips(); track trip.id) {
-          <div class="trip-card card animate-fade-in">
-            <!-- Cover Image & Badges -->
-            <div class="trip-cover-wrapper">
-              <img [src]="trip.coverUrl" [alt]="trip.title" class="trip-cover-img" loading="lazy">
-              <div class="trip-cover-overlay"></div>
-              
-              <div class="cover-top-badges">
-                <span class="badge badge-country">
-                  📍 {{ trip.destination }}, {{ trip.country }}
-                </span>
-                
-                @switch (trip.status) {
-                  @case ('upcoming') {
-                    <span class="badge badge-emerald">In Arrivo</span>
-                  }
-                  @case ('planning') {
-                    <span class="badge badge-amber">In Pianificazione</span>
-                  }
-                  @case ('completed') {
-                    <span class="badge badge-slate">Concluso</span>
-                  }
-                  @default {
-                    <span class="badge badge-indigo">{{ trip.status }}</span>
-                  }
+          <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm active:bg-surface-container-low transition-colors cursor-pointer"
+            [routerLink]="['/trips', trip.id]">
+            <div class="flex gap-space-md">
+              <!-- Cover Thumbnail -->
+              <div class="relative w-24 h-24 rounded-lg overflow-hidden shrink-0 bg-surface-container">
+                @if (trip.coverUrl) {
+                  <img [alt]="trip.title" class="w-full h-full object-cover" [src]="trip.coverUrl">
+                } @else {
+                  <div class="w-full h-full flex items-center justify-center bg-surface-container-high">
+                    <span class="material-symbols-outlined text-[36px] text-on-surface-variant/40">map</span>
+                  </div>
                 }
+                <div class="absolute top-1 left-1">
+                  @switch (trip.status) {
+                    @case ('ongoing') {
+                      <span class="bg-primary text-on-primary px-1.5 py-0.5 rounded font-label-sm text-[10px]">Live</span>
+                    }
+                    @case ('upcoming') {
+                      <span class="bg-tertiary-container text-on-tertiary-container px-1.5 py-0.5 rounded font-label-sm text-[10px]">{{ formatDateRange(trip.startDate, trip.startDate) }}</span>
+                    }
+                    @case ('planning') {
+                      <span class="bg-secondary-container text-on-secondary-fixed-variant px-1.5 py-0.5 rounded font-label-sm text-[10px]">Planning</span>
+                    }
+                    @case ('completed') {
+                      <span class="bg-surface-container-highest text-on-surface px-1.5 py-0.5 rounded font-label-sm text-[10px]">Passato</span>
+                    }
+                  }
+                </div>
               </div>
 
-              <div class="cover-bottom-info">
-                <span class="trip-duration">
-                  ⏳ {{ calculateDuration(trip.startDate, trip.endDate) }}
-                </span>
+              <!-- Trip Details -->
+              <div class="flex flex-col justify-between flex-1 min-w-0">
+                <div>
+                  <div class="flex items-center gap-1.5 mb-1">
+                    @switch (trip.status) {
+                      @case ('ongoing') {
+                        <span class="bg-primary/10 text-primary font-label-sm text-label-sm px-2 py-0.5 rounded-full">In Corso</span>
+                      }
+                      @case ('upcoming') {
+                        <span class="bg-secondary-container text-on-secondary-fixed-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full">In Arrivo</span>
+                      }
+                      @case ('planning') {
+                        <span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full">In Pianificazione</span>
+                      }
+                      @case ('completed') {
+                        <span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full">Completato</span>
+                      }
+                    }
+                    <span class="font-label-sm text-label-sm text-on-surface-variant">• {{ calculateDuration(trip.startDate, trip.endDate) }}</span>
+                  </div>
+                  <h4 class="font-headline-sm text-headline-sm text-on-surface truncate">{{ trip.title }}</h4>
+                </div>
+                <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                  <span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[13px] text-primary">location_on</span>
+                    {{ trip.destination }}{{ trip.country ? ', ' + trip.country : '' }}
+                  </span>
+                  @if (trip.budgetEstimate) {
+                    <span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full">
+                      {{ trip.budgetEstimate }} {{ trip.currency || 'EUR' }}
+                    </span>
+                  }
+                </div>
               </div>
             </div>
 
-            <!-- Trip Content -->
-            <div class="trip-body">
-              <h3 class="trip-title">
-                <a [routerLink]="['/trips', trip.id]">{{ trip.title }}</a>
-              </h3>
-
-              <div class="trip-dates">
-                <span class="date-icon">🗓️</span>
-                <span>{{ formatDateRange(trip.startDate, trip.endDate) }}</span>
-              </div>
-
-              @if (trip.notes) {
-                <p class="trip-snippet">{{ trip.notes }}</p>
-              }
-
-              <!-- Tags (Food / Style) -->
-              <div class="trip-tags">
-                @for (tag of trip.tags; track tag) {
-                  <span class="tag-pill">#{{ tag }}</span>
+            <!-- Tags & Actions -->
+            <div class="flex items-center justify-between pt-1">
+              <div class="flex flex-wrap gap-1">
+                @for (tag of trip.tags.slice(0, 2); track tag) {
+                  <span class="font-label-sm text-label-sm text-on-surface-variant">#{{ tag }}</span>
                 }
               </div>
-            </div>
-
-            <!-- Trip Footer -->
-            <div class="trip-footer">
-              <div class="budget-box">
-                <span class="budget-label">Budget stimato:</span>
-                <strong class="budget-amount">{{ trip.budgetEstimate || 0 }} {{ trip.currency }}</strong>
-              </div>
-
-              <div class="trip-actions">
-                <button 
-                  type="button" 
-                  class="btn-delete" 
-                  (click)="deleteTrip(trip.id, trip.title, $event)" 
-                  title="Elimina viaggio">
-                  🗑️
-                </button>
-                <a [routerLink]="['/trips', trip.id]" class="btn btn-primary btn-sm">
-                  Dettagli & Pasti ➔
-                </a>
-              </div>
+              <button class="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container-high transition-colors"
+                type="button"
+                (click)="deleteTrip(trip.id, trip.title, $event)">
+                <span class="material-symbols-outlined text-[16px]">delete_outline</span>
+              </button>
             </div>
           </div>
         }
       </div>
     } @else {
-      <app-empty-state
-        icon="🎒"
-        title="Nessun viaggio trovato"
-        [description]="searchQuery ? 'Nessun risultato corrisponde alla tua ricerca.' : 'Non ci sono ancora viaggi per questo gruppo. Creane subito uno!'"
-        actionLabel="Crea un Nuovo Viaggio"
-        (action)="goToNewTrip()">
-      </app-empty-state>
+      <!-- Empty State -->
+      <div class="flex flex-col items-center justify-center py-16 gap-space-md text-center">
+        <div class="w-16 h-16 rounded-full bg-primary-fixed flex items-center justify-center">
+          <span class="material-symbols-outlined text-[32px] text-primary">luggage</span>
+        </div>
+        <div class="flex flex-col gap-1">
+          <h3 class="font-headline-sm text-headline-sm text-on-surface">
+            {{ searchQuery ? 'Nessun risultato' : 'Nessun viaggio ancora' }}
+          </h3>
+          <p class="font-body-md text-body-md text-on-surface-variant max-w-xs">
+            {{ searchQuery ? 'Nessun viaggio corrisponde alla ricerca.' : 'Crea il primo viaggio con il tuo gruppo!' }}
+          </p>
+        </div>
+        @if (!searchQuery) {
+          <a routerLink="/trips/new" class="bg-primary text-on-primary font-label-lg text-label-lg px-5 py-3 rounded-full shadow-sm flex items-center gap-2 no-underline active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-[20px]">add</span>
+            Pianifica un Viaggio
+          </a>
+        }
+      </div>
     }
-  </div>
+  </section>
+
 </div>
