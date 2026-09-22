@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TripService } from '../../../core/services/trip.service';
 import { GroupService } from '../../../core/services/group.service';
@@ -15,6 +15,7 @@ import { Trip, TripStatus } from '../../../core/models/trip.model';
   styleUrl: './trip-list.component.css'
 })
 export class TripListComponent {
+  private router = inject(Router);
   public tripService = inject(TripService);
   public groupService = inject(GroupService);
 
@@ -64,6 +65,6 @@ export class TripListComponent {
   }
 
   goToNewTrip(): void {
-    //
+    this.router.navigate(['/trips/new']);
   }
 }
