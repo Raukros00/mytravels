@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "secondary": "#3a674f",
+          "surface-container-high": "#ebe8e3",
+          "primary-fixed-dim": "#ffb4a1",
+          "on-primary-container": "#fffbff",
+          "surface-dim": "#dcdad5",
+          "secondary-fixed-dim": "#a1d1b4",
+          "on-tertiary-container": "#fffbff",
+          "on-error-container": "#93000a",
+          "tertiary-container": "#986d00",
+          "error-container": "#ffdad6",
+          "on-secondary": "#ffffff",
+          "primary": "#ab2f0a",
+          "on-surface-variant": "#59413b",
+          "inverse-surface": "#31302d",
+          "secondary-fixed": "#bceecf",
+          "surface-container-low": "#f6f3ee",
+          "surface-container-highest": "#e5e2dd",
+          "background": "#fcf9f4",
+          "primary-fixed": "#ffdbd2",
+          "on-tertiary-fixed-variant": "#5e4200",
+          "on-background": "#1c1c19",
+          "on-secondary-fixed-variant": "#224f39",
+          "tertiary-fixed-dim": "#ffba20",
+          "surface-variant": "#e5e2dd",
+          "surface": "#fcf9f4",
+          "tertiary-fixed": "#ffdea8",
+          "on-secondary-container": "#406d55",
+          "error": "#ba1a1a",
+          "on-primary-fixed": "#3c0800",
+          "secondary-container": "#bceecf",
+          "on-primary": "#ffffff",
+          "inverse-on-surface": "#f3f0eb",
+          "outline": "#8d7169",
+          "on-tertiary": "#ffffff",
+          "primary-container": "#cd4722",
+          "outline-variant": "#e1bfb7",
+          "surface-container": "#f0ede9",
+          "surface-bright": "#fcf9f4",
+          "on-secondary-fixed": "#002112",
+          "surface-tint": "#ae310d",
+          "inverse-primary": "#ffb4a1",
+          "surface-container-lowest": "#ffffff",
+          "on-primary-fixed-variant": "#881f00",
+          "on-tertiary-fixed": "#271900",
+          "tertiary": "#795600",
+          "on-error": "#ffffff",
+          "on-surface": "#1c1c19"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "margin": "1rem",
+          "margin-desktop": "2.5rem",
+          "space-lg": "1.5rem",
+          "space-sm": "0.5rem",
+          "gutter-desktop": "1.5rem",
+          "space-xl": "2.5rem",
+          "space-md": "1rem",
+          "space-xs": "0.25rem",
+          "gutter": "1rem"
+        },
+        "fontFamily": {
+          "label-sm": [
+            "Plus Jakarta Sans"
+          ],
+          "body-sm": [
+            "Plus Jakarta Sans"
+          ],
+          "body-lg": [
+            "Plus Jakarta Sans"
+          ],
+          "headline-md": [
+            "Plus Jakarta Sans"
+          ],
+          "label-md": [
+            "Plus Jakarta Sans"
+          ],
+          "headline-xl-mobile": [
+            "Plus Jakarta Sans"
+          ],
+          "headline-xl": [
+            "Plus Jakarta Sans"
+          ],
+          "headline-lg-mobile": [
+            "Plus Jakarta Sans"
+          ],
+          "label-lg": [
+            "Plus Jakarta Sans"
+          ],
+          "headline-sm": [
+            "Plus Jakarta Sans"
+          ],
+          "body-md": [
+            "Plus Jakarta Sans"
+          ],
+          "headline-lg": [
+            "Plus Jakarta Sans"
+          ]
+        },
+        "fontSize": {
+          "label-sm": [
+            "11px",
+            {
+              "lineHeight": "14px",
+              "fontWeight": "700"
+            }
+          ],
+          "body-sm": [
+            "12px",
+            {
+              "lineHeight": "18px",
+              "fontWeight": "400"
+            }
+          ],
+          "body-lg": [
+            "16px",
+            {
+              "lineHeight": "26px",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-md": [
+            "22px",
+            {
+              "lineHeight": "28px",
+              "fontWeight": "700"
+            }
+          ],
+          "label-md": [
+            "12px",
+            {
+              "lineHeight": "16px",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-xl-mobile": [
+            "30px",
+            {
+              "lineHeight": "38px",
+              "fontWeight": "800"
+            }
+          ],
+          "headline-xl": [
+            "40px",
+            {
+              "lineHeight": "48px",
+              "fontWeight": "800"
+            }
+          ],
+          "headline-lg-mobile": [
+            "24px",
+            {
+              "lineHeight": "32px",
+              "fontWeight": "700"
+            }
+          ],
+          "label-lg": [
+            "14px",
+            {
+              "lineHeight": "18px",
+              "fontWeight": "700"
+            }
+          ],
+          "headline-sm": [
+            "18px",
+            {
+              "lineHeight": "24px",
+              "fontWeight": "700"
+            }
+          ],
+          "body-md": [
+            "14px",
+            {
+              "lineHeight": "22px",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-lg": [
+            "32px",
+            {
+              "lineHeight": "40px",
+              "fontWeight": "700"
+            }
+          ]
+        }
+      },
+    },
+  }</script></head><body class="bg-surface text-on-surface font-body-md text-body-md"><header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_2px_12px_rgba(78,42,29,0.06)]"><div class="h-20 max-w-7xl mx-auto px-margin md:px-margin-desktop flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-sm"><img alt="Brand logo. - Primary color: #e85a34
+- Font: plusJakartaSans
+- Mode: light
+- Roundness: rounded-md
+" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1U0Aa9SjXiLldZgIfGnH9moXkxyn6Hm6frbK4F_ks0eRJhCp96dq7grju5VGsyY90r4eC0wEtmgZ0SFuvleI_frEzBbBzADb_m3mWxCImchoHErJFRksSzO_AFrQFbw3xnQ-qoBcnQ41CPUGynJU3KgJt5jglfnay3fS9mnA5gdKVDk8inXl8A3fhfHSUjemSpS8tOZxfs7X8ZYrFil2Bf8jjLny-SsIeTHQBoAFoV8Qax-8H6pz41lrA"/><span class="font-headline-sm text-headline-sm text-primary tracking-tight">WanderBite</span></div><div class="h-6 w-[1.5px] bg-surface-container-high hidden md:block"></div><div class="relative hidden lg:flex items-center bg-surface-container-low hover:bg-surface-container-high px-space-md py-space-xs rounded-xl cursor-pointer transition-colors group"><div class="flex flex-col text-left"><div class="flex items-center gap-space-xs"><span class="font-label-md text-label-md text-on-surface">The Ramen Chasers</span><span class="font-label-sm text-label-sm px-space-xs py-0.5 rounded-full bg-secondary-container text-on-secondary-container">6 active</span></div><span class="font-body-sm text-body-sm text-on-surface-variant">RAMEN24 • Tokyo &amp; Osaka</span></div><span class="material-symbols-outlined ml-space-sm text-on-surface-variant group-hover:text-primary transition-colors text-lg">expand_more</span></div></div><nav class="hidden xl:flex items-center gap-space-xs bg-surface-container-low p-1.5 rounded-full" data-active-classes="bg-primary-container text-on-primary-container font-label-md text-label-md rounded-full shadow-[0_2px_8px_rgba(78,42,29,0.12)]"><a aria-current="page" class="px-space-md py-space-xs transition-all bg-primary-container text-on-primary-container font-label-md text-label-md rounded-full shadow-[0_2px_8px_rgba(78,42,29,0.12)]" data-path="trips" href="#">Trips</a><a class="px-space-md py-space-xs rounded-full font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all" data-path="daily-itinerary" href="#">Daily Itinerary</a><a class="px-space-md py-space-xs rounded-full font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all" data-path="food-and-drink" href="#">Food &amp; Drink</a><a class="px-space-md py-space-xs rounded-full font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all" data-path="flights-and-logistics" href="#">Flights &amp; Logistics</a></nav><div class="flex items-center gap-space-md"><div class="hidden sm:flex items-center gap-space-xs bg-secondary-container/60 px-space-sm py-1 rounded-full"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span></span><span class="font-label-sm text-label-sm text-on-secondary-container">Live Sync</span></div><button class="relative p-space-xs text-on-surface-variant hover:text-primary transition-colors" type="button"><span class="material-symbols-outlined">notifications</span><span class="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full ring-2 ring-surface"></span></button><div class="flex items-center gap-space-xs pl-space-xs cursor-pointer"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-outline-variant hover:ring-primary transition-all" src="https://lh3.googleusercontent.com/aida/AEtjO1XDFUxuNP0SoINgIGM2kZof3mYst04aBHu1PtBKsIAw1pHDlUTPobAXYtYRxRlr-L0hBiQcBSwDu3KruSNm4fFsgwPnfkVVRKvRUO2p-OcSJJF2eTT6oBBLvA8Zyr3fbGOcXvOYFP64Mh8rfdFso96dvyYRB361g75OpvacI_a3qix6d5isALcjN11H8bpWrnXMISjDUPlhyu2_BTaAiXo_PZ_dpXC-a5u-iA1ftUuLgnRmYvY9N5u4tA"/></div></div></div></header><main class="w-full pt-20 bg-surface min-h-[calc(100vh-80px)]"><div class="flex flex-col w-full">
+<div class="max-w-7xl mx-auto w-full px-margin md:px-margin-desktop py-space-lg flex flex-col gap-space-xl">
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary bg-primary-fixed/60 px-2.5 py-1 rounded-full">Active Expedition</span>
+<div class="flex items-center gap-1.5 bg-surface-container px-3 py-1 rounded-full shadow-sm">
+<span class="material-symbols-outlined text-secondary text-sm">group</span>
+<span class="font-label-md text-label-md text-on-surface">The Ramen Chasers</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono ml-1 px-1.5 py-0.5 bg-surface-container-high rounded text-[10px]">RAMEN24</span>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span> 6 Members Active
+          </span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight">Expedition Hub</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Shared culinary blueprints, live group tastings, and seasonal bookings.</p>
+</div>
+<div class="flex items-center gap-space-sm self-stretch md:self-auto">
+<button class="flex-1 md:flex-initial inline-flex items-center justify-center gap-space-xs bg-surface-container hover:bg-surface-container-high text-on-surface font-label-lg text-label-lg px-space-md py-3 rounded-xl transition-all shadow-sm">
+<span class="material-symbols-outlined text-lg">share</span>
+<span>Invite Crew</span>
+</button>
+<button class="flex-1 md:flex-initial inline-flex items-center justify-center gap-space-xs bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg px-space-lg py-3 rounded-xl shadow-md hover:shadow-lg transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-xl">add_location_alt</span>
+<span>+ Plan New Trip</span>
+</button>
+</div>
+</div>
+<div class="w-full bg-gradient-to-r from-primary/10 via-tertiary-fixed/30 to-secondary/10 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm shadow-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary flex-shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-xl">soup_kitchen</span>
+</div>
+<div class="min-w-0 flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-primary font-semibold uppercase">Up Next in 48 mins</span>
+<span class="text-xs text-on-surface-variant">• 12:30 PM JST</span>
+</div>
+<p class="font-headline-sm text-headline-sm text-on-surface truncate">Tsukiji Outer Market Tasting Tour &amp; Tuna Auction Breakfast</p>
+</div>
+</div>
+<div class="flex items-center gap-space-sm flex-shrink-0">
+<div class="flex -space-x-2">
+<img class="w-7 h-7 rounded-full object-cover shadow-sm ring-2 ring-surface" data-alt="Close up face profile avatar of male traveler smiling in Tokyo restaurant with warm sunset backlight and natural linen jacket" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAH_lUPvjMVwkTERNqWOo1u2wCSkapiUgrdGae0K043RNZh-7HvkzevPJ0VoVrqwfEhqpKKkcjIZNT2kUubuAaZyJmUhuks0d3J0jFQYlaaZLgzqdiBDOFqN1Xpc-qi66BjJbjxKal6oKXD7LIp5hQbRWWjJUDnY3eO2pljUy7UMlzlb_24YDdBE1qXPtYLZTOTMDfeAmH1Y8WloVxeF7CD_auX5GtwEbXCZ8y67p1cw-Qd0WSQLhbb"/>
+<img class="w-7 h-7 rounded-full object-cover shadow-sm ring-2 ring-surface" data-alt="Portrait of female food blogger laughing holding ceramic matcha bowl in Kyoto garden cafe softly blurred" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAb7eFBy2YybY1yLbHrNZrKDCZtUz7A4vm2_9W5F1IEyVhjbFrX9oH48hRSY8SjqIqjo8cTMJ7RmZLG8QaX9j5zGHrIIRcV87K8HImVB6h8qUjJrt3CCKvmmheXUvrKx41isNYh68pP91xjJUk-2YDGqjlXINCw7Dc2EeFiI4F6PsZGOx2wva-Lkk6BfwB7bzKCWTb1zChmtrwmgCbF83X5JLCTRsbHjVq8qAN_intCz7hwWTeH3gLA"/>
+<img class="w-7 h-7 rounded-full object-cover shadow-sm ring-2 ring-surface" data-alt="Young man with camera dining at bustling Tokyo izakaya counter food photography aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbRcNPEhMH1soqT-FIB8OMBl4V4ASKki9a_kXebC9lSiqRBBYzE_YJ3d5TCYsM5S-7coQea7ps6szj6Zdu4OKvbQWfHt1lqXqgYO4WBH7UYjAx2WERwxRoXJe0lJcnY7zLqUg_SQ-IfR_Tvnpx1fCu-vyLIWZFh0vsmMcA6nCXS1sASGIH7xjVPpxjq_QKZrKSDNHFkDp2FR9EDNiiZ2JF9FPgYfRIexSUPSHm7AcZKdo3x_DPgr13"/>
+</div>
+<a class="inline-flex items-center gap-1 font-label-md text-label-md text-primary hover:text-primary-container font-bold px-3 py-1.5 bg-surface rounded-lg shadow-sm transition-colors" href="#">
+<span>Live Map</span>
+<span class="material-symbols-outlined text-base">arrow_forward</span>
+</a>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<div class="lg:col-span-8 flex flex-col bg-surface-container-lowest rounded-2xl overflow-hidden shadow-md group">
+<div class="relative h-80 w-full overflow-hidden">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Vibrant traditional Tokyo ramen stall bar interior with steaming bowls of tonkotsu broth, glowing paper lanterns, polished dark cedar wood counters, culinary travelers tasting noodles warmly lit ambient food scene" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDrQ7aIY1RItxzVo8GyAYqU_RwE9XiTnBI3D6pR_9j97OjIRPKYHzyVTG7YynFytc5kYzbflgo7HXM15j7z26zFb0wFqdWi7oin4mSdLpx2NlfBf33Ji-k9v8_xd_x-_SR8Y-XTghKodAhEHWIPzbIFfiUd3SurbHeGqTPZwbaD_gU9nKW-DTleAZaEC1VIyFILFETLasJN9HhHKErfJS9rtozZ4DY-wd2VC0dHradU3myPnlXUpyEw')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface via-on-surface/40 to-transparent"></div>
+<div class="absolute top-4 left-4 flex items-center gap-space-xs">
+<span class="bg-secondary text-on-secondary font-label-sm text-label-sm px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md">
+<span class="material-symbols-outlined text-sm">flight_takeoff</span> Ongoing • Day 3 of 10
+            </span>
+<span class="bg-surface/85 backdrop-blur-md text-on-surface font-label-sm text-label-sm px-3 py-1.5 rounded-full shadow-md font-semibold">
+              Oct 14 – Oct 24, 2024
+            </span>
+</div>
+<div class="absolute top-4 right-4 bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm px-3 py-1 rounded-full shadow-md flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">local_fire_department</span> 14 Curated Stops Left
+          </div>
+<div class="absolute bottom-6 left-6 right-6 flex flex-col gap-2">
+<div class="flex items-center gap-2 text-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-secondary-fixed text-base">pin_drop</span>
+<span>Tokyo, Kyoto &amp; Osaka, Japan</span>
+</div>
+<h2 class="font-headline-xl text-headline-xl text-surface-lowest text-white drop-shadow-sm font-extrabold">Tokyo &amp; Kyoto Food Odyssey</h2>
+<p class="font-body-md text-body-md text-surface-container-highest line-clamp-1 max-w-xl">Deep exploration of nocturnal ramen joints, Ginza sushi counters, and Uji matcha tea ceremonies.</p>
+</div>
+</div>
+<div class="p-6 md:p-8 flex flex-col gap-space-lg bg-surface-container-low/50">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<div class="bg-surface p-4 rounded-xl shadow-sm flex flex-col gap-2">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase">Shared Vault</span>
+<span class="material-symbols-outlined text-primary text-base">account_balance_wallet</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-headline-md text-on-surface font-extrabold">$2,450</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/ $3,200</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 76.5%"></div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>76% expended</span>
+<span class="text-secondary font-bold">$750 safe</span>
+</div>
+</div>
+<div class="bg-surface p-4 rounded-xl shadow-sm flex flex-col gap-2">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase">Reservations</span>
+<span class="material-symbols-outlined text-secondary text-base">event_seat</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-headline-md text-on-surface font-extrabold">9 / 12</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Locked</span>
+</div>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed-variant">3 Michelin</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-medium">6 Izakaya</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-auto">Kappo Ryokan waitlist #2</span>
+</div>
+<div class="bg-surface p-4 rounded-xl shadow-sm flex flex-col gap-2">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase">Group Pulse</span>
+<span class="material-symbols-outlined text-tertiary text-base">recommend</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-headline-md text-on-surface font-extrabold">98%</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Consensus</span>
+</div>
+<div class="flex -space-x-1.5 py-1">
+<div class="w-6 h-6 rounded-full bg-secondary-fixed flex items-center justify-center text-[10px] font-bold text-on-secondary-fixed">🍜</div>
+<div class="w-6 h-6 rounded-full bg-primary-fixed flex items-center justify-center text-[10px] font-bold text-on-primary-fixed">🍣</div>
+<div class="w-6 h-6 rounded-full bg-tertiary-fixed flex items-center justify-center text-[10px] font-bold text-on-tertiary-fixed">🍶</div>
+<div class="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold text-on-surface-variant">+5</div>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">24 dishes bookmarked</span>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row items-center justify-between pt-2 gap-space-md">
+<div class="flex items-center gap-space-sm w-full sm:w-auto">
+<div class="flex -space-x-2.5 overflow-hidden">
+<img class="inline-block h-9 w-9 rounded-full ring-2 ring-surface object-cover" data-alt="Profile headshot of modern culinary enthusiast traveler with glasses smiling warmly against soft natural linen backdrop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfgA5a56S3ZHEAuY8X3Xjmjp-UAYTYBhfiJAN3aEAS15MYqchKC047gGfgq1RUKhU_Zg-DKjux_N-l87Z1R-eGAiWA9m5G0wqLE6gaHs0ldlopbgsslmjchhsZLNMUq9XC_re4iemwXFBSkAHB1_Wyt0OegHKXQRbXGJWQVEhqsBE2iCE3z9MqznZVQQBBKIl7kYPPaHQPPQd9czG6Ebu4GE99LX3zrjCmDRQkl48Wx6tSBbOv-g8X"/>
+<img class="inline-block h-9 w-9 rounded-full ring-2 ring-surface object-cover" data-alt="Portrait of young stylish foodie traveler eating ramen in Tokyo smiling outdoors soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzwAQ7BUnNY7WotXpzpAeYMDYnoAKyr5hWB3-AfMp1lbyaKfylZiEEhBABHZI0F15lWGw2xhGnqs12vpRvYNzG3-nJKuOJw8IyUB65KA8oLdPxfBxsMvSn970kBApl8Td1ACv1YXMVS3Afv0edX3U4zWrG48L3XGaAE91ij2lO1jKJTvcaEj9uEg1jb-mb1cAmVFfPWKvocLCX-VGBDsKInFpGCClZCnzZMSb5nEz5XxC2SqrSTNHQ"/>
+<img class="inline-block h-9 w-9 rounded-full ring-2 ring-surface object-cover" data-alt="Artistic profile of woman sommelier sampling natural wine in Japanese bar ambient wood aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDDoEc8hbS0dIZnG81XXrll_neLN7bCOkhQcuj2SY1MIS9Cq3priwQur6oO2vETWtAcXWWHD8TJOcTP8y2h5WRJKmgj5oTb2R6k4UJS8SpxryRxOFTVH-vFkOrZsXOTpMFrIjW-9WdmcDYkz4oM-xX75d2lxt30eSqlN8FtWN4HY8A43JdLgn6LMHu3O34egq5eCILbiDGg9RdxwhY_7faeIdML4YSA8BrTkDTCGNHwOAIPR-m6nTJ"/>
+<img class="inline-block h-9 w-9 rounded-full ring-2 ring-surface object-cover" data-alt="Portrait of Asian food critic travel companion enjoying street yakitori warm lantern lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALYT1iLM5z0jirVvc5ckYrYH9jQy6OtE-_8xsKkOFpSo8Y9v1lLm49yFD5PjWfl3weNxFUp5pUIYAVz4h-jlaj15PGS7EGcyEf-o1HAh1K2b7JDMYn5IYGAmF--haLbBbvCQvI6XREhGBEv0bHlQUty7nBsISDZXsj4F8SRd6ipR3cx049J2hx86Pm5enZ6cA6sqmn708NkiTQzuvdZ3QfClW8JMj6rMa8NPo0pBsk2y9oYrxJ8SmY"/>
+<div class="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm ring-2 ring-surface font-bold">+2</div>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">All 6 checked into Shinjuku Hub</span>
+</div>
+<div class="flex items-center gap-space-sm w-full sm:w-auto justify-end">
+<button class="inline-flex items-center gap-space-xs bg-surface hover:bg-surface-container text-on-surface font-label-md text-label-md px-space-md py-2.5 rounded-xl shadow-sm transition-all">
+<span class="material-symbols-outlined text-base">receipt_long</span>
+<span>Split Ledger</span>
+</button>
+<a class="inline-flex items-center gap-space-xs bg-secondary hover:bg-secondary/90 text-on-secondary font-label-lg text-label-lg px-space-lg py-2.5 rounded-xl shadow-md transition-all active:scale-[0.98]" href="#">
+<span>Open Trip Itinerary</span>
+<span class="material-symbols-outlined text-lg">calendar_month</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+<div class="lg:col-span-4 flex flex-col gap-space-md">
+<div class="bg-surface-container-low p-6 rounded-2xl shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-bold">Local Intel &amp; Forecast</span>
+<span class="material-symbols-outlined text-primary text-xl">wb_sunny</span>
+</div>
+<div class="flex items-center justify-between bg-surface p-4 rounded-xl shadow-sm">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-3xl text-tertiary-container">partly_cloudy_day</span>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-on-surface">21°C</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tokyo • Sunny &amp; Crisp</span>
+</div>
+</div>
+<div class="text-right flex flex-col font-label-sm text-label-sm text-secondary font-semibold">
+<span>Ideal for</span>
+<span class="font-bold">Al Fresco Yatai</span>
+</div>
+</div>
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-md text-label-md text-on-surface font-bold">Active Crew Roster</span>
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between p-2.5 rounded-lg bg-surface/70 hover:bg-surface transition-colors">
+<div class="flex items-center gap-2.5">
+<div class="relative">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Portrait of male traveler with beanie tasting matcha soft lighting Japanese minimalist aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjYcl4C-AQ7K65Pcn0S2egckFby2j1WNJGpDfvqhXEFBRQr_2JnCozjnbOLowIvDMaHrfAAFWsA5arn4giCg15LI2FqArf_uddKaK_EGS2pLtko7Lnx3-hD8n9BH55ZDg60uGnFxoEFTi8PG0hNGmyUv_-WY2CnsOM1Lmvy_DA0at901RJqe9Mp_DELJpJZWuS4a90HNUbgqtpDLPhPbZRiBdBDRRrBn2g7F5s0MFa4eNFV0ZY89Lm"/>
+<span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-secondary ring-2 ring-surface"></span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Elena Rostova</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Lead Curator • In Shibuya</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed">Host</span>
+</div>
+<div class="flex items-center justify-between p-2.5 rounded-lg bg-surface/70 hover:bg-surface transition-colors">
+<div class="flex items-center gap-2.5">
+<div class="relative">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Young bearded chef traveler holding a menu in foreign city candid natural portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzPx7as5YoOxdw9qLPwwTzgI952Xg2z1EY0v333C-f7-eI7ogKWgtbRVaPYZQK-jLRoR3P1KTXZTBroBfmYJRGLmcul9Dt4heV79f5uUC-OLCKx8iz1zyEkVLfQrgHF7XMPWbkqtOVFuKQMdoXcnc-41_TmYoVu0ByWDRT8eKNIfvesSraIx1GYyk0ljpuBxbyeDFAbKWjYqEOBpAWViKTqYpWU4ybamjGhN5eaIbxX9O4gFE7kp4k"/>
+<span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-secondary ring-2 ring-surface"></span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Marco Diaz</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Sommelier • Near Ginza</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-medium">Wine Czar</span>
+</div>
+<div class="flex items-center justify-between p-2.5 rounded-lg bg-surface/70 hover:bg-surface transition-colors">
+<div class="flex items-center gap-2.5">
+<div class="relative">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Smiling Japanese-American girl with camera walking along traditional wooden alleys in Kyoto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXI26GmCjPPqxFDZwvXlyLsrPnBDFXTzc-0-W78HdlrudbdcJTIgxtE6LRv9D_9veWmGs8gzc7fuMFu6gqA2QgK-vQ1IfkJAIWlvZmfo0N-z9h4aaQuBidpSX-xMgg-I8vF8AtuY2RxsYimmoWIsUcIg80TcSy5HIUp3CDdv7YWzXoO84nM3m6A5DLxAUG1bb1_F5A9nqYZj6r2lz0uL9auhiZkDBiceilYUpW9tIzeoIIvJ_3Dkg6"/>
+<span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-secondary ring-2 ring-surface"></span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Aoi Tanaka</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Navigator • Roppongi</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-medium">Local Voice</span>
+</div>
+</div>
+</div>
+<div class="bg-primary/5 p-4 rounded-xl flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-xl flex-shrink-0 mt-0.5">notifications_active</span>
+<div class="flex flex-col gap-1">
+<span class="font-label-md text-label-md text-primary font-bold">Consensus Alert</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">5/6 approved the late night yakitori detour at Omoide Yokocho. Auto-added to Day 3 itinerary.</p>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed">
+<span class="material-symbols-outlined text-xl">qr_code_scanner</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Table Pass &amp; Offline Cards</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">6 dietary allergy translated passes</span>
+</div>
+</div>
+<button class="p-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-space-md pt-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-2xl">flight</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Upcoming Journeys</h2>
+<span class="ml-2 font-label-sm text-label-sm px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-bold">2 in pipeline</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-full font-label-md text-label-md bg-primary text-on-primary shadow-sm">All Squads</button>
+<button class="px-3 py-1.5 rounded-full font-label-md text-label-md bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors">Voting Open</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-lg">
+<div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group">
+<div class="relative h-56 w-full overflow-hidden">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Traditional Mexican kitchen in Oaxaca with clay pots of black mole, clay copitas of artisanal smoky mezcal, dried chiles, warm earthy rustic lighting" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC7LHklxPwJ5y3bc5kIxHtQ5MO9g5-0odR1zqdvrscF2l6vgJz6-oHeUu57gCgY3QEy-AWnedyAzXHfJRi8NvPrPIXlKQE4jwfK78z5SbNFPp8Om_8Hgt897POC6kWO4Pm8uS3N3SS2_TmpDRzqpC-HIazFwXYI2vG8qhhW_KD6FcWyC-d0y-D6AuGJD23ECbX3ojsoxIThdsB-j-oAwfXhhhVsG5rhNjD1EauEIjZy0T-a1KkUBIOE')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/80 via-transparent to-transparent"></div>
+<div class="absolute top-4 left-4">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm px-3 py-1 rounded-full shadow-sm font-bold">
+                Planning Phase • Polls Active
+              </span>
+</div>
+<div class="absolute top-4 right-4 bg-surface/90 backdrop-blur-md px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1 text-on-surface font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-secondary text-sm">how_to_vote</span> 18 Votes Cast
+            </div>
+<div class="absolute bottom-4 left-4 right-4 text-white">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-tertiary-fixed font-bold">Oaxaca, Mexico</span>
+<h3 class="font-headline-md text-headline-md text-white drop-shadow-sm font-bold">Oaxaca Mezcal &amp; Mole Experience</h3>
+</div>
+</div>
+<div class="p-6 flex flex-col gap-space-md flex-1 justify-between">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-on-surface-variant font-label-md text-label-md">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-base">date_range</span> Nov 18 – Nov 26, 2024 (8 Days)
+                </span>
+<span class="font-bold text-primary">Target: $1,800/pp</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">Ancestral palenque farm stays, seven varieties of ceremonial mole, and indigenous coastal zapotec seafood.</p>
+</div>
+<div class="bg-surface-container-low p-3.5 rounded-xl flex flex-col gap-2">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-primary text-sm">thumb_up</span> Top Poll: Criollo vs. Alfonsina
+                </span>
+<span class="text-secondary font-bold">92% Criollo</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 92%"></div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-2">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2">
+<img class="w-7 h-7 rounded-full object-cover ring-2 ring-surface shadow-sm" data-alt="Portrait of food photographer traveler smiling in Mexican courtyard warm terracotta walls" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvCkFc0aWQ5W2E_e-yHZTfp_eQJv9HVpsO5snq356qr492OFES6_8ldmEc6DbVuIrj2YUeghVMNwtWo4ixd7VWrIC1hv4VNPHk1A1An3veaaOpNtpjsQTbKhdEuGqmPgVx5edCtqTPZNKIMyJYEWAGamFM7-b1WjQsWY2pmnmLCTnTLxfszAuM91RudorjG0CjX2ad85BoNDb0lUK6FOSBvLTbfaIuM3N8HHwSXj4MtLrKuYtA70YT"/>
+<img class="w-7 h-7 rounded-full object-cover ring-2 ring-surface shadow-sm" data-alt="Smiling female adventurer traveler wearing sunglasses holding taco outdoors in Mexico" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtR6NURRrRrLGmpvkXggkxj8_NL3yXdxPPV1t5fPxgKacW6NqSSk-Xcg6EtfNT0ZaJgisfnhT8y61QORfaV1_qhjBpyfbduro3CXo5fC7Sim0CS4E34rRE7gzA6PPgAXMrFOtE81y-YldqaT7NdNLLF3Ux8cbH7FqfLlcquDHGYwefOfJ8flUGC-gIBjRNUPxZmLf52Z-KcQW2IA5DexxDYskwSd_CUhF5gnhJJmIWc-4PcFC2bp6D"/>
+<img class="w-7 h-7 rounded-full object-cover ring-2 ring-surface shadow-sm" data-alt="Man dining with cocktail glass in artisanal mezcal lounge portrait warm ambiance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDrZ9EXFRK6Zfm34lh09_WpdtYGU2mKRMDjgUdOf2cz3KPJBJ74PMPh7i2oHWQnJk7KpP9qTsZou53TX6C8p5t6YByb9M-2iF5v1PFI63ggtrEkVN7YkiLGpxeHu-FqZZFRxZMfWT3HMsuWxaU_sJ36rKK6S09oDSHPMJdIVIF3HBV1QRXj5W_vqPwkUiRbUueyeFeTMXskDKd0u5hBz60rLxMuEqIoYYXxmCfRg4MMQPvm0nHvdU9"/>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">5 confirmed foodies</span>
+</div>
+<button class="inline-flex items-center gap-1 font-label-md text-label-md text-primary hover:text-primary-container font-bold px-3 py-1.5 bg-primary-fixed/40 hover:bg-primary-fixed/70 rounded-lg transition-colors">
+<span>Vote &amp; Curate</span>
+<span class="material-symbols-outlined text-base">how_to_vote</span>
+</button>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group">
+<div class="relative h-56 w-full overflow-hidden">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Charming coastal tavern bar in San Sebastian Spain loaded with pintxos appetizers skewers glasses of txakoli sparkling white wine rustic seaside ambiance" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBFnSkLHF9SSvUUKY6-thmyEqBaq5r_kiBV32gWRySjK0P5YUC0MXRKjaRbieOdPWWdJ_jGAzja1joVC2iiiN0f3KJPcQedv1-2t5UgesFEoPJwQjARUsODXfcKveKNZNq3lJWdsn-CrIkCJl6iWqbRptLcAMIlP3SWNy7SMHQX3Dz0vInm8NO3VS7mw1sHg7BKifKh0fQHUqA_yg-97Q7rYm8UnKtBZf8tWk1U-J9oMQjVeuZTiZsT')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/80 via-transparent to-transparent"></div>
+<div class="absolute top-4 left-4">
+<span class="bg-secondary text-on-secondary font-label-sm text-label-sm px-3 py-1 rounded-full shadow-sm font-bold">
+                Spring 2025 • Early Formation
+              </span>
+</div>
+<div class="absolute top-4 right-4 bg-surface/90 backdrop-blur-md px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1 text-on-surface font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-primary text-sm">schedule</span> 42 Days to Res Open
+            </div>
+<div class="absolute bottom-4 left-4 right-4 text-white">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary-fixed font-bold">Basque Country, Spain</span>
+<h3 class="font-headline-md text-headline-md text-white drop-shadow-sm font-bold">San Sebastián Pintxo Tour</h3>
+</div>
+</div>
+<div class="p-6 flex flex-col gap-space-md flex-1 justify-between">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-on-surface-variant font-label-md text-label-md">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-base">date_range</span> Apr 12 – Apr 19, 2025 (7 Days)
+                </span>
+<span class="font-bold text-primary">Target: $2,400/pp</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">Txakoli vineyard hikes, cider house steak feasts in Astigarraga, and Michelin 3-star dining pilgrimage.</p>
+</div>
+<div class="bg-surface-container-low p-3.5 rounded-xl flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-lg">hotel_class</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Asador Etxebarri Alert Set</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-bold">Auto-Snipe</span>
+</div>
+<div class="flex items-center justify-between pt-2">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2">
+<img class="w-7 h-7 rounded-full object-cover ring-2 ring-surface shadow-sm" data-alt="Portrait of young culinary enthusiast smiling with natural backdrop of European seaside city" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGdtkB8p3-Oii6JgFKWQW_vJ2N7O12Xjmn-GwaWbs2Ldm4GBnFdWYBv6klp7KPrLUJRaca8Gt1YjfJtizWqzpO6uYfwzsz_dS9x52x9GfOzGRbplDNj16PgMLbtOGCoXdEDqaIgYQihIZ0g7ESQkuEzELTaTsIltY80qrdVxJCLjlbHme2zMQ2X5lJytQNBDWQL6KOotiKPlfYLvXgAU7UjycVaUFdVwYE1-wq6VAy2f7BC3jg98WW"/>
+<img class="w-7 h-7 rounded-full object-cover ring-2 ring-surface shadow-sm" data-alt="Face of traveler enjoying cider outdoors in Spanish Basque town natural warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMBNi5XpdcBEwlq7Vvb13Qyd4YlY41Vy_LjNBwi1jbxvtWEzPhoYGlrlEYJ-TLRwEvY7WlRTKmwCR6QKZeqAMyf8cR2QOxTA_YlHfOq6Rn_uJPKQycpddb0xWpkHs8bV71vz50RQXqcxOxRdGoW9hR1tMms0yVO8PWaELZDlbc9m6I-ISt17FPe4XYI9pyKwpaSvT2bwXlg3wobO8LvqJY3iswejdAGgGCcTlGnOTuaV9kctzbNrAe"/>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">4 slots available</span>
+</div>
+<button class="inline-flex items-center gap-1 font-label-md text-label-md text-secondary hover:text-secondary/80 font-bold px-3 py-1.5 bg-secondary-fixed/50 hover:bg-secondary-fixed rounded-lg transition-colors">
+<span>Join Expedition</span>
+<span class="material-symbols-outlined text-base">person_add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-space-md pt-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-on-surface-variant text-2xl">auto_stories</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Past Flavor Escapes</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant ml-2">Shared scrapbooks &amp; taste logs</span>
+</div>
+<a class="font-label-md text-label-md text-primary hover:underline flex items-center gap-1" href="#">
+<span>View all 14 completed</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col gap-3 group">
+<div class="relative h-40 w-full rounded-lg overflow-hidden">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Bangkok vibrant night market bustling with woks fire pad thai street food vendors under glowing festive street lights" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD2u0Gmm8C7i-1NAoqNDiOo303YiydFtk3pvlj0IZulcctxGr7ERZRa09GHqLRRTwoIpDHYyFDmG_ygY20xieEe76kG43SrN-_OeoCX3kFUOSgZodhh7liDT4g-VfSNyelovP9HgLXTc7rf1fDdKAmCealONJnS37uJjq43hRs-jzk7quSeKzMjouVMTIwyEbWxBLgq06RcOzrgR2aQOF6hiz2Uj6scB7ZX-1s31ORiTI7fna7OAOBt')"></div>
+<span class="absolute bottom-2 left-2 bg-on-surface/80 text-white font-label-sm text-label-sm px-2 py-0.5 rounded backdrop-blur-sm">Feb 2024</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<h4 class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">Bangkok Street Night Crawls</h4>
+<span class="flex items-center text-tertiary text-xs font-bold gap-0.5">
+<span class="material-symbols-outlined text-xs">star</span> 4.9
+              </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">42 street carts sampled • 6 travelers • $940 spent total</p>
+</div>
+<div class="flex items-center justify-between pt-1 font-label-sm text-label-sm text-on-surface-variant border-t-0">
+<span class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-sm">photo_library</span> 342 photos
+            </span>
+<span class="hover:text-primary cursor-pointer font-bold">Relive Route →</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col gap-3 group">
+<div class="relative h-40 w-full rounded-lg overflow-hidden">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Rustic Italian trattoria in Bologna with handmade tagliatelle al ragu, wheels of Parmigiano Reggiano cheese, and carafes of red wine on checked cloth" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAq6A6Kh6wEfVcKHaaUmdaYa5VZ6o1NrGumVDgR63_XJ5r67P_bdJxju76DUQQC0XqIfe8yX9sj8w5X7RLST0-mMQvBJtpdshW5hlr6uL91V0h-9Io1iOC7gC7YW9KlkbsE1ajLSknCIkd0c-f9zno53nNZBz6nb5z7Q1BbTcFt9tgk_ZMMm4EyFQVScSS1MnFxVklzoM8PET_n4hmJu9k5i_DDb7_NxK2Z-6r0weGgQJUqKYWEFsYk')"></div>
+<span class="absolute bottom-2 left-2 bg-on-surface/80 text-white font-label-sm text-label-sm px-2 py-0.5 rounded backdrop-blur-sm">Oct 2023</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<h4 class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">Bologna &amp; Emilia-Romagna Feast</h4>
+<span class="flex items-center text-tertiary text-xs font-bold gap-0.5">
+<span class="material-symbols-outlined text-xs">star</span> 5.0
+              </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Handmade pasta masterclass • Balsamic vinegar aging cellars</p>
+</div>
+<div class="flex items-center justify-between pt-1 font-label-sm text-label-sm text-on-surface-variant border-t-0">
+<span class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-sm">photo_library</span> 518 photos
+            </span>
+<span class="hover:text-primary cursor-pointer font-bold">Relive Route →</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col gap-3 group">
+<div class="relative h-40 w-full rounded-lg overflow-hidden">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Taipei Raohe night market with steaming bamboo baskets of soup dumplings xiao long bao and grilled scallion buns with neon signage in background" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA1aDS06JrnWDVAg97j1ccc60tVmMV0k_B_UFjT-elz5PmkBOKxityjrge0AfmRy_aIeXfltlqpl7cmPh7L6ewnL8WaaeRQJ4nca1_Hl9TCQCz-mwv_vbZV2LYGu96lKdRzfa_7U590VKTcvKqCFrOsqCvcfTeuzKKwEIEVZ4Tgr-ETGveQ086XKf3HMBHGFbUAjR61H8AaDJ30JoSIUGkCaQgv9PU1sAqpkQ8VP39F3iQW4tPAOm3L')"></div>
+<span class="absolute bottom-2 left-2 bg-on-surface/80 text-white font-label-sm text-label-sm px-2 py-0.5 rounded backdrop-blur-sm">May 2023</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<h4 class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">Taipei Xiao Long Bao Pilgrimage</h4>
+<span class="flex items-center text-tertiary text-xs font-bold gap-0.5">
+<span class="material-symbols-outlined text-xs">star</span> 4.8
+              </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Bao crawl championship • Oolong tea hills of Maokong</p>
+</div>
+<div class="flex items-center justify-between pt-1 font-label-sm text-label-sm text-on-surface-variant border-t-0">
+<span class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-sm">photo_library</span> 290 photos
+            </span>
+<span class="hover:text-primary cursor-pointer font-bold">Relive Route →</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div></main><footer class="w-full bg-surface-container-low py-space-xl mt-space-xl"><div class="max-w-7xl mx-auto px-margin md:px-margin-desktop flex flex-col md:flex-row items-center justify-between gap-space-md"><div class="flex items-center gap-space-sm"><img alt="Brand logo. - Primary color: #e85a34
+- Font: plusJakartaSans
+- Mode: light
+- Roundness: rounded-md
+" class="h-6 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1U0Aa9SjXiLldZgIfGnH9moXkxyn6Hm6frbK4F_ks0eRJhCp96dq7grju5VGsyY90r4eC0wEtmgZ0SFuvleI_frEzBbBzADb_m3mWxCImchoHErJFRksSzO_AFrQFbw3xnQ-qoBcnQ41CPUGynJU3KgJt5jglfnay3fS9mnA5gdKVDk8inXl8A3fhfHSUjemSpS8tOZxfs7X8ZYrFil2Bf8jjLny-SsIeTHQBoAFoV8Qax-8H6pz41lrA"/><span class="font-headline-sm text-headline-sm text-on-surface">WanderBite</span><span class="font-body-sm text-body-sm text-on-surface-variant ml-space-sm">Collaborative food itineraries &amp; group explorations</span></div><div class="flex items-center gap-space-lg text-on-surface-variant font-label-md text-label-md"><a class="hover:text-primary transition-colors" href="#">Group Guidelines</a><a class="hover:text-primary transition-colors" href="#">Dietary Curations</a><a class="hover:text-primary transition-colors" href="#">Split Expense Helper</a><span class="font-body-sm text-body-sm text-on-surface-variant">© 2024 WanderBite</span></div></div></footer></body></html>

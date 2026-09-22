@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><title>WanderBite</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: 'class', theme: { extend: { colors: { 'error-container': '#ffdad6', 'tertiary': '#795600', 'primary-container': '#cd4722', 'primary-fixed-dim': '#ffb4a1', 'surface-tint': '#ae310d', 'on-primary-fixed-variant': '#881f00', 'background': '#fcf9f4', 'primary-fixed': '#ffdbd2', 'outline': '#8d7169', 'on-primary-container': '#fffbff', 'surface-container-lowest': '#ffffff', 'outline-variant': '#e1bfb7', 'surface-dim': '#dcdad5', 'secondary': '#3a674f', 'surface-bright': '#fcf9f4', 'on-secondary-fixed-variant': '#224f39', 'surface-container-low': '#f6f3ee', 'on-surface': '#1c1c19', 'on-background': '#1c1c19', 'tertiary-container': '#986d00', 'surface-container-high': '#ebe8e3', 'on-tertiary-fixed-variant': '#5e4200', 'on-error': '#ffffff', 'on-tertiary': '#ffffff', 'on-error-container': '#93000a', 'tertiary-fixed-dim': '#ffba20', 'on-secondary': '#ffffff', 'error': '#ba1a1a', 'on-secondary-container': '#406d55', 'on-secondary-fixed': '#002112', 'secondary-fixed-dim': '#a1d1b4', 'on-primary': '#ffffff', 'primary': '#ab2f0a', 'inverse-primary': '#ffb4a1', 'tertiary-fixed': '#ffdea8', 'surface-container': '#f0ede9', 'surface-variant': '#e5e2dd', 'on-tertiary-container': '#fffbff', 'inverse-surface': '#31302d', 'surface': '#fcf9f4', 'surface-container-highest': '#e5e2dd', 'on-primary-fixed': '#3c0800', 'inverse-on-surface': '#f3f0eb', 'secondary-container': '#bceecf', 'on-surface-variant': '#59413b', 'on-tertiary-fixed': '#271900', 'secondary-fixed': '#bceecf' }, borderRadius: { 'DEFAULT': '0.25rem', 'lg': '0.5rem', 'xl': '0.75rem', 'full': '9999px' }, spacing: { 'gutter': '1rem', 'space-xs': '0.25rem', 'margin': '1rem', 'space-xl': '2.5rem', 'space-lg': '1.5rem', 'space-md': '1rem', 'margin-desktop': '2.5rem', 'space-sm': '0.5rem', 'gutter-desktop': '1.5rem' }, fontFamily: { 'label-lg': ['Plus Jakarta Sans'], 'body-sm': ['Plus Jakarta Sans'], 'body-md': ['Plus Jakarta Sans'], 'headline-sm': ['Plus Jakarta Sans'], 'body-lg': ['Plus Jakarta Sans'], 'headline-xl': ['Plus Jakarta Sans'], 'label-md': ['Plus Jakarta Sans'], 'label-sm': ['Plus Jakarta Sans'], 'headline-md': ['Plus Jakarta Sans'], 'headline-lg-mobile': ['Plus Jakarta Sans'], 'headline-lg': ['Plus Jakarta Sans'], 'headline-xl-mobile': ['Plus Jakarta Sans'] }, fontSize: { 'label-lg': ['14px', { lineHeight: '18px', fontWeight: '700' }], 'body-sm': ['12px', { lineHeight: '18px', fontWeight: '400' }], 'body-md': ['14px', { lineHeight: '22px', fontWeight: '400' }], 'headline-sm': ['18px', { lineHeight: '24px', fontWeight: '700' }], 'body-lg': ['16px', { lineHeight: '26px', fontWeight: '500' }], 'headline-xl': ['40px', { lineHeight: '48px', fontWeight: '800' }], 'label-md': ['12px', { lineHeight: '16px', fontWeight: '600' }], 'label-sm': ['11px', { lineHeight: '14px', fontWeight: '700' }], 'headline-md': ['22px', { lineHeight: '28px', fontWeight: '700' }], 'headline-lg-mobile': ['24px', { lineHeight: '32px', fontWeight: '700' }], 'headline-lg': ['32px', { lineHeight: '40px', fontWeight: '700' }], 'headline-xl-mobile': ['30px', { lineHeight: '38px', fontWeight: '800' }] } } } }</script><style>@layer base { html, body { width: 100vw; margin: 0; padding: 0; } body { overscroll-behavior-y: none; } .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); } .pt-safe { padding-top: env(safe-area-inset-top, 0px); } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style></head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl shadow-[0_2px_12px_rgba(78,42,29,0.05)] pt-safe"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="WanderBite Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1U0Aa9SjXiLldZgIfGnH9moXkxyn6Hm6frbK4F_ks0eRJhCp96dq7grju5VGsyY90r4eC0wEtmgZ0SFuvleI_frEzBbBzADb_m3mWxCImchoHErJFRksSzO_AFrQFbw3xnQ-qoBcnQ41CPUGynJU3KgJt5jglfnay3fS9mnA5gdKVDk8inXl8A3fhfHSUjemSpS8tOZxfs7X8ZYrFil2Bf8jjLny-SsIeTHQBoAFoV8Qax-8H6pz41lrA"/><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight">WanderBite</span></div><div class="flex items-center gap-space-sm"><div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-fixed-variant"><span class="material-symbols-outlined text-[16px]">group</span><span class="font-label-sm text-label-sm">Tokyo Crew (5)</span></div><a class="min-h-[44px] min-w-[44px] flex items-center justify-center" data-path="profile-settings" href="#"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTaFOS2yNxqbRKMa5h5rvRtbAkowGcP4Wb3ZCb7_XG-z7aovMtx2w4ymnzC34ggFGaCO5lxG0C9LMTdWe_CYqIAJNEFgzQJpf_La4URo7h275dCqqRZu9QpDerbW0tX-MGFlfWlfNjz9oMyeQGcF-5EHesJIbcCjskwgMAmmRCkJ6WZR0J7OHaeYnHN2JPCHVIJFwxXMGmcyhVUYQFw2ior96tGcuN3IRYmIckT6RgL5gtqoFIWU-U"/></a></div></div></header><main class="flex flex-col relative w-full pt-16 pb-20 bg-surface min-h-screen"><div class="flex flex-col w-full pb-10">
+<!-- Group Switcher & Invite Header Bar -->
+<section class="px-gutter pt-space-md pb-space-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between gap-space-sm">
+<!-- Active Squad Pill Button -->
+<button class="flex items-center gap-space-xs bg-surface-container-high px-space-md py-2 rounded-full shadow-sm active:scale-95 transition-all text-left" id="groupDropdownBtn" type="button">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary animate-pulse"></span>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface flex items-center gap-1">
+            The Ramen Chasers
+            <span class="material-symbols-outlined text-[18px] text-on-surface-variant">expand_more</span>
+</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">6 foodies active</span>
+</div>
+</button>
+<!-- Invite Code Pill with Copy Delight -->
+<button class="relative flex items-center gap-1.5 bg-primary-fixed text-on-primary-fixed px-3 py-2 rounded-full shadow-sm active:scale-95 transition-transform" id="copyInviteBtn" title="Tap to copy invite code" type="button">
+<span class="material-symbols-outlined text-[16px] text-primary">key</span>
+<span class="font-label-sm text-label-sm tracking-wider">RAMEN24</span>
+<span class="material-symbols-outlined text-[16px] text-primary">content_copy</span>
+<span class="absolute -top-7 right-0 bg-inverse-surface text-inverse-on-surface font-label-sm text-label-sm px-2 py-0.5 rounded shadow opacity-0 pointer-events-none transition-opacity duration-200" id="copiedTooltip">Copied!</span>
+</button>
+</div>
+<!-- Switch Group Quick Peek Drawer (Toggleable) -->
+<div class="hidden flex-col gap-2 p-3 bg-surface-container rounded-xl shadow-md transition-all" id="groupDrawer">
+<div class="flex items-center justify-between pb-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Your Travel Squads</span>
+<span class="font-label-sm text-label-sm text-primary cursor-pointer">+ New Group</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded-lg bg-surface-container-lowest">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-label-md text-label-md text-on-surface">The Ramen Chasers (6)</span>
+</div>
+<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded-lg bg-surface-container-low hover:bg-surface-container-lowest cursor-pointer transition-colors">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-outline-variant"></span>
+<span class="font-body-md text-body-md text-on-surface-variant">Oaxaca Mezcaleros (4)</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Nov 2024</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded-lg bg-surface-container-low hover:bg-surface-container-lowest cursor-pointer transition-colors">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-outline-variant"></span>
+<span class="font-body-md text-body-md text-on-surface-variant">Basque Country Crew (5)</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Spring 2025</span>
+</div>
+</div>
+</section>
+<!-- Today's Up-Next Floating Live Alert -->
+<section class="px-gutter my-space-xs">
+<div class="bg-secondary-container text-on-secondary-fixed-variant rounded-xl p-3 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center text-secondary shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">ramen_dining</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
+<span class="font-label-sm text-label-sm uppercase tracking-wide text-secondary">Next Tasting • 12:30 PM</span>
+</div>
+<p class="font-label-lg text-label-lg truncate text-on-surface">Tsukiji Outer Market Tasting Tour</p>
+</div>
+</div>
+<a aria-label="View Tsukiji itinerary" class="flex items-center justify-center w-8 h-8 rounded-full bg-surface-container-lowest text-secondary shrink-0 ml-2 shadow-sm active:scale-95 transition-transform" data-path="itinerary" href="#">
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</a>
+</div>
+</section>
+<!-- Ongoing Highlighted Trip Hero Card -->
+<section class="px-gutter mt-space-sm flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant tracking-wider uppercase">Active Journey</span>
+<span class="flex items-center gap-1 font-label-sm text-label-sm text-primary">
+<span class="material-symbols-outlined text-[14px]">sensors</span> Live Sync
+      </span>
+</div>
+<div class="relative bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(78,42,29,0.08)] overflow-hidden flex flex-col">
+<!-- Media Cover with Badges -->
+<div class="relative w-full h-48 overflow-hidden bg-surface-container">
+<img alt="Tokyo Food Odyssey" class="w-full h-full object-cover" data-alt="Steaming fresh artisanal tonkotsu ramen bowl with glistening chashu pork, bright scallions, seasoned egg, and bamboo shoots placed on a warm wooden dining bar in Tokyo at golden hour with neon reflections and natural ambient warmth." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPXqaWz52jhR1XNtaUqS4-9EbZfPWFSW2O4H7pt2inMSho56Q7zDvsPTe6s0fAUq6xLnqaZfHzubFoPYcxSGlx0OeMUnX_zr3BQV7NaontvJRQMFJY_mungZSZKFNRVemzrX4XqeE7NcbW0Ei_RsPadj4vyW4GVJ72rl3kYh4jLG9IjHigJQtUD5IMT88bdPm6eH2TjgpyqRdXx9TGy8dG-Bi2InuXOSBLpwRJp0U2BVLSj3DllSoB"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent"></div>
+<!-- Live Status Pill -->
+<div class="absolute top-3 left-3 flex items-center gap-1.5 bg-primary text-on-primary px-3 py-1 rounded-full shadow-md">
+<span class="material-symbols-outlined text-[14px] animate-spin">timelapse</span>
+<span class="font-label-sm text-label-sm">Ongoing • Day 3 of 10</span>
+</div>
+<!-- Destination & Dates Anchor Over Image Bottom -->
+<div class="absolute bottom-3 left-3 right-3 text-on-primary-container">
+<div class="flex items-center gap-1.5 text-primary-fixed-dim text-xs font-label-md drop-shadow">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span>Tokyo &amp; Kyoto, Japan</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-white tracking-tight drop-shadow-md">Tokyo &amp; Kyoto Food Odyssey</h2>
+</div>
+</div>
+<!-- Card Body Content -->
+<div class="p-space-md flex flex-col gap-space-md">
+<!-- Date Tagline & Countdown -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[18px] text-primary">calendar_today</span>
+<span>Oct 14 – Oct 24 • 10 Days</span>
+</div>
+<span class="bg-surface-container-high text-on-surface font-label-sm text-label-sm px-2.5 py-1 rounded-full">
+            7 Days Remaining
+          </span>
+</div>
+<!-- Budget Gauge Bento Slice -->
+<div class="bg-surface-container-low rounded-lg p-3 flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-tertiary">payments</span>
+              Squad Food Kitty
+            </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">
+<strong class="font-label-lg text-label-lg text-primary">$2,450</strong> / $3,200 spent
+            </span>
+</div>
+<!-- Gauge Progress Bar -->
+<div class="w-full h-2.5 bg-surface-container-highest rounded-full overflow-hidden flex">
+<div class="h-full bg-primary rounded-full transition-all duration-500" style="width: 76.5%;"></div>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant font-label-sm text-label-sm pt-0.5">
+<span>76% budget utilized</span>
+<span class="text-secondary font-label-md text-label-md">$750 remaining</span>
+</div>
+</div>
+<!-- Crew Avatars & Collaborative Fork-Vote Badge -->
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center">
+<div class="flex -space-x-2 overflow-hidden items-center">
+<img alt="Emi" class="inline-block h-8 w-8 rounded-full object-cover shadow-sm ring-2 ring-surface-container-lowest" data-alt="Close up warm profile portrait of a smiling young Asian woman traveler tasting matcha ice cream outdoors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAE8js7iUTwUgWLjo4YPwkUeJjt_jAIC9Gal6mMl_BCsKjgEdtazzicM9-MKRJOvmanG4X5d0-GrJvHz7J1HPDekrXrjjba5hh8KQKIisvnWSd4hReTsw6bVunT2wDcLbLLQ-9FuQUrJmk8KBc_nhEOfV9LABXQyrcAVW25Fm4bIkgMfXeviuSpqODKQXrn_tIuOS-tp1QrZ81dYBlA9XWV3Es3pDzUGCBOR9zr-aiJ7YVCk2i0n1ZR"/>
+<img alt="Marcus" class="inline-block h-8 w-8 rounded-full object-cover shadow-sm ring-2 ring-surface-container-lowest" data-alt="Candid outdoor portrait of a young man with glasses holding a camera in a sunlit Japanese alley." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7bRBV3cHVPzKekGy70BVdU1YYn0GIklY0xLyeYzMGU1rwvS1fh02Ulwv8M8q1ZHIfQRpz2t2SoQdf_VlTD2RMQVTCwLT4gVYaqpQE2LxuMYXd3MLGyNpCBYEXIXe7obL0LqjAvFq8-6v2sl_-FQVxrjjHsvcE85qUzcjMyLxv85919PcZaMVIJ_qTzPc4PwIKKWGTndk1_KLlkIxg17erKNB_s67byF732rRxSRNvNO_iX8ZRjePe"/>
+<img alt="Chloe" class="inline-block h-8 w-8 rounded-full object-cover shadow-sm ring-2 ring-surface-container-lowest" data-alt="Portrait of a laughing woman wearing a linen hat eating street skewers under lanterns." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwv-qXqgIPFFdJIO-mVh4ngaY_61J_CSCLMNKjOBlatZ8tnp4F2_LfC-ngZStG-BhR1ZJ_F51lU7wSDnPGz8WeK4_NsBHFCdGgSIksinJdZOenrlJylA8sXjSbhUh0XOSzfJig6d7xIBFAWvdi-3N2p61N-2rnFtNjkWelPyhhBj0LJVdD0aJznVkNiQf7sp8eD0Kuh_BE2q4G9zQsl7rWXT-2EI6jerYKqTYP5m1snkwscqmH-ZDM"/>
+<img alt="Kenji" class="inline-block h-8 w-8 rounded-full object-cover shadow-sm ring-2 ring-surface-container-lowest" data-alt="Portrait of a cheerful guy wearing a casual beanie drinking bubble tea in Shibuya." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpwaf0aKvDib0o2K1UTZx3q0SSBg0TBKTehrlJ2EElvHQw1xpKzpesNVN-Zs1QEwYm66qS16MGuy6xPUxP3cWXJxSp8PBKhInBnC4Rq3uAx0KmQ443jA3heeXLZVWTXQvkIsmeDUJls9CRvdNKTQZ5tgaJkbBvt9fFBVFCC1s_mWTHheKJg5RHd4g17wJnaCq_UFUUhQedJ92GYNXAjTVSFMCHLNpZwsa9VA0SXDMZmT1Ic2eKx-sA"/>
+<div class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm shadow-sm">
+                +2
+              </div>
+</div>
+<span class="ml-3 font-body-sm text-body-sm text-on-surface-variant">6 foodies dining</span>
+</div>
+<!-- Action CTA -->
+<a class="bg-primary text-on-primary font-label-md text-label-md px-4 py-2 rounded-full shadow-sm active:scale-95 transition-transform flex items-center gap-1" data-path="itinerary" href="#">
+<span>Open Trip</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</a>
+</div>
+</div>
+</div>
+</section>
+<!-- Upcoming Trips Section -->
+<section class="px-gutter mt-space-lg flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Upcoming Journeys</h3>
+<span class="font-label-sm text-label-sm text-primary font-bold">2 in queue</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<!-- Trip 1: Oaxaca Mezcal & Mole -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm active:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex gap-space-md">
+<!-- Thumbnail Visual -->
+<div class="relative w-24 h-24 rounded-lg overflow-hidden shrink-0 bg-surface-container">
+<img alt="Oaxaca Mole" class="w-full h-full object-cover" data-alt="Artisanal clay copitas filled with craft mezcal alongside richly spiced dark mole negro on handmade corn tortillas under warm patio sunlight in Oaxaca." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPArmORx0qHUSmM6m3CHfn8qZd9XoAXJj2I-Aqxh4_MonGcKKXBRRR4z478fxzlePxo9fWAxSPg38UbnqZQ78oMBMtd1CJAOAocw3XZajiSN7zBJPX6dmKkdEaGWYJ8LLU8igpzk2llL1hcp-CA6tTLd0-3f79AyUsgUQSqWdqhDakFpF4SmV5Nz40YNYpwCFf_8r_fPaGfrR9GptH2J5-VkDqnDHxCUvUe6_on9HIn2MHlOytX_nk"/>
+<div class="absolute top-1 left-1 bg-tertiary-container text-on-tertiary-container px-1.5 py-0.5 rounded font-label-sm text-[10px]">
+              Nov 18
+            </div>
+</div>
+<!-- Trip Details -->
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="bg-secondary-container text-on-secondary-fixed-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full">
+                  Planning Stage
+                </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">• 8 Days</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface truncate">Oaxaca Mezcal &amp; Mole Trail</h4>
+</div>
+<!-- Tags & Budget stats -->
+<div class="flex flex-wrap items-center gap-1.5 mt-1">
+<span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-tertiary">local_bar</span>
+                Street Food &amp; Spirits
+              </span>
+<span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full">
+                $1,800 target
+              </span>
+</div>
+</div>
+</div>
+<!-- Participant and voting summary bar -->
+<div class="flex items-center justify-between pt-2">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-1.5 overflow-hidden">
+<span class="inline-block h-6 w-6 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[11px] font-bold flex items-center justify-center ring-2 ring-surface-container-lowest">SM</span>
+<span class="inline-block h-6 w-6 rounded-full bg-primary-fixed text-on-primary-fixed text-[11px] font-bold flex items-center justify-center ring-2 ring-surface-container-lowest">TJ</span>
+<span class="inline-block h-6 w-6 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-[11px] font-bold flex items-center justify-center ring-2 ring-surface-container-lowest">+2</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">4 friends polled</span>
+</div>
+<button class="font-label-sm text-label-sm text-primary flex items-center gap-0.5 hover:underline" type="button">
+<span>Vote Dishes</span>
+<span class="material-symbols-outlined text-[16px]">how_to_vote</span>
+</button>
+</div>
+</div>
+<!-- Trip 2: San Sebastián Pintxo Tour -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm active:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex gap-space-md">
+<!-- Thumbnail Visual -->
+<div class="relative w-24 h-24 rounded-lg overflow-hidden shrink-0 bg-surface-container">
+<img alt="San Sebastian Pintxos" class="w-full h-full object-cover" data-alt="Colorful Spanish pintxos displayed in an elegant Basque bar counter in San Sebastian with gilda skewers, crispy croquetas, and glasses of sparkling txakoli wine." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPk41oWEWU_akQ1sBGXVax7sbIjRbSMCv_2onJW-RLnDuSVZo17v3A6tUAYcR5SBEHsJN5TPZZ2zDLaP3m5avqTueXiWPnLRhdN1dqjEGLcfM6BRzAl1YnhVY-8qvqzrPBhqKxL0TkkUbu4cW_zHfjidr68S26FRiSdW5SyHhXEvAFgUamq-0LDkZdOAV-xnirp8jz08qPtc4X_bnzqH8HyBUs89q9MQtQvZOTKO-Zx-qWLgGeBb9c"/>
+<div class="absolute top-1 left-1 bg-surface-container-highest text-on-surface px-1.5 py-0.5 rounded font-label-sm text-[10px]">
+              Apr 2025
+            </div>
+</div>
+<!-- Trip Details -->
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full">
+                  Upcoming
+                </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">• Spring 2025</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface truncate">San Sebastián Pintxo Tour</h4>
+</div>
+<!-- Tags & Budget stats -->
+<div class="flex flex-wrap items-center gap-1.5 mt-1">
+<span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-primary">star</span>
+                Michelin &amp; Bars
+              </span>
+<span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full">
+                5 friends
+              </span>
+</div>
+</div>
+</div>
+<!-- Participant and reservation reminder bar -->
+<div class="flex items-center justify-between pt-2">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-tertiary">restaurant_menu</span>
+<span>Reservations open in 42 days</span>
+</div>
+<button class="font-label-sm text-label-sm text-secondary flex items-center gap-0.5 hover:underline" type="button">
+<span>Wishlist (14)</span>
+<span class="material-symbols-outlined text-[16px]">bookmark_added</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Group Planning Delight Banner / Past Trips Shortcut -->
+<section class="px-gutter mt-space-lg mb-space-xl">
+<div class="bg-gradient-to-r from-surface-container to-surface-container-high rounded-xl p-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">archive</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface">Past Flavor Escapes</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Relive Bangkok, Bologna &amp; Taipei</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">arrow_forward_ios</span>
+</div>
+</section>
+<!-- Sticky Bottom Quick Floating Action Button for New Trip -->
+<div class="fixed bottom-20 right-4 z-40">
+<button class="bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg px-5 py-3.5 rounded-full shadow-[0_6px_20px_rgba(171,47,10,0.35)] flex items-center gap-2 active:scale-95 transition-all" id="planNewTripBtn" type="button">
+<span class="material-symbols-outlined text-[22px]">add</span>
+<span>Plan New Trip</span>
+</button>
+</div>
+</div>
+<script>
+  // Simple Micro-interactions: Drawer Toggle & Copy Code Delight
+  (function() {
+    const dropdownBtn = document.getElementById('groupDropdownBtn');
+    const drawer = document.getElementById('groupDrawer');
+    const copyBtn = document.getElementById('copyInviteBtn');
+    const tooltip = document.getElementById('copiedTooltip');
+    const planTripBtn = document.getElementById('planNewTripBtn');
+
+    if (dropdownBtn && drawer) {
+      dropdownBtn.addEventListener('click', () => {
+        const isHidden = drawer.classList.contains('hidden');
+        if (isHidden) {
+          drawer.classList.remove('hidden');
+          drawer.classList.add('flex');
+        } else {
+          drawer.classList.add('hidden');
+          drawer.classList.remove('flex');
+        }
+      });
+    }
+
+    if (copyBtn && tooltip) {
+      copyBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        tooltip.classList.remove('opacity-0');
+        tooltip.classList.add('opacity-100');
+        
+        // Mock clipboard write
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText('RAMEN24').catch(() => {});
+        }
+
+        setTimeout(() => {
+          tooltip.classList.remove('opacity-100');
+          tooltip.classList.add('opacity-0');
+        }, 1600);
+      });
+    }
+
+    if (planTripBtn) {
+      planTripBtn.addEventListener('click', () => {
+        // Subtle haptic ripple indicator
+        planTripBtn.classList.add('scale-90');
+        setTimeout(() => {
+          planTripBtn.classList.remove('scale-90');
+        }, 120);
+      });
+    }
+  })();
+</script></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_16px_rgba(78,42,29,0.06)]" data-active-classes="text-primary font-label-md"><div class="h-16 px-gutter flex items-center justify-around"><a aria-current="page" class="min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 transition-colors text-primary font-label-md" data-path="trips" href="#"><span class="material-symbols-outlined text-[24px]">explore</span><span class="font-label-sm text-label-sm">Trips</span></a><a class="min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 text-on-surface-variant transition-colors" data-path="itinerary" href="#"><span class="material-symbols-outlined text-[24px]">calendar_month</span><span class="font-label-sm text-label-sm">Itinerary</span></a><a class="min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 text-on-surface-variant transition-colors" data-path="food" href="#"><span class="material-symbols-outlined text-[24px]">restaurant</span><span class="font-label-sm text-label-sm">Food</span></a><a class="min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 text-on-surface-variant transition-colors" data-path="logistics" href="#"><span class="material-symbols-outlined text-[24px]">flight</span><span class="font-label-sm text-label-sm">Logistics</span></a></div></nav></body></html>
