@@ -1,12 +1,34 @@
 <!-- WanderBite Top Header -->
 <header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl shadow-[0_2px_12px_rgba(78,42,29,0.05)]">
-  <div class="h-16 px-gutter flex items-center justify-between">
+  <div class="h-16 px-gutter flex items-center justify-between gap-space-md">
     <!-- Logo -->
-    <a routerLink="/trips" class="flex items-center gap-space-sm no-underline">
+    <a routerLink="/trips" class="flex items-center gap-space-sm no-underline shrink-0">
       <span class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Wander<span class="text-primary">Bite</span></span>
     </a>
 
-    <!-- Group Pill + User -->
+    <!-- Desktop Nav Links -->
+    @if (authService.isAuthenticated()) {
+      <nav class="hidden md:flex items-center gap-1">
+        <a routerLink="/trips" routerLinkActive="desktop-nav-active" [routerLinkActiveOptions]="{exact: false}" class="desktop-nav-link no-underline">
+          <span class="material-symbols-outlined text-[18px]">luggage</span>
+          Viaggi
+        </a>
+        <a routerLink="/groups" routerLinkActive="desktop-nav-active" class="desktop-nav-link no-underline">
+          <span class="material-symbols-outlined text-[18px]">group</span>
+          Gruppi
+        </a>
+        <a routerLink="/dashboard" routerLinkActive="desktop-nav-active" class="desktop-nav-link no-underline">
+          <span class="material-symbols-outlined text-[18px]">bar_chart</span>
+          Stats
+        </a>
+        <a routerLink="/profile" routerLinkActive="desktop-nav-active" class="desktop-nav-link no-underline">
+          <span class="material-symbols-outlined text-[18px]">person</span>
+          Profilo
+        </a>
+      </nav>
+    }
+
+    <!-- Right: Group Pill + New Trip + User -->
     @if (authService.isAuthenticated()) {
       <div class="flex items-center gap-space-sm">
         <!-- Active Group Pill -->
@@ -17,10 +39,16 @@
             (click)="toggleGroupMenu($event)"
             [attr.aria-expanded]="isGroupMenuOpen()">
             <span class="material-symbols-outlined text-[16px]">group</span>
-            <span>{{ activeGroup.name }} ({{ activeGroup.members.length }})</span>
+            <span class="hidden sm:inline">{{ activeGroup.name }} ({{ activeGroup.members.length }})</span>
             <span class="material-symbols-outlined text-[14px]">expand_more</span>
           </button>
         }
+
+        <!-- New Trip button (desktop only) -->
+        <a routerLink="/trips/new" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-on-primary font-label-md text-label-md no-underline transition-all active:scale-95">
+          <span class="material-symbols-outlined text-[16px]">add</span>
+          Nuovo
+        </a>
 
         <!-- User Avatar -->
         <button
@@ -104,9 +132,9 @@
   }
 </header>
 
-<!-- Mobile Bottom Navigation -->
+<!-- Mobile Bottom Navigation (hidden on desktop) -->
 @if (authService.isAuthenticated()) {
-  <nav class="fixed bottom-0 inset-x-0 z-50 bg-surface/95 backdrop-blur-xl border-t border-outline-variant/30 pb-safe shadow-[0_-4px_20px_rgba(78,42,29,0.06)]">
+  <nav class="md:hidden fixed bottom-0 inset-x-0 z-50 bg-surface/95 backdrop-blur-xl border-t border-outline-variant/30 pb-safe shadow-[0_-4px_20px_rgba(78,42,29,0.06)]">
     <div class="flex items-stretch h-16">
       <a routerLink="/trips" routerLinkActive="active-nav" [routerLinkActiveOptions]="{exact: false}" class="wb-nav-item" #tripsLink="routerLinkActive">
         <span class="material-symbols-outlined text-[24px]" [style.font-variation-settings]="tripsLink.isActive ? '\'FILL\' 1' : '\'FILL\' 0'">luggage</span>
@@ -130,13 +158,10 @@
         <span>Stats</span>
       </a>
 
-      <button type="button" class="wb-nav-item" (click)="toggleUserMenu($event)">
-        <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
-          [style.background-color]="authService.currentUser()?.color || '#ab2f0a'">
-          {{ authService.currentUser()?.name?.charAt(0)?.toUpperCase() || 'U' }}
-        </div>
+      <a routerLink="/profile" routerLinkActive="active-nav" class="wb-nav-item" #profileLink="routerLinkActive">
+        <span class="material-symbols-outlined text-[24px]" [style.font-variation-settings]="profileLink.isActive ? '\'FILL\' 1' : '\'FILL\' 0'">person</span>
         <span>Profilo</span>
-      </button>
+      </a>
     </div>
   </nav>
 }

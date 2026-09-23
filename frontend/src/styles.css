@@ -108,6 +108,7 @@ html {
 body {
   min-height: 100vh;
   min-height: -webkit-fill-available;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: radial-gradient(circle at 10% 10%, var(--bg-glow-primary) 0%, transparent 45%),

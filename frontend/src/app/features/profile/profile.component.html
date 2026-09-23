@@ -1,0 +1,98 @@
+@if (authService.currentUser(); as user) {
+<div class="min-h-dvh bg-background pb-24 md:pb-8">
+
+  <!-- Header -->
+  <section class="px-gutter pt-space-lg pb-space-md">
+    <div class="flex items-center gap-space-md">
+      <div class="w-20 h-20 rounded-full flex items-center justify-center text-4xl font-bold text-white shrink-0"
+        [style.background-color]="user.color">
+        {{ user.name.charAt(0).toUpperCase() }}
+      </div>
+      <div class="flex flex-col gap-1 min-w-0">
+        <h1 class="font-headline-md text-headline-md text-on-surface truncate">{{ user.name }}</h1>
+        <span class="font-body-md text-body-md text-on-surface-variant truncate">{{ user.email }}</span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">
+          Membro dal {{ user.joinedDate | date:'MMMM yyyy' : '' : 'it' }}
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="px-gutter pb-space-md">
+    <div class="grid grid-cols-2 gap-space-sm">
+      <div class="bg-surface-container-lowest rounded-xl p-space-md flex flex-col gap-1 shadow-sm">
+        <span class="font-headline-md text-headline-md text-primary">{{ tripService.trips().length }}</span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Viaggi totali</span>
+      </div>
+      <div class="bg-surface-container-lowest rounded-xl p-space-md flex flex-col gap-1 shadow-sm">
+        <span class="font-headline-md text-headline-md text-secondary">{{ groupService.userGroups().length }}</span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Gruppi</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Account -->
+  <section class="px-gutter pb-space-md">
+    <h2 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-space-sm">Account</h2>
+    <div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm divide-y divide-outline-variant/20">
+      <div class="flex items-center gap-space-md px-space-md py-3">
+        <span class="material-symbols-outlined text-[22px] text-on-surface-variant">person</span>
+        <div class="flex flex-col min-w-0">
+          <span class="font-label-md text-label-md text-on-surface-variant">Nome</span>
+          <span class="font-body-md text-body-md text-on-surface truncate">{{ user.name }}</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-space-md px-space-md py-3">
+        <span class="material-symbols-outlined text-[22px] text-on-surface-variant">mail</span>
+        <div class="flex flex-col min-w-0">
+          <span class="font-label-md text-label-md text-on-surface-variant">Email</span>
+          <span class="font-body-md text-body-md text-on-surface truncate">{{ user.email }}</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-space-md px-space-md py-3">
+        <div class="w-6 h-6 rounded-full shrink-0" [style.background-color]="user.color"></div>
+        <div class="flex flex-col min-w-0">
+          <span class="font-label-md text-label-md text-on-surface-variant">Colore profilo</span>
+          <span class="font-body-md text-body-md text-on-surface">{{ user.color }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gruppi -->
+  <section class="px-gutter pb-space-md">
+    <div class="flex items-center justify-between mb-space-sm">
+      <h2 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">I miei gruppi</h2>
+      <a routerLink="/groups" class="font-label-md text-label-md text-primary no-underline">Vedi tutti</a>
+    </div>
+    @if (groupService.userGroups().length > 0) {
+      <div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm divide-y divide-outline-variant/20">
+        @for (group of groupService.userGroups().slice(0, 3); track group.id) {
+          <div class="flex items-center gap-space-md px-space-md py-3">
+            <span class="material-symbols-outlined text-[22px] text-secondary">group</span>
+            <div class="flex flex-col min-w-0 flex-1">
+              <span class="font-body-md text-body-md text-on-surface truncate">{{ group.name }}</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">{{ group.members.length }} membri</span>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="font-body-md text-body-md text-on-surface-variant">Nessun gruppo ancora.</p>
+    }
+  </section>
+
+  <!-- Logout -->
+  <section class="px-gutter">
+    <button
+      type="button"
+      class="w-full flex items-center justify-center gap-space-sm px-space-md py-3 rounded-xl bg-error-container text-on-error-container font-label-lg text-label-lg transition-all active:scale-95"
+      (click)="authService.logout()">
+      <span class="material-symbols-outlined text-[20px]">logout</span>
+      Disconnetti
+    </button>
+  </section>
+
+</div>
+}
