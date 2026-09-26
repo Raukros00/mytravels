@@ -22,9 +22,8 @@
       }
 
       <!-- New Trip CTA -->
-      <a routerLink="/trips/new" class="flex items-center gap-1.5 bg-primary text-on-primary px-3 py-2 rounded-full shadow-sm active:scale-95 transition-transform no-underline">
-        <span class="material-symbols-outlined text-[16px]">add</span>
-        <span class="font-label-sm text-label-sm">Nuovo Viaggio</span>
+      <a routerLink="/trips/new" class="btn btn-primary no-underline">
+        <span class="material-symbols-outlined">add</span> Nuovo Viaggio
       </a>
     </div>
   </section>
@@ -298,26 +297,22 @@
         }
       </div>
     } @else {
-      <!-- Empty State -->
-      <div class="flex flex-col items-center justify-center py-16 gap-space-md text-center">
-        <div class="w-16 h-16 rounded-full bg-primary-fixed flex items-center justify-center">
-          <span class="material-symbols-outlined text-[32px] text-primary">luggage</span>
-        </div>
-        <div class="flex flex-col gap-1">
-          <h3 class="font-headline-sm text-headline-sm text-on-surface">
-            {{ searchQuery ? 'Nessun risultato' : 'Nessun viaggio ancora' }}
-          </h3>
-          <p class="font-body-md text-body-md text-on-surface-variant max-w-xs">
-            {{ searchQuery ? 'Nessun viaggio corrisponde alla ricerca.' : 'Crea il primo viaggio con il tuo gruppo!' }}
-          </p>
-        </div>
-        @if (!searchQuery) {
-          <a routerLink="/trips/new" class="bg-primary text-on-primary font-label-lg text-label-lg px-5 py-3 rounded-full shadow-sm flex items-center gap-2 no-underline active:scale-95 transition-all">
-            <span class="material-symbols-outlined text-[20px]">add</span>
-            Pianifica un Viaggio
-          </a>
-        }
-      </div>
+      @if (searchQuery) {
+        <app-empty-state
+          materialIcon="search_off"
+          title="Nessun risultato"
+          description="Nessun viaggio corrisponde alla ricerca.">
+        </app-empty-state>
+      } @else {
+        <app-empty-state
+          materialIcon="luggage"
+          title="Nessun viaggio ancora"
+          description="Crea il primo viaggio con il tuo gruppo!"
+          actionLabel="Pianifica un Viaggio"
+          actionMaterialIcon="add"
+          (action)="goToNewTrip()">
+        </app-empty-state>
+      }
     }
   </section>
 

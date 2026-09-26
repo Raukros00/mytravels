@@ -1,5 +1,5 @@
 @if (trip(); as t) {
-<div class="flex flex-col w-full min-h-screen bg-surface pb-28">
+<div class="flex flex-col w-full min-h-dvh bg-surface pb-28">
 
   <!-- Trip Header Card -->
   <section class="px-gutter pt-space-sm pb-space-xs">
@@ -196,20 +196,14 @@
             }
           </div>
         } @else {
-          <!-- Empty day state -->
-          <div class="flex flex-col items-center justify-center py-12 gap-space-md text-center">
-            <div class="w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center">
-              <span class="material-symbols-outlined text-[28px] text-on-surface-variant">event_note</span>
-            </div>
-            <div>
-              <p class="font-body-md text-body-md text-on-surface-variant">Nessuna tappa pianificata per il Giorno {{ selectedDay() }}.</p>
-            </div>
-            <button class="flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-on-primary font-label-md text-label-md shadow-sm active:scale-95 transition-all"
-              type="button" (click)="openPlanFromBacklogModal()">
-              <span class="material-symbols-outlined text-[18px]">add</span>
-              Pianifica dal Backlog
-            </button>
-          </div>
+          <app-empty-state
+            materialIcon="event_note"
+            title="Giorno {{ selectedDay() }} libero"
+            description="Nessuna tappa pianificata per questo giorno."
+            actionLabel="Pianifica dal Backlog"
+            actionMaterialIcon="add"
+            (action)="openPlanFromBacklogModal()">
+          </app-empty-state>
         }
       </section>
 
@@ -382,15 +376,11 @@
             </article>
           }
         } @else {
-          <div class="flex flex-col items-center justify-center py-12 gap-space-md text-center">
-            <div class="w-14 h-14 rounded-full bg-primary-fixed flex items-center justify-center">
-              <span class="material-symbols-outlined text-[28px] text-primary">restaurant</span>
-            </div>
-            <div>
-              <h3 class="font-headline-sm text-headline-sm text-on-surface">Nessun locale in lista</h3>
-              <p class="font-body-md text-body-md text-on-surface-variant mt-1">Aggiungi ristoranti, bar o mercati per questa categoria.</p>
-            </div>
-          </div>
+          <app-empty-state
+            materialIcon="restaurant"
+            title="Nessun locale in lista"
+            description="Aggiungi ristoranti, bar o mercati per questa categoria.">
+          </app-empty-state>
         }
       </div>
 
@@ -773,15 +763,11 @@
           </article>
         }
       } @else {
-        <div class="flex flex-col items-center justify-center py-12 gap-space-md text-center">
-          <div class="w-14 h-14 rounded-full bg-secondary-container flex items-center justify-center">
-            <span class="material-symbols-outlined text-[28px] text-secondary">explore</span>
-          </div>
-          <div>
-            <h3 class="font-headline-sm text-headline-sm text-on-surface">Nessuna attrazione</h3>
-            <p class="font-body-md text-body-md text-on-surface-variant mt-1">Aggiungi musei, monumenti e esperienze.</p>
-          </div>
-        </div>
+        <app-empty-state
+          materialIcon="explore"
+          title="Nessuna attrazione"
+          description="Aggiungi musei, monumenti e esperienze.">
+        </app-empty-state>
       }
 
       <div class="fixed bottom-20 right-4 z-40">
@@ -834,7 +820,7 @@
 <app-modal
   [isOpen]="isActivityModalOpen()"
   title="Aggiungi Attrazione / Cosa da Vedere"
-  icon="🏛️"
+  icon="account_balance"
   (close)="isActivityModalOpen.set(false)">
 
   <form [formGroup]="activityForm" (ngSubmit)="saveActivity()">
@@ -847,12 +833,12 @@
       <div class="form-group">
         <label class="form-label" for="act_category">Categoria *</label>
         <select id="act_category" formControlName="category" class="form-select">
-          <option value="monument">🏛️ Monumento</option>
-          <option value="museum">🖼️ Museo</option>
-          <option value="nature">🌳 Natura / Parco</option>
-          <option value="experience">✨ Esperienza / Tour</option>
-          <option value="shopping">🛍️ Shopping / Mercato</option>
-          <option value="other">📍 Altro</option>
+          <option value="monument">Monumento</option>
+          <option value="museum">Museo</option>
+          <option value="nature">Natura / Parco</option>
+          <option value="experience">Esperienza / Tour</option>
+          <option value="shopping">Shopping / Mercato</option>
+          <option value="other">Altro</option>
         </select>
       </div>
 
@@ -928,7 +914,7 @@
 <app-modal
   [isOpen]="isPlaceModalOpen()"
   title="Aggiungi Posto Dove Mangiare"
-  icon="🍽️"
+  icon="restaurant"
   (close)="isPlaceModalOpen.set(false)">
 
   <form [formGroup]="placeForm" (ngSubmit)="savePlaceToEat()">
@@ -941,11 +927,11 @@
       <div class="form-group">
         <label class="form-label" for="food_category">Tipo Pasto *</label>
         <select id="food_category" formControlName="category" class="form-select">
-          <option value="lunch">🍝 Pranzo</option>
-          <option value="dinner">🍷 Cena</option>
-          <option value="snack">🥐 Spuntino / Street Food</option>
-          <option value="breakfast">☕ Colazione</option>
-          <option value="aperitivo">🍸 Aperitivo / Tapas</option>
+          <option value="lunch">Pranzo</option>
+          <option value="dinner">Cena</option>
+          <option value="snack">Spuntino / Street Food</option>
+          <option value="breakfast">Colazione</option>
+          <option value="aperitivo">Aperitivo / Tapas</option>
         </select>
       </div>
 
@@ -990,7 +976,7 @@
 
   <div modal-footer>
     <button type="button" class="btn btn-secondary" (click)="isPlaceModalOpen.set(false)">Annulla</button>
-    <button type="button" class="btn btn-sunset" [disabled]="placeForm.invalid" (click)="savePlaceToEat()">Salva Locale</button>
+    <button type="button" class="btn btn-primary" [disabled]="placeForm.invalid" (click)="savePlaceToEat()">Salva Locale</button>
   </div>
 </app-modal>
 
@@ -998,7 +984,7 @@
 <app-modal
   [isOpen]="isAssignModalOpen()"
   title="Pianifica nel Giorno"
-  icon="🗓️"
+  icon="event"
   (close)="isAssignModalOpen.set(false)">
 
   <div class="assign-form">
@@ -1007,7 +993,7 @@
     <div class="form-group mt-2">
       <label class="form-label">Scegli Giorno *</label>
       <select [(ngModel)]="assignDayTarget" class="form-select">
-        <option [value]="0">📦 Mantieni nel Backlog</option>
+        <option [value]="0">Mantieni nel Backlog</option>
         @for (d of tripDaysNumbers(); track d) {
           <option [value]="d">Giorno {{ d }} ({{ getDayDateFormatted(d) }})</option>
         }
@@ -1030,12 +1016,12 @@
 <app-modal
   [isOpen]="isFlightsModalOpen()"
   title="Dettagli Voli A/R"
-  icon="✈️"
+  icon="flight"
   maxWidth="680px"
   (close)="isFlightsModalOpen.set(false)">
 
   <form [formGroup]="flightsForm" (ngSubmit)="saveFlights()">
-    <h4 class="form-sub-header">🛫 Volo di Andata</h4>
+    <h4 class="form-sub-header"><span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle">flight_takeoff</span> Volo di Andata</h4>
     <div class="form-grid-2">
       <div class="form-group">
         <label class="form-label">Compagnia</label>
@@ -1067,7 +1053,7 @@
       </div>
     </div>
 
-    <h4 class="form-sub-header mt-3">🛬 Volo di Ritorno</h4>
+    <h4 class="form-sub-header mt-3"><span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle">flight_land</span> Volo di Ritorno</h4>
     <div class="form-grid-2">
       <div class="form-group">
         <label class="form-label">Compagnia</label>
@@ -1114,18 +1100,18 @@
 <app-modal
   [isOpen]="isTransfersModalOpen()"
   title="Spostamenti Aeroporto → Hotel"
-  icon="🚇"
+  icon="subway"
   (close)="isTransfersModalOpen.set(false)">
 
   <form [formGroup]="transfersForm" (ngSubmit)="saveTransfers()">
     <div class="form-group">
       <label class="form-label">Opzione Consigliata</label>
       <select formControlName="recommendedOption" class="form-select">
-        <option value="bus">🚌 Bus / Navetta</option>
-        <option value="metro">🚇 Metro</option>
-        <option value="train">🚆 Treno</option>
-        <option value="taxi">🚕 Taxi</option>
-        <option value="uber">🚗 Uber / Bolt</option>
+        <option value="bus">Bus / Navetta</option>
+        <option value="metro">Metro</option>
+        <option value="train">Treno</option>
+        <option value="taxi">Taxi</option>
+        <option value="uber">Uber / Bolt</option>
       </select>
     </div>
     <div class="form-grid-2">
@@ -1166,7 +1152,7 @@
 <app-modal
   [isOpen]="isAccommodationModalOpen()"
   title="Dettagli Alloggio & Hotel"
-  icon="🏨"
+  icon="hotel"
   (close)="isAccommodationModalOpen.set(false)">
 
   <form [formGroup]="accommodationForm" (ngSubmit)="saveAccommodation()">

@@ -1,5 +1,6 @@
 .auth-page {
   min-height: calc(100vh - 120px);
+  min-height: calc(100dvh - 120px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -10,9 +11,9 @@
   width: 100%;
   max-width: 520px;
   padding: 1.75rem 1.25rem;
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-xl);
+  border-radius: var(--wb-radius-2xl);
+  border: 1px solid var(--wb-border);
+  box-shadow: var(--wb-shadow-xl);
   background: rgba(255, 255, 255, 0.96);
 }
 
@@ -34,26 +35,26 @@
   font-size: 1.75rem;
   width: 58px;
   height: 58px;
-  background: var(--primary-50);
-  border-radius: var(--radius-full);
+  background: var(--wb-primary-surface);
+  border-radius: var(--wb-radius-full);
   margin-bottom: 0.85rem;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 4px 12px rgba(171, 47, 10, 0.14);
 }
 
 .auth-title {
   font-size: 1.45rem;
-  color: var(--slate-900);
+  color: var(--wb-text-primary);
   margin-bottom: 0.35rem;
 }
 
 .brand-highlight {
-  color: var(--sunset-500);
+  color: var(--wb-primary);
 }
 
 .auth-subtitle {
   font-size: 0.875rem;
-  color: var(--slate-500);
-  line-height: 1.4;
+  color: var(--wb-text-secondary);
+  line-height: 1.45;
 }
 
 .avatar-grid {
@@ -74,11 +75,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--slate-200);
-  background: var(--slate-50);
-  border-radius: var(--radius-md);
+  border: 1.5px solid var(--wb-border);
+  background: var(--wb-surface-1);
+  border-radius: var(--wb-radius-md);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 150ms var(--wb-ease);
 }
 
 .avatar-select-btn:active {
@@ -86,9 +87,9 @@
 }
 
 .avatar-select-btn.selected {
-  background: var(--primary-100);
-  border-color: var(--primary-600);
-  box-shadow: 0 0 0 2px var(--primary-600);
+  background: var(--wb-primary-surface);
+  border-color: var(--wb-primary);
+  box-shadow: 0 0 0 2px var(--wb-primary);
 }
 
 .color-grid {
@@ -99,9 +100,9 @@
 .color-btn {
   width: 36px;
   height: 36px;
-  border-radius: var(--radius-full);
+  border-radius: var(--wb-radius-full);
   border: 2px solid #ffffff;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--wb-shadow-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -109,12 +110,12 @@
   color: #ffffff;
   font-size: 0.85rem;
   font-weight: bold;
-  transition: transform var(--transition-fast);
+  transition: transform 150ms var(--wb-ease);
 }
 
 .color-btn.selected {
-  transform: scale(1.15);
-  box-shadow: 0 0 0 2px var(--slate-800);
+  transform: scale(1.18);
+  box-shadow: 0 0 0 2.5px var(--wb-text-primary);
 }
 
 .mt-3 {
@@ -125,15 +126,19 @@
   text-align: center;
   margin-top: 1.5rem;
   padding-top: 1.15rem;
-  border-top: 1px solid var(--slate-100);
+  border-top: 1px solid var(--wb-surface-2);
 }
 
 .auth-footer p {
   font-size: 0.875rem;
-  color: var(--slate-600);
+  color: var(--wb-text-secondary);
 }
 
 .auth-footer a {
   font-weight: 700;
-  color: var(--primary-600);
+  color: var(--wb-primary);
+}
+
+.auth-footer a:hover {
+  color: var(--wb-primary-dark);
 }
