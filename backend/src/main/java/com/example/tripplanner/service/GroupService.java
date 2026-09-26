@@ -10,6 +10,7 @@ import com.example.tripplanner.repository.GroupRepository;
 import com.example.tripplanner.repository.TripRepository;
 import com.example.tripplanner.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -30,40 +31,16 @@ public class GroupService {
         this.tripRepository = tripRepository;
     }
 
+    @Transactional
     public Group createGroup(CreateGroupRequest request, String defaultUserId) {
-        String creatorId = request.getCreatorId() != null && !request.getCreatorId().isBlank() 
-                ? request.getCreatorId() 
+        String creatorId = request.getCreatorId() != null && !request.getCreatorId().isBlank()
+                ? request.getCreatorId()
                 : defaultUserId;
 
         String inviteCode = "GRP-" + UUID.randomUUID().toString().replace("-", "").substring(0, 5).toUpperCase();
 
-        List<GroupMember> members = new ArrayList<>();
-        if (creatorId != null) {
-            Optional<User> creatorOpt = userRepository.findById(creatorId);
-            if (creatorOpt.isEmpty()) {
-                creatorOpt = userRepository.findByEmail(creatorId);
-            }
-            if (creatorOpt.isPresent()) {
-                User u = creatorOpt.get();
-                members.add(GroupMember.builder()
-                        .id(u.getId())
-                        .name(u.getName())
-                        .avatar(u.getAvatar())
-                        .role("admin")
-                        .color(u.getColor())
-                        .build());
-            } else {
-                members.add(GroupMember.builder()
-                        .id(creatorId)
-                        .name("Admin")
-                        .avatar("👑")
-                        .role("admin")
-                        .color(request.getColor() != null ? request.getColor() : "#4f46e5")
-                        .build());
-            }
-        }
-
         Group group = Group.builder()
+                .id(UUID.randomUUID().toString())
                 .name(request.getName().trim())
                 .description(request.getDescription() != null ? request.getDescription().trim() : "")
                 .icon(request.getIcon() != null && !request.getIcon().isBlank() ? request.getIcon() : "✈️")
@@ -71,8 +48,36 @@ public class GroupService {
                 .creatorId(creatorId)
                 .inviteCode(inviteCode)
                 .createdAt(Instant.now().toString().split("T")[0])
-                .members(members)
+                .members(new ArrayList<>())
                 .build();
+
+        if (creatorId != null) {
+            Optional<User> creatorOpt = userRepository.findById(creatorId);
+            if (creatorOpt.isEmpty()) {
+                creatorOpt = userRepository.findByEmail(creatorId);
+            }
+            GroupMember member;
+            if (creatorOpt.isPresent()) {
+                User u = creatorOpt.get();
+                member = GroupMember.builder()
+                        .id(u.getId())
+                        .name(u.getName())
+                        .avatar(u.getAvatar())
+                        .role("admin")
+                        .color(u.getColor())
+                        .build();
+            } else {
+                member = GroupMember.builder()
+                        .id(creatorId)
+                        .name("Admin")
+                        .avatar("👑")
+                        .role("admin")
+                        .color(request.getColor() != null ? request.getColor() : "#4f46e5")
+                        .build();
+            }
+            member.setGroup(group);
+            group.getMembers().add(member);
+        }
 
         return groupRepository.save(group);
     }
@@ -89,6 +94,7 @@ public class GroupService {
         return groupRepository.findByUserId(userId);
     }
 
+    @Transactional
     public Optional<Group> updateGroup(String id, UpdateGroupRequest request) {
         return groupRepository.findById(id).map(existing -> {
             if (request.getName() != null && !request.getName().isBlank()) {
@@ -107,6 +113,7 @@ public class GroupService {
         });
     }
 
+    @Transactional
     public boolean deleteGroup(String id) {
         if (groupRepository.existsById(id)) {
             tripRepository.deleteByGroupId(id);
@@ -116,6 +123,7 @@ public class GroupService {
         return false;
     }
 
+    @Transactional
     public Optional<Group> joinGroupByInvite(JoinGroupRequest request) {
         String cleanCode = request.getInviteCode().trim().toUpperCase();
         Optional<Group> opt = groupRepository.findByInviteCode(cleanCode);
@@ -124,9 +132,6 @@ public class GroupService {
         }
 
         Group group = opt.get();
-        if (group.getMembers() == null) {
-            group.setMembers(new ArrayList<>());
-        }
 
         boolean alreadyMember = group.getMembers().stream()
                 .anyMatch(m -> m.getId() != null && m.getId().equals(request.getUserId()));
@@ -139,7 +144,7 @@ public class GroupService {
                     .role("member")
                     .color(request.getColor() != null ? request.getColor() : "#10b981")
                     .build();
-
+            newMember.setGroup(group);
             group.getMembers().add(newMember);
             groupRepository.save(group);
         }
@@ -147,13 +152,11 @@ public class GroupService {
         return Optional.of(group);
     }
 
+    @Transactional
     public Optional<Group> removeMember(String groupId, String memberId) {
         return groupRepository.findById(groupId).map(group -> {
-            if (group.getMembers() != null) {
-                group.getMembers().removeIf(m -> m.getId() != null && m.getId().equals(memberId));
-                return groupRepository.save(group);
-            }
-            return group;
+            group.getMembers().removeIf(m -> m.getId() != null && m.getId().equals(memberId));
+            return groupRepository.save(group);
         });
     }
 }

@@ -1,16 +1,23 @@
 services:
-  mongodb:
-    image: mongo:4.4.18
-    container_name: ${COMPOSE_PROJECT_NAME:-mytravels-test}-mongodb
+  postgres:
+    image: postgres:16-alpine
+    container_name: ${COMPOSE_PROJECT_NAME:-mytravels-test}-postgres
     restart: unless-stopped
     ports:
-      - "${MONGO_PORT:-27017}:27017"
+      - "${POSTGRES_PORT:-5432}:5432"
     environment:
-      MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-tripplanner}
+      POSTGRES_DB: ${POSTGRES_DB:-tripplanner}
+      POSTGRES_USER: ${POSTGRES_USER:-tripplanner}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tripplanner}
     volumes:
-      - mongo_data:/data/db
+      - pg_data:/var/lib/postgresql/data
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tripplanner} -d ${POSTGRES_DB:-tripplanner}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
@@ -22,11 +29,14 @@ services:
     ports:
       - "${BACKEND_PORT:-8083}:8080"
     environment:
-      SPRING_DATA_MONGODB_HOST: mongodb
-      SPRING_DATA_MONGODB_PORT: 27017
-      SPRING_DATA_MONGODB_DATABASE: ${MONGO_DATABASE:-tripplanner}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-tripplanner}
+      POSTGRES_USER: ${POSTGRES_USER:-tripplanner}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tripplanner}
     depends_on:
-      - mongodb
+      postgres:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -50,5 +60,5 @@ networks:
     driver: bridge
 
 volumes:
-  mongo_data:
-    name: ${COMPOSE_PROJECT_NAME:-mytravels-test}-mongo-data
+  pg_data:
+    name: ${COMPOSE_PROJECT_NAME:-mytravels-test}-pg-data

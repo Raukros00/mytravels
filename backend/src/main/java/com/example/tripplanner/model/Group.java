@@ -1,37 +1,57 @@
 package com.example.tripplanner.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.data.domain.Persistable;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "groups")
-public class Group {
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Entity
+@Table(name = "groups",
+       uniqueConstraints = @UniqueConstraint(columnNames = "invite_code"))
+public class Group implements Persistable<String> {
+
     @Id
+    @EqualsAndHashCode.Include
     private String id;
+
     private String name;
+
+    @Column(columnDefinition = "text")
     private String description;
+
     private String icon;
     private String color;
+
+    /** Soft reference to the creator User id — FK enforced only at DDL level to keep JSON as a plain string. */
+    @Column(name = "creator_id")
     private String creatorId;
-    
-    @Indexed(unique = true)
+
+    @Column(name = "invite_code", nullable = false, unique = true)
     private String inviteCode;
-    
-    @Builder.Default
-    private String createdAt = Instant.now().toString();
-    
+
+    @Column(name = "created_at")
+    private String createdAt;
+
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<GroupMember> members = new ArrayList<>();
+
+    @Transient
+    @Builder.Default
+    private boolean isNew = true;
+
+    @Override
+    public boolean isNew() { return isNew; }
+
+    @PostLoad
+    @PostPersist
+    void markNotNew() { this.isNew = false; }
 }

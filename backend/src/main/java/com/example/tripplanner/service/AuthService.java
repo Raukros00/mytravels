@@ -5,9 +5,11 @@ import com.example.tripplanner.model.User;
 import com.example.tripplanner.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -28,11 +30,13 @@ public class AuthService {
         return null;
     }
 
+    @Transactional
     public User register(RegisterDto dto) {
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new IllegalArgumentException("Email already exists: " + dto.getEmail());
         }
         User user = User.builder()
+                .id(UUID.randomUUID().toString())
                 .name(dto.getName())
                 .email(dto.getEmail())
                 .password(passwordEncoder.encode(dto.getPassword()))
@@ -44,9 +48,11 @@ public class AuthService {
         return userRepository.save(user);
     }
 
+    @Transactional
     public User createDemoUser(String email, String rawPassword, String name) {
         return userRepository.findByEmail(email).orElseGet(() -> {
             User user = User.builder()
+                    .id(UUID.randomUUID().toString())
                     .name(name)
                     .email(email)
                     .password(passwordEncoder.encode(rawPassword))
