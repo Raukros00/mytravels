@@ -3,7 +3,7 @@
     <!-- Brand Header -->
     <div class="auth-header">
       <div class="brand-badge">
-        <span>✈️ 🍕</span>
+        <span class="material-symbols-outlined">travel_explore</span>
       </div>
       <h1 class="auth-title">Bentornato su Wander<span class="brand-highlight">Bite</span></h1>
       <p class="auth-subtitle">Accedi per organizzare i viaggi e le soste gastronomiche con i tuoi compagni di avventura.</p>
@@ -12,13 +12,13 @@
     <!-- Quick Demo Login Banner -->
     <div class="demo-banner">
       <div class="demo-info">
-        <span class="demo-icon">⚡</span>
+        <span class="demo-icon material-symbols-outlined">bolt</span>
         <div>
           <strong>Vuoi provare subito?</strong>
           <p>Entra con l'account demo preconfigurato</p>
         </div>
       </div>
-      <button type="button" class="btn btn-sunset btn-sm" (click)="onDemoLogin()">
+      <button type="button" class="btn btn-primary" (click)="onDemoLogin()">
         Demo Login Rapido
       </button>
     </div>
@@ -54,7 +54,7 @@
 
       <button 
         type="submit" 
-        class="btn btn-primary w-full btn-lg mt-2" 
+        class="btn btn-primary w-full mt-2"
         [disabled]="loginForm.invalid">
         Accedi a WanderBite
       </button>

@@ -2,7 +2,7 @@
   <div class="app-container max-w-form">
     <!-- Header -->
     <div class="form-header animate-fade-in">
-      <a routerLink="/trips" class="btn btn-ghost btn-sm back-link">
+      <a routerLink="/trips" class="btn btn-ghost back-link">
         <span>←</span> Torna ai Viaggi
       </a>
       <h1 class="page-title">Pianifica un Nuovo Viaggio</h1>
@@ -107,7 +107,7 @@
                 (keydown.enter)="addTag($event)"
                 class="form-input" 
                 placeholder="Es. Street food, Musei, Relax...">
-              <button type="button" class="btn btn-secondary btn-sm" (click)="addTag()">Aggiungi</button>
+              <button type="button" class="btn btn-secondary" (click)="addTag()">Aggiungi</button>
             </div>
           </div>
         </div>
@@ -118,7 +118,7 @@
             @for (tag of tagsList; track tag) {
               <span class="tag-badge">
                 #{{ tag }}
-                <button type="button" class="tag-remove" (click)="removeTag(tag)">✕</button>
+                <button type="button" class="tag-remove" (click)="removeTag(tag)"><span class="material-symbols-outlined" style="font-size:14px">close</span></button>
               </span>
             }
           </div>
@@ -170,9 +170,9 @@
           <a routerLink="/trips" class="btn btn-secondary flex-1">Annulla</a>
           <button 
             type="submit" 
-            class="btn btn-sunset btn-lg flex-1" 
+            class="btn btn-primary flex-1" 
             [disabled]="tripForm.invalid">
-            <span>🚀</span> Crea Viaggio
+            <span class="material-symbols-outlined">rocket_launch</span> Crea Viaggio
           </button>
         </div>
       </form>

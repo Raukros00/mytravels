@@ -1,7 +1,7 @@
 <app-modal 
   [isOpen]="isOpen" 
   title="Crea Nuovo Gruppo di Viaggio" 
-  icon="👥" 
+  icon="group"
   (close)="onClose()">
   
   <form [formGroup]="groupForm" (ngSubmit)="onSubmit()">
@@ -69,7 +69,7 @@
       class="btn btn-primary" 
       [disabled]="groupForm.invalid" 
       (click)="onSubmit()">
-      <span>✨</span> Crea Gruppo
+      <span class="material-symbols-outlined">add</span> Crea Gruppo
     </button>
   </div>
 </app-modal>

@@ -18,8 +18,9 @@
     </div>
   </section>
 
-  <!-- Stats -->
+  <!-- Stats Grid -->
   <section class="px-gutter pb-space-md">
+    <h2 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-space-sm">Le mie statistiche</h2>
     <div class="grid grid-cols-2 gap-space-sm">
       <div class="bg-surface-container-lowest rounded-xl p-space-md flex flex-col gap-1 shadow-sm">
         <span class="font-headline-md text-headline-md text-primary">{{ tripService.trips().length }}</span>
@@ -28,6 +29,14 @@
       <div class="bg-surface-container-lowest rounded-xl p-space-md flex flex-col gap-1 shadow-sm">
         <span class="font-headline-md text-headline-md text-secondary">{{ groupService.userGroups().length }}</span>
         <span class="font-body-sm text-body-sm text-on-surface-variant">Gruppi</span>
+      </div>
+      <div class="bg-surface-container-lowest rounded-xl p-space-md flex flex-col gap-1 shadow-sm">
+        <span class="font-headline-md text-headline-md text-tertiary">{{ tripService.stats().uniqueCountries }}</span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Nazioni esplorate</span>
+      </div>
+      <div class="bg-surface-container-lowest rounded-xl p-space-md flex flex-col gap-1 shadow-sm">
+        <span class="font-headline-md text-headline-md" style="color: #2563EB">{{ tripService.stats().upcoming }}</span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Prossimi viaggi</span>
       </div>
     </div>
   </section>
@@ -58,29 +67,6 @@
         </div>
       </div>
     </div>
-  </section>
-
-  <!-- Gruppi -->
-  <section class="px-gutter pb-space-md">
-    <div class="flex items-center justify-between mb-space-sm">
-      <h2 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">I miei gruppi</h2>
-      <a routerLink="/groups" class="font-label-md text-label-md text-primary no-underline">Vedi tutti</a>
-    </div>
-    @if (groupService.userGroups().length > 0) {
-      <div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm divide-y divide-outline-variant/20">
-        @for (group of groupService.userGroups().slice(0, 3); track group.id) {
-          <div class="flex items-center gap-space-md px-space-md py-3">
-            <span class="material-symbols-outlined text-[22px] text-secondary">group</span>
-            <div class="flex flex-col min-w-0 flex-1">
-              <span class="font-body-md text-body-md text-on-surface truncate">{{ group.name }}</span>
-              <span class="font-body-sm text-body-sm text-on-surface-variant">{{ group.members.length }} membri</span>
-            </div>
-          </div>
-        }
-      </div>
-    } @else {
-      <p class="font-body-md text-body-md text-on-surface-variant">Nessun gruppo ancora.</p>
-    }
   </section>
 
   <!-- Logout -->

@@ -11,9 +11,9 @@
   width: 100%;
   max-width: 480px;
   padding: 1.75rem 1.25rem;
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-xl);
+  border-radius: var(--wb-radius-2xl);
+  border: 1px solid var(--wb-border);
+  box-shadow: var(--wb-shadow-xl);
   background: rgba(255, 255, 255, 0.96);
 }
 
@@ -35,32 +35,32 @@
   font-size: 1.75rem;
   width: 58px;
   height: 58px;
-  background: var(--primary-50);
-  border-radius: var(--radius-full);
+  background: var(--wb-primary-surface);
+  border-radius: var(--wb-radius-full);
   margin-bottom: 0.85rem;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 4px 12px rgba(171, 47, 10, 0.14);
 }
 
 .auth-title {
   font-size: 1.45rem;
-  color: var(--slate-900);
+  color: var(--wb-text-primary);
   margin-bottom: 0.35rem;
 }
 
 .brand-highlight {
-  color: var(--sunset-500);
+  color: var(--wb-primary);
 }
 
 .auth-subtitle {
   font-size: 0.875rem;
-  color: var(--slate-500);
-  line-height: 1.4;
+  color: var(--wb-text-secondary);
+  line-height: 1.45;
 }
 
 .demo-banner {
-  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
-  border: 1px solid #fed7aa;
-  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--wb-accent-surface) 0%, #FDE68A33 100%);
+  border: 1px solid var(--wb-accent-border);
+  border-radius: var(--wb-radius-xl);
   padding: 0.85rem 1rem;
   display: flex;
   align-items: center;
@@ -82,13 +82,13 @@
 
 .demo-info strong {
   font-size: 0.85rem;
-  color: #9a3412;
+  color: var(--wb-accent-dark);
   display: block;
 }
 
 .demo-info p {
   font-size: 0.75rem;
-  color: #c2410c;
+  color: var(--wb-accent);
   margin: 0;
 }
 
@@ -105,7 +105,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: var(--slate-200);
+  background: var(--wb-border);
 }
 
 .auth-divider span {
@@ -113,7 +113,7 @@
   background: #ffffff;
   padding: 0 0.75rem;
   font-size: 0.775rem;
-  color: var(--slate-400);
+  color: var(--wb-text-tertiary);
   font-weight: 500;
 }
 
@@ -125,15 +125,19 @@
   text-align: center;
   margin-top: 1.5rem;
   padding-top: 1.15rem;
-  border-top: 1px solid var(--slate-100);
+  border-top: 1px solid var(--wb-surface-2);
 }
 
 .auth-footer p {
   font-size: 0.875rem;
-  color: var(--slate-600);
+  color: var(--wb-text-secondary);
 }
 
 .auth-footer a {
   font-weight: 700;
-  color: var(--primary-600);
+  color: var(--wb-primary);
+}
+
+.auth-footer a:hover {
+  color: var(--wb-primary-dark);
 }

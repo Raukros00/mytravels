@@ -17,39 +17,12 @@
           <span class="material-symbols-outlined text-[18px]">group</span>
           Gruppi
         </a>
-        <a routerLink="/dashboard" routerLinkActive="desktop-nav-active" class="desktop-nav-link no-underline">
-          <span class="material-symbols-outlined text-[18px]">bar_chart</span>
-          Stats
-        </a>
-        <a routerLink="/profile" routerLinkActive="desktop-nav-active" class="desktop-nav-link no-underline">
-          <span class="material-symbols-outlined text-[18px]">person</span>
-          Profilo
-        </a>
       </nav>
     }
 
-    <!-- Right: Group Pill + New Trip + User -->
+    <!-- Right: User Avatar -->
     @if (authService.isAuthenticated()) {
       <div class="flex items-center gap-space-sm">
-        <!-- Active Group Pill -->
-        @if (groupService.activeGroup(); as activeGroup) {
-          <button
-            type="button"
-            class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-fixed-variant font-label-sm text-label-sm transition-all active:scale-95"
-            (click)="toggleGroupMenu($event)"
-            [attr.aria-expanded]="isGroupMenuOpen()">
-            <span class="material-symbols-outlined text-[16px]">group</span>
-            <span class="hidden sm:inline">{{ activeGroup.name }} ({{ activeGroup.members.length }})</span>
-            <span class="material-symbols-outlined text-[14px]">expand_more</span>
-          </button>
-        }
-
-        <!-- New Trip button (desktop only) -->
-        <a routerLink="/trips/new" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-on-primary font-label-md text-label-md no-underline transition-all active:scale-95">
-          <span class="material-symbols-outlined text-[16px]">add</span>
-          Nuovo
-        </a>
-
         <!-- User Avatar -->
         <button
           type="button"
@@ -68,41 +41,6 @@
     }
   </div>
 
-  <!-- Group Dropdown -->
-  @if (isGroupMenuOpen() && authService.isAuthenticated()) {
-    <div class="absolute top-16 left-gutter right-gutter bg-surface-container-lowest rounded-xl shadow-[0_16px_36px_rgba(45,30,24,0.14)] border border-outline-variant/40 overflow-hidden z-50 animate-fade-in" (click)="$event.stopPropagation()">
-      <div class="px-space-md pt-space-md pb-space-sm">
-        <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">I Tuoi Gruppi</span>
-      </div>
-      <div class="flex flex-col pb-space-sm">
-        @for (group of groupService.userGroups(); track group.id) {
-          <button
-            type="button"
-            class="flex items-center justify-between px-space-md py-2.5 hover:bg-surface-container transition-colors"
-            [class.bg-surface-container-low]="group.id === groupService.activeGroupId()"
-            (click)="selectGroup(group.id)">
-            <div class="flex items-center gap-space-sm">
-              <span class="w-2 h-2 rounded-full" [class.bg-primary]="group.id === groupService.activeGroupId()" [class.bg-outline-variant]="group.id !== groupService.activeGroupId()"></span>
-              <div class="flex flex-col text-left">
-                <span class="font-label-md text-label-md text-on-surface">{{ group.name }}</span>
-                <span class="font-body-sm text-body-sm text-on-surface-variant">{{ group.members.length }} membri</span>
-              </div>
-            </div>
-            @if (group.id === groupService.activeGroupId()) {
-              <span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
-            }
-          </button>
-        }
-      </div>
-      <div class="border-t border-outline-variant/30 px-space-md py-space-sm">
-        <button type="button" class="flex items-center gap-space-sm font-label-md text-label-md text-primary w-full py-1" (click)="openCreateGroupModal()">
-          <span class="material-symbols-outlined text-[18px]">add</span>
-          Nuovo Gruppo
-        </button>
-      </div>
-    </div>
-  }
-
   <!-- User Dropdown -->
   @if (isUserMenuOpen() && authService.isAuthenticated()) {
     <div class="absolute top-16 right-gutter w-64 bg-surface-container-lowest rounded-xl shadow-[0_16px_36px_rgba(45,30,24,0.14)] border border-outline-variant/40 overflow-hidden z-50 animate-fade-in" (click)="$event.stopPropagation()">
@@ -117,9 +55,9 @@
         </div>
       </div>
       <div class="py-space-sm">
-        <a routerLink="/groups" class="flex items-center gap-space-sm px-space-md py-2.5 hover:bg-surface-container transition-colors no-underline text-on-surface" (click)="isUserMenuOpen.set(false)">
-          <span class="material-symbols-outlined text-[20px] text-on-surface-variant">group</span>
-          <span class="font-body-md text-body-md">I Miei Gruppi</span>
+        <a routerLink="/profile" class="flex items-center gap-space-sm px-space-md py-2.5 hover:bg-surface-container transition-colors no-underline text-on-surface" (click)="isUserMenuOpen.set(false)">
+          <span class="material-symbols-outlined text-[20px] text-on-surface-variant">person</span>
+          <span class="font-body-md text-body-md">Profilo</span>
         </a>
       </div>
       <div class="border-t border-outline-variant/30 py-space-sm">
@@ -141,11 +79,6 @@
         <span>Viaggi</span>
       </a>
 
-      <a routerLink="/groups" routerLinkActive="active-nav" class="wb-nav-item" #groupsLink="routerLinkActive">
-        <span class="material-symbols-outlined text-[24px]" [style.font-variation-settings]="groupsLink.isActive ? '\'FILL\' 1' : '\'FILL\' 0'">group</span>
-        <span>Gruppi</span>
-      </a>
-
       <!-- FAB: Nuovo Viaggio -->
       <a routerLink="/trips/new" class="flex-1 flex items-center justify-center">
         <div class="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md shadow-primary/30 active:scale-95 transition-transform">
@@ -153,14 +86,9 @@
         </div>
       </a>
 
-      <a routerLink="/dashboard" routerLinkActive="active-nav" class="wb-nav-item" #dashLink="routerLinkActive">
-        <span class="material-symbols-outlined text-[24px]" [style.font-variation-settings]="dashLink.isActive ? '\'FILL\' 1' : '\'FILL\' 0'">bar_chart</span>
-        <span>Stats</span>
-      </a>
-
-      <a routerLink="/profile" routerLinkActive="active-nav" class="wb-nav-item" #profileLink="routerLinkActive">
-        <span class="material-symbols-outlined text-[24px]" [style.font-variation-settings]="profileLink.isActive ? '\'FILL\' 1' : '\'FILL\' 0'">person</span>
-        <span>Profilo</span>
+      <a routerLink="/groups" routerLinkActive="active-nav" class="wb-nav-item" #groupsLink="routerLinkActive">
+        <span class="material-symbols-outlined text-[24px]" [style.font-variation-settings]="groupsLink.isActive ? '\'FILL\' 1' : '\'FILL\' 0'">group</span>
+        <span>Gruppi</span>
       </a>
     </div>
   </nav>
