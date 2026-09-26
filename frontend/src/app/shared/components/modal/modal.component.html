@@ -4,12 +4,12 @@
       <div class="modal-header">
         <div class="modal-title-wrap">
           @if (icon) {
-            <span class="modal-icon">{{ icon }}</span>
+            <span class="modal-icon material-symbols-outlined">{{ icon }}</span>
           }
           <h3 class="modal-title">{{ title }}</h3>
         </div>
         <button type="button" class="btn-close" (click)="onClose()" aria-label="Chiudi modale">
-          ✕
+          <span class="material-symbols-outlined" style="font-size:18px">close</span>
         </button>
       </div>
 

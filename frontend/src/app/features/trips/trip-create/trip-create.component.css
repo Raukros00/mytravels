@@ -125,8 +125,8 @@
 }
 
 .preset-item.selected {
-  border-color: var(--primary-600);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.35);
+  border-color: var(--wb-primary);
+  box-shadow: 0 0 0 3px rgba(171, 47, 10, 0.25);
 }
 
 .preset-img {

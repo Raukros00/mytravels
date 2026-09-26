@@ -129,6 +129,44 @@ export class GroupService {
     return this.groupsSignal().find(g => g.id === id);
   }
 
+  public updateGroup(id: string, dto: Partial<CreateGroupDto>): void {
+    const updated = this.groupsSignal().map(g => g.id === id ? { ...g, ...dto } : g);
+    this.groupsSignal.set(updated);
+    this.storageService.setGroups(updated);
+    this.apiService.put<Group>(`/api/v1/groups/${id}`, dto).subscribe({
+      error: (err) => console.error('Error updating group:', err)
+    });
+    this.toastService.success('Gruppo aggiornato con successo!');
+  }
+
+  public deleteGroup(id: string): void {
+    const group = this.groupsSignal().find(g => g.id === id);
+    const updated = this.groupsSignal().filter(g => g.id !== id);
+    this.groupsSignal.set(updated);
+    this.storageService.setGroups(updated);
+    if (this.activeGroupIdSignal() === id) {
+      const next = updated[0];
+      if (next) this.setActiveGroup(next.id);
+      else this.activeGroupIdSignal.set(null);
+    }
+    this.apiService.delete(`/api/v1/groups/${id}`).subscribe({
+      error: (err) => console.error('Error deleting group:', err)
+    });
+    if (group) this.toastService.success(`Gruppo "${group.name}" eliminato.`);
+  }
+
+  public removeMember(groupId: string, memberId: string): void {
+    const updated = this.groupsSignal().map(g =>
+      g.id === groupId ? { ...g, members: g.members.filter(m => m.id !== memberId) } : g
+    );
+    this.groupsSignal.set(updated);
+    this.storageService.setGroups(updated);
+    this.apiService.delete(`/api/v1/groups/${groupId}/members/${memberId}`).subscribe({
+      error: (err) => console.error('Error removing member:', err)
+    });
+    this.toastService.success('Membro rimosso dal gruppo.');
+  }
+
   public joinGroupByCode(code: string): boolean {
     const user = this.authService.currentUser();
     if (!user) return false;

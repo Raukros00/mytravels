@@ -127,43 +127,26 @@
 }
 
 /* Desktop Navigation */
-.desktop-nav {
-  display: none;
-}
-
-@media (min-width: 868px) {
-  .desktop-nav {
-    display: inline-flex;
-  }
-
-  .navbar-center {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-}
-
-.nav-link {
+.desktop-nav-link {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.5rem 0.95rem;
-  border-radius: var(--radius-md);
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--slate-600);
-  text-decoration: none;
-  transition: all var(--transition-fast);
+  color: #59413b;
+  transition: background 150ms, color 150ms;
 }
 
-.nav-link:hover {
-  color: var(--primary-600);
-  background: var(--primary-50);
+.desktop-nav-link:hover {
+  background: rgba(171, 47, 10, 0.08);
+  color: #ab2f0a;
 }
 
-.nav-link.active {
-  color: var(--primary-700);
-  background: var(--primary-50);
+.desktop-nav-link.desktop-nav-active {
+  background: rgba(171, 47, 10, 0.10);
+  color: #ab2f0a;
   font-weight: 700;
 }
 

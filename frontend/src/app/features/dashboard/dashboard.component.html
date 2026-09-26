@@ -3,7 +3,7 @@
     <!-- Hero Welcome -->
     <div class="dashboard-hero card-glass animate-fade-in">
       <div class="hero-left">
-        <span class="badge badge-sunset">👋 Benvenuto Viaggiatore Gourmet</span>
+        <span class="badge badge-sunset">Benvenuto Viaggiatore Gourmet</span>
         <h1 class="hero-title">Ciao, {{ authService.currentUser()?.name || 'Amico' }}!</h1>
         <p class="hero-desc">
           Ecco la panoramica dei tuoi viaggi in corso e in programma con il gruppo 
@@ -11,11 +11,11 @@
         </p>
       </div>
       <div class="hero-cta-buttons">
-        <a routerLink="/trips/new" class="btn btn-sunset">
-          <span>➕</span> Nuovo Viaggio
+        <a routerLink="/trips/new" class="btn btn-primary">
+          <span class="material-symbols-outlined">add</span> Nuovo Viaggio
         </a>
         <a routerLink="/groups" class="btn btn-secondary">
-          <span>👥</span> I Tuoi Gruppi
+          <span class="material-symbols-outlined">group</span> I Tuoi Gruppi
         </a>
       </div>
     </div>
@@ -24,7 +24,7 @@
     <div class="metrics-grid animate-slide-up">
       <div class="card metric-card">
         <div class="metric-icon-bubble bg-indigo">
-          <span>🗺️</span>
+          <span class="material-symbols-outlined">map</span>
         </div>
         <div class="metric-details">
           <span class="metric-label">Viaggi nel Gruppo</span>
@@ -34,7 +34,7 @@
 
       <div class="card metric-card">
         <div class="metric-icon-bubble bg-emerald">
-          <span>✈️</span>
+          <span class="material-symbols-outlined">flight</span>
         </div>
         <div class="metric-details">
           <span class="metric-label">Prossimi Viaggi</span>
@@ -44,7 +44,7 @@
 
       <div class="card metric-card">
         <div class="metric-icon-bubble bg-sunset">
-          <span>📍</span>
+          <span class="material-symbols-outlined">location_on</span>
         </div>
         <div class="metric-details">
           <span class="metric-label">Nazioni Esplorate</span>
@@ -54,7 +54,7 @@
 
       <div class="card metric-card">
         <div class="metric-icon-bubble bg-amber">
-          <span>👥</span>
+          <span class="material-symbols-outlined">group</span>
         </div>
         <div class="metric-details">
           <span class="metric-label">Membri nel Gruppo</span>
@@ -67,10 +67,10 @@
     <div class="section-container mt-4 animate-fade-in">
       <div class="section-header">
         <div>
-          <h2 class="section-title">🎒 Viaggi in Primo Piano</h2>
+          <h2 class="section-title">Viaggi in Primo Piano</h2>
           <p class="section-subtitle">Esplora gli itinerari e le tappe culinarie programmate</p>
         </div>
-        <a routerLink="/trips" class="btn btn-outline btn-sm">Vedi Tutti ➔</a>
+        <a routerLink="/trips" class="btn btn-outline">Vedi Tutti <span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle">arrow_forward</span></a>
       </div>
 
       <div class="featured-trips-grid">
@@ -78,16 +78,16 @@
           <div class="card trip-preview-card">
             <div class="preview-img-wrap">
               <img [src]="trip.coverUrl" [alt]="trip.title" class="preview-img" loading="lazy">
-              <span class="badge badge-country preview-badge">📍 {{ trip.destination }}</span>
+              <span class="badge badge-country preview-badge"><span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle">location_on</span> {{ trip.destination }}</span>
             </div>
             <div class="preview-content">
               <h3 class="preview-title">{{ trip.title }}</h3>
               <p class="preview-notes">{{ trip.notes || 'Itinerario e tappe in fase di definizione.' }}</p>
               
               <div class="preview-footer">
-                <span class="preview-dates">🗓️ {{ trip.startDate }} - {{ trip.endDate }}</span>
-                <a [routerLink]="['/trips', trip.id]" class="btn btn-primary btn-sm">
-                  Apri Dettaglio ➔
+                <span class="preview-dates"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">event</span> {{ trip.startDate }} - {{ trip.endDate }}</span>
+                <a [routerLink]="['/trips', trip.id]" class="btn btn-primary">
+                  Apri Dettaglio <span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle">arrow_forward</span>
                 </a>
               </div>
             </div>

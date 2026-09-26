@@ -17,8 +17,8 @@
 
 .page-title {
   font-size: 1.6rem;
-  margin: 0.4rem 0 0.35rem 0;
-  color: var(--slate-900);
+  margin: 0.4rem 0 0.35rem;
+  color: var(--wb-text-primary);
 }
 
 @media (min-width: 768px) {
@@ -29,6 +29,7 @@
 
 .page-desc {
   font-size: 0.925rem;
+  color: var(--wb-text-secondary);
   max-width: 600px;
 }
 
@@ -73,24 +74,26 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border: 1.5px solid var(--border-subtle);
-  transition: all var(--transition-normal);
+  border: 1.5px solid var(--wb-border);
+  transition: all 220ms var(--wb-ease);
   position: relative;
 }
 
-.group-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--primary-300);
+@media (hover: hover) {
+  .group-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--wb-shadow-lg);
+    border-color: var(--wb-primary-border);
+  }
 }
 
 .group-card.is-active {
-  border-color: var(--emerald-500);
-  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
+  border-color: var(--wb-secondary-light);
+  box-shadow: 0 4px 20px rgba(45, 106, 79, 0.14);
 }
 
 .group-card-header {
-  padding: 1.15rem 1.15rem 0.5rem 1.15rem;
+  padding: 1.15rem 1.15rem 0.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -99,7 +102,7 @@
 .group-icon-bubble {
   width: 48px;
   height: 48px;
-  border-radius: var(--radius-md);
+  border-radius: var(--wb-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -115,20 +118,20 @@
 .group-name {
   font-size: 1.2rem;
   margin-bottom: 0.35rem;
-  color: var(--slate-900);
+  color: var(--wb-text-primary);
 }
 
 .group-desc {
   font-size: 0.875rem;
-  color: var(--slate-500);
+  color: var(--wb-text-secondary);
   margin-bottom: 1.15rem;
   line-height: 1.45;
 }
 
 .invite-code-box {
-  background: var(--slate-50);
-  border: 1px dashed var(--slate-200);
-  border-radius: var(--radius-md);
+  background: var(--wb-surface-1);
+  border: 1px dashed var(--wb-border);
+  border-radius: var(--wb-radius-md);
   padding: 0.6rem 0.85rem;
   display: flex;
   align-items: center;
@@ -145,26 +148,33 @@
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--slate-400);
+  color: var(--wb-text-tertiary);
 }
 
 .code-val {
-  font-family: monospace;
+  font-family: var(--wb-font-mono);
   font-size: 0.95rem;
-  color: var(--primary-700);
+  color: var(--wb-primary);
   letter-spacing: 0.05em;
+  font-weight: 700;
 }
 
 .btn-copy {
-  background: #ffffff;
-  border: 1px solid var(--slate-200);
-  border-radius: var(--radius-sm);
+  background: var(--wb-surface-0);
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius-sm);
   padding: 0.35rem 0.65rem;
   font-size: 0.775rem;
   font-weight: 600;
   cursor: pointer;
-  color: var(--slate-700);
-  transition: all var(--transition-fast);
+  color: var(--wb-text-secondary);
+  transition: all 150ms var(--wb-ease);
+  font-family: var(--wb-font-body);
+}
+
+.btn-copy:hover {
+  background: var(--wb-surface-1);
+  border-color: var(--wb-border-strong);
 }
 
 .btn-copy:active {
@@ -173,8 +183,8 @@
 
 .group-card-footer {
   padding: 0.85rem 1.15rem;
-  background: var(--slate-50);
-  border-top: 1px solid var(--slate-100);
+  background: var(--wb-surface-1);
+  border-top: 1px solid var(--wb-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -186,17 +196,44 @@
   gap: 0.25rem;
 }
 
+.group-card-footer-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .section-label {
   font-size: 0.7rem;
-  color: var(--slate-400);
+  color: var(--wb-text-tertiary);
   font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .text-uppercase {
   text-transform: uppercase;
-  font-family: monospace;
+  font-family: var(--wb-font-mono);
   letter-spacing: 0.08em;
   font-weight: 700;
+}
+
+.modal-info {
+  font-size: 0.9rem;
+  color: var(--wb-text-secondary);
+  line-height: 1.5;
+}
+
+.modal-info code {
+  background: var(--wb-surface-2);
+  color: var(--wb-primary);
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--wb-radius-xs);
+  font-family: var(--wb-font-mono);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.join-modal-content {
+  padding-bottom: 0.25rem;
 }
 
 .mt-3 {

@@ -3,7 +3,7 @@
   
   @if (stops && stops.length > 0) {
     <div class="map-floating-bar">
-      <span class="stops-count">📍 {{ stops.length }} {{ stops.length === 1 ? 'tappa' : 'tappe' }} sulla mappa</span>
+      <span class="stops-count"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">location_on</span> {{ stops.length }} {{ stops.length === 1 ? 'tappa' : 'tappe' }} sulla mappa</span>
       <span class="route-hint">Tracciato percorso giornaliero attivo</span>
     </div>
   } @else {

@@ -26,7 +26,16 @@ export const routes: Routes = [
   {
     path: 'groups',
     canActivate: [authGuard],
-    loadComponent: () => import('./features/groups/group-list/group-list.component').then(m => m.GroupListComponent)
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./features/groups/group-list/group-list.component').then(m => m.GroupListComponent)
+      },
+      {
+        path: ':id',
+        loadComponent: () => import('./features/groups/group-detail/group-detail.component').then(m => m.GroupDetailComponent)
+      }
+    ]
   },
   {
     path: 'trips',
@@ -45,6 +54,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/trips/trip-detail/trip-detail.component').then(m => m.TripDetailComponent)
       }
     ]
+  },
+  {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent)
   },
   {
     path: '**',
