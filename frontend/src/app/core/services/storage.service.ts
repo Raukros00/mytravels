@@ -108,10 +108,11 @@ export class StorageService {
   }
 
   private initializeSeedData(): void {
-    const existingUsers = this.getItem<User[]>(STORAGE_KEYS.USERS);
-    if (existingUsers && existingUsers.length > 0) {
-      return; // Already initialized
-    }
+    const SEED_VERSION = '5';
+    if (this.getItem<string>('wb_seed_version') === SEED_VERSION) return;
+    // Clear stale data before re-seeding
+    Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
+
 
     const defaultUser: User = {
       id: 'usr_demo_1',
@@ -140,10 +141,16 @@ export class StorageService {
       joinedDate: '2026-02-15'
     };
 
+    const explorer1 = { id: 'usr_demo_4', name: 'Sofia Conti', avatar: '🌸', color: '#ec4899', role: 'member' as const };
+    const explorer2 = { id: 'usr_demo_5', name: 'Luca Ferrari', avatar: '🏔️', color: '#0ea5e9', role: 'member' as const };
+    const explorer3 = { id: 'usr_demo_6', name: 'Martina Greco', avatar: '🌊', color: '#14b8a6', role: 'member' as const };
+    const explorer4 = { id: 'usr_demo_7', name: 'Davide Esposito', avatar: '🦅', color: '#f59e0b', role: 'member' as const };
+    const explorer5 = { id: 'usr_demo_8', name: 'Chiara Mancini', avatar: '🦋', color: '#a855f7', role: 'member' as const };
+
     const groups: Group[] = [
       {
         id: 'grp_1',
-        name: 'Weekend Foodies 🍕',
+        name: 'Weekend Foodies',
         description: 'Amanti del buon cibo e dei viaggi on-the-road culinari nel weekend.',
         icon: '🍕',
         color: '#f97316',
@@ -157,8 +164,26 @@ export class StorageService {
         ]
       },
       {
+        id: 'grp_3',
+        name: 'Gli Esploratori',
+        description: 'Viaggi off the beaten path, trekking, borghi nascosti e avventure senza mappa.',
+        icon: '🧭',
+        color: '#8b5cf6',
+        creatorId: defaultUser.id,
+        inviteCode: 'EXPLOR-888',
+        createdAt: '2026-05-20',
+        members: [
+          { id: defaultUser.id, name: defaultUser.name, avatar: defaultUser.avatar, role: 'admin', color: defaultUser.color },
+          { id: explorer1.id, name: explorer1.name, avatar: explorer1.avatar, role: explorer1.role, color: explorer1.color },
+          { id: explorer2.id, name: explorer2.name, avatar: explorer2.avatar, role: explorer2.role, color: explorer2.color },
+          { id: explorer3.id, name: explorer3.name, avatar: explorer3.avatar, role: explorer3.role, color: explorer3.color },
+          { id: explorer4.id, name: explorer4.name, avatar: explorer4.avatar, role: explorer4.role, color: explorer4.color },
+          { id: explorer5.id, name: explorer5.name, avatar: explorer5.avatar, role: explorer5.role, color: explorer5.color }
+        ]
+      },
+      {
         id: 'grp_2',
-        name: 'Giappone & Oriente 🗾',
+        name: 'Giappone & Oriente',
         description: 'Esplorazione culturale e gastronomica tra Tokyo, Kyoto e Osaka.',
         icon: '🍜',
         color: '#4f46e5',
@@ -483,7 +508,7 @@ export class StorageService {
     this.setActiveGroupId('grp_1');
     this.setTrips(trips);
     this.setCurrentUser(defaultUser);
-    // Initialize JWT storage as empty
     this.clearJwt();
+    this.setItem('wb_seed_version', SEED_VERSION);
   }
 }
