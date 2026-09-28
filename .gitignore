@@ -11,3 +11,7 @@ Thumbs.db
 .vscode/
 *.iml
 *.log
+# Environment variables
+.env
+.env.*
+!.env.example

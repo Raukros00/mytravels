@@ -19,6 +19,7 @@ public class GroupMember {
     /** Surrogate PK — internal only, never exposed in JSON. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     @JsonIgnore
     private Long rowId;
 
