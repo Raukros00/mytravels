@@ -4,9 +4,24 @@ server:
 spring:
   application:
     name: trip-planner-backend
-  data:
-    mongodb:
-      uri: mongodb://${SPRING_DATA_MONGODB_HOST:localhost}:${SPRING_DATA_MONGODB_PORT:27017}/${SPRING_DATA_MONGODB_DATABASE:tripplanner}
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:tripplanner}
+    username: ${POSTGRES_USER:tripplanner}
+    password: ${POSTGRES_PASSWORD:tripplanner}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
 
 jwt:
   secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
