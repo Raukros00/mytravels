@@ -1,0 +1,186 @@
+@if (group(); as g) {
+<div class="page-wrapper">
+  <div class="app-container max-w-2xl">
+
+    <!-- Back + Actions header -->
+    <div class="detail-header animate-fade-in">
+      <a routerLink="/groups" class="btn btn-ghost back-btn">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Gruppi
+      </a>
+      @if (!isEditing() && isCurrentUserAdmin()) {
+        <button type="button" class="btn btn-outline" (click)="startEdit()">
+          <span class="material-symbols-outlined">edit</span>
+          Modifica
+        </button>
+      }
+    </div>
+
+    <!-- Group Hero Card -->
+    @if (!isEditing()) {
+      <div class="card group-hero animate-fade-in">
+        <div class="group-hero-body">
+          <div class="group-icon-wrap" [style.background-color]="g.color + '22'" [style.border-color]="g.color + '55'">
+            <span class="group-icon-emoji">{{ g.icon }}</span>
+          </div>
+          <div class="group-hero-info">
+            <h1 class="group-hero-name">{{ g.name }}</h1>
+            <p class="group-hero-desc">{{ g.description || 'Nessuna descrizione.' }}</p>
+            <span class="group-hero-date">Creato il {{ g.createdAt }}</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Edit Form Card -->
+    @if (isEditing()) {
+      <div class="card form-card animate-fade-in">
+        <div class="form-card-header">
+          <h2 class="form-card-title">Modifica Gruppo</h2>
+        </div>
+        <div class="form-card-body">
+          <form [formGroup]="editForm">
+            <div class="form-group">
+              <label class="form-label">Nome del Gruppo *</label>
+              <input type="text" formControlName="name" class="form-input" placeholder="Nome del gruppo">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Descrizione</label>
+              <textarea formControlName="description" class="form-textarea" rows="3" placeholder="Descrizione..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Icona</label>
+              <div class="emoji-grid">
+                @for (emoji of emojiPresets; track emoji) {
+                  <button type="button" class="emoji-btn" [class.selected]="editForm.get('icon')?.value === emoji" (click)="editForm.patchValue({ icon: emoji })">{{ emoji }}</button>
+                }
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Colore</label>
+              <div class="color-grid">
+                @for (color of colorPresets; track color) {
+                  <button type="button" class="color-btn" [style.background-color]="color" [class.selected]="editForm.get('color')?.value === color" (click)="editForm.patchValue({ color: color })">
+                    @if (editForm.get('color')?.value === color) { <span>✓</span> }
+                  </button>
+                }
+              </div>
+            </div>
+          </form>
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" (click)="cancelEdit()">Annulla</button>
+            <button type="button" class="btn btn-primary" [disabled]="editForm.invalid" (click)="saveEdit()">
+              <span class="material-symbols-outlined">check</span>
+              Salva Modifiche
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Invite Code Card -->
+    <div class="card invite-card animate-fade-in">
+      <div class="invite-card-inner">
+        <div class="invite-info">
+          <span class="material-symbols-outlined invite-icon">key</span>
+          <div>
+            <p class="invite-label">Codice invito</p>
+            <strong class="invite-code">{{ g.inviteCode }}</strong>
+          </div>
+        </div>
+        <button type="button" class="btn btn-outline" (click)="copyCode(g.inviteCode)">
+          <span class="material-symbols-outlined">content_copy</span>
+          Copia
+        </button>
+      </div>
+      <p class="invite-hint">Condividi questo codice per invitare nuovi membri al gruppo.</p>
+    </div>
+
+    <!-- Members Card -->
+    <div class="card members-card animate-fade-in">
+      <div class="members-header">
+        <h2 class="members-title">Membri</h2>
+        <span class="badge badge-slate">{{ g.members.length }}</span>
+      </div>
+      <div class="members-list">
+        @for (member of g.members; track member.id) {
+          <div class="member-row">
+            <div class="member-avatar" [style.background-color]="member.color">
+              {{ member.name.charAt(0).toUpperCase() }}
+            </div>
+            <div class="member-info">
+              <span class="member-name">{{ member.name }}</span>
+              @if (member.role === 'admin') {
+                <span class="badge badge-sunset">Admin</span>
+              } @else {
+                <span class="badge badge-slate">Membro</span>
+              }
+            </div>
+            @if (isCurrentUserAdmin() && member.id !== authService.currentUser()?.id) {
+              <button type="button" class="remove-btn" (click)="removeMember(member.id)" title="Rimuovi membro">
+                <span class="material-symbols-outlined">person_remove</span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Trips summary -->
+    <div class="card trips-summary-card animate-fade-in">
+      <div class="members-header">
+        <h2 class="members-title">Viaggi del Gruppo</h2>
+        <span class="badge badge-indigo">{{ groupTrips().length }}</span>
+      </div>
+      @if (groupTrips().length > 0) {
+        <div class="trips-list">
+          @for (trip of groupTrips(); track trip.id) {
+            <a [routerLink]="['/trips', trip.id]" class="trip-row no-underline">
+              <div class="trip-row-img">
+                <img [src]="trip.coverUrl" [alt]="trip.title" loading="lazy">
+              </div>
+              <div class="trip-row-info">
+                <span class="trip-row-name">{{ trip.title }}</span>
+                <span class="trip-row-dest">{{ trip.destination }}</span>
+              </div>
+              <span class="material-symbols-outlined trip-row-arrow">chevron_right</span>
+            </a>
+          }
+        </div>
+      } @else {
+        <p class="empty-trips">Nessun viaggio ancora per questo gruppo.</p>
+      }
+    </div>
+
+    <!-- Danger Zone -->
+    @if (isCurrentUserAdmin()) {
+      <div class="danger-zone animate-fade-in">
+        @if (!showDeleteConfirm()) {
+          <button type="button" class="btn-danger-outline" (click)="confirmDelete()">
+            <span class="material-symbols-outlined">delete</span>
+            Elimina Gruppo
+          </button>
+        } @else {
+          <div class="delete-confirm">
+            <p class="delete-confirm-msg">Sei sicuro di voler eliminare <strong>{{ g.name }}</strong>? Questa azione è irreversibile.</p>
+            <div class="delete-confirm-actions">
+              <button type="button" class="btn btn-outline" (click)="cancelDelete()">Annulla</button>
+              <button type="button" class="btn-danger" (click)="deleteGroup()">
+                <span class="material-symbols-outlined">delete</span>
+                Sì, elimina
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+</div>
+} @else {
+  <div class="page-wrapper">
+    <div class="app-container">
+      <p style="color: var(--wb-text-secondary); padding: 2rem 0;">Gruppo non trovato.</p>
+    </div>
+  </div>
+}

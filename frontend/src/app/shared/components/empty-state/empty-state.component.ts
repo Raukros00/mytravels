@@ -10,9 +10,11 @@ import { CommonModule } from '@angular/common';
 })
 export class EmptyStateComponent {
   @Input() icon = '🗺️';
+  @Input() materialIcon = '';
   @Input() title = 'Nessun elemento trovato';
   @Input() description = 'Inizia creando il tuo primo itinerario o aggiungendo nuovi dettagli.';
   @Input() actionLabel = '';
-  @Input() actionIcon = '➕';
+  @Input() actionIcon = '';
+  @Input() actionMaterialIcon = 'add';
   @Output() action = new EventEmitter<void>();
 }

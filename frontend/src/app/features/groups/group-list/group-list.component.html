@@ -9,11 +9,11 @@
       </div>
 
       <div class="header-actions">
-        <button type="button" class="btn btn-outline flex-1" (click)="isJoinModalOpen.set(true)">
-          <span>🔑</span> Unisciti con Codice
+        <button type="button" class="btn btn-outline " (click)="isJoinModalOpen.set(true)">
+          <span class="material-symbols-outlined">person_add</span> Unisciti con codice
         </button>
-        <button type="button" class="btn btn-sunset flex-1" (click)="isCreateModalOpen.set(true)">
-          <span>➕</span> Crea Gruppo
+        <button type="button" class="btn btn-primary " (click)="isCreateModalOpen.set(true)">
+          <span class="material-symbols-outlined">add</span> Nuovo Gruppo
         </button>
       </div>
     </div>
@@ -39,7 +39,7 @@
               } @else {
                 <button 
                   type="button" 
-                  class="btn btn-secondary btn-sm select-active-btn" 
+                  class="btn btn-secondary select-active-btn"
                   (click)="selectActiveGroup(group.id)">
                   Imposta Attivo
                 </button>
@@ -62,7 +62,7 @@
                   class="btn-copy" 
                   (click)="copyCode(group.inviteCode)" 
                   title="Copia codice negli appunti">
-                  📋 Copia
+                  <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">content_copy</span> Copia
                 </button>
               </div>
             </div>
@@ -83,19 +83,19 @@
                 </div>
               </div>
 
-              <a 
-                routerLink="/trips" 
-                (click)="selectActiveGroup(group.id)" 
-                class="btn btn-outline btn-sm">
-                Vedi Viaggi ➔
-              </a>
+              <div class="group-card-footer-actions">
+                <a [routerLink]="['/groups', group.id]" class="btn btn-primary">
+                  <span class="material-symbols-outlined" style="font-size:18px">open_in_new</span>
+                  Dettaglio
+                </a>
+              </div>
             </div>
           </div>
         }
       </div>
     } @else {
       <app-empty-state
-        icon="👥"
+        materialIcon="group"
         title="Non fai ancora parte di nessun gruppo"
         description="Crea il tuo primo gruppo di viaggio per iniziare a pianificare insieme ai tuoi amici."
         actionLabel="Crea il tuo primo gruppo"
@@ -115,7 +115,7 @@
 <app-modal 
   [isOpen]="isJoinModalOpen()" 
   title="Unisciti a un Gruppo con Codice" 
-  icon="🔑" 
+  icon="key" 
   (close)="isJoinModalOpen.set(false)">
   
   <div class="join-modal-content">

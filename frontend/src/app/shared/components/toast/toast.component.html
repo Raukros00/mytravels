@@ -3,17 +3,17 @@
     <div class="toast-item toast-{{ toast.type }} animate-slide-in" role="alert">
       <div class="toast-icon">
         @switch (toast.type) {
-          @case ('success') { <span>✨</span> }
-          @case ('error') { <span>⚠️</span> }
-          @case ('warning') { <span>⚡</span> }
-          @default { <span>ℹ️</span> }
+          @case ('success') { <span class="material-symbols-outlined">check_circle</span> }
+          @case ('error') { <span class="material-symbols-outlined">error</span> }
+          @case ('warning') { <span class="material-symbols-outlined">warning</span> }
+          @default { <span class="material-symbols-outlined">info</span> }
         }
       </div>
       <div class="toast-content">
         <p class="toast-message">{{ toast.message }}</p>
       </div>
       <button type="button" class="toast-close" (click)="toastService.remove(toast.id)" aria-label="Chiudi notifica">
-        ✕
+        <span class="material-symbols-outlined" style="font-size:18px">close</span>
       </button>
     </div>
   }
