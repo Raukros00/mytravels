@@ -1,30 +1,55 @@
 package com.example.tripplanner.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Entity
+@Table(name = "trip_activities")
 public class TripActivity {
+
+    @Id
+    @EqualsAndHashCode.Include
     private String id;
+
+    /** Owning side of the FK — not serialized to avoid recursion. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trip_id", nullable = false, insertable = false, updatable = false)
+    @JsonIgnore
+    private Trip trip;
+
+    /** Scalar column so JSON still has "tripId". */
+    @Column(name = "trip_id", nullable = false)
     private String tripId;
+
     private String name;
-    private String category; // 'monument' | 'museum' | 'nature' | 'experience' | 'shopping' | 'other'
+
+    /** 'monument' | 'museum' | 'nature' | 'experience' | 'shopping' | 'other' */
+    private String category;
+
+    @Column(columnDefinition = "text")
     private String address;
+
+    @Embedded
     private GeoPoint coordinates;
-    private Boolean ticketsRequired;
-    private Double ticketPrice;
+
+    @Column(name = "tickets_required") private Boolean ticketsRequired;
+    @Column(name = "ticket_price")     private Double ticketPrice;
     private String currency;
-    private Boolean bookingRequired;
-    private String bookingUrl;
-    private String openingHours;
-    private String closingDays;
-    private String notes;
-    private Integer assignedDay; // null = in backlog, number = assigned to Day X
-    private String timeSlot;     // e.g. "10:00 - 12:00"
-    private Boolean isCompleted;
+    @Column(name = "booking_required") private Boolean bookingRequired;
+    @Column(name = "booking_url", columnDefinition = "text") private String bookingUrl;
+    @Column(name = "opening_hours")    private String openingHours;
+    @Column(name = "closing_days")     private String closingDays;
+    @Column(columnDefinition = "text") private String notes;
+
+    /** null = backlog, number = assigned to Day X */
+    @Column(name = "assigned_day")  private Integer assignedDay;
+    @Column(name = "time_slot")     private String timeSlot;
+    @Column(name = "is_completed")  private Boolean isCompleted;
 }
