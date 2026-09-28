@@ -1,33 +1,52 @@
 package com.example.tripplanner.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.data.domain.Persistable;
 
-import java.time.Instant;
-
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "users")
-public class User {
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Entity
+@Table(name = "users",
+       uniqueConstraints = @UniqueConstraint(columnNames = "email"))
+public class User implements Persistable<String> {
+
     @Id
+    @EqualsAndHashCode.Include
     private String id;
+
     private String name;
-    
-    @Indexed(unique = true)
+
+    @Column(nullable = false, unique = true)
     private String email;
-    
+
     private String password;
     private String avatar;
     private String color;
-    private String role; // "USER" or "ADMIN"
-    
+
+    /** "USER" or "ADMIN" */
+    private String role;
+
+    @Column(name = "joined_date")
+    private String joinedDate;
+
+    /**
+     * Tracks whether this instance has never been persisted.
+     * Needed because Hibernate issues a SELECT before INSERT for app-assigned PKs
+     * unless the entity implements Persistable correctly.
+     */
+    @Transient
     @Builder.Default
-    private String joinedDate = Instant.now().toString();
+    private boolean isNew = true;
+
+    @Override
+    public boolean isNew() { return isNew; }
+
+    @PostLoad
+    @PostPersist
+    void markNotNew() { this.isNew = false; }
 }

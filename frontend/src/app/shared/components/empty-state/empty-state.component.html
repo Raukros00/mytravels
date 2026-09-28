@@ -1,13 +1,21 @@
 <div class="empty-state-card animate-fade-in">
   <div class="empty-icon-bubble">
-    <span>{{ icon }}</span>
+    @if (materialIcon) {
+      <span class="material-symbols-outlined" style="font-size: 2rem">{{ materialIcon }}</span>
+    } @else {
+      <span>{{ icon }}</span>
+    }
   </div>
   <h3 class="empty-title">{{ title }}</h3>
   <p class="empty-description">{{ description }}</p>
-  
+
   @if (actionLabel) {
     <button type="button" class="btn btn-primary" (click)="action.emit()">
-      <span>{{ actionIcon }}</span>
+      @if (actionIcon) {
+        <span>{{ actionIcon }}</span>
+      } @else {
+        <span class="material-symbols-outlined" style="font-size: 1.1rem">{{ actionMaterialIcon }}</span>
+      }
       {{ actionLabel }}
     </button>
   }
