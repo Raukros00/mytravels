@@ -3,6 +3,7 @@ import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
 import { GroupService } from './group.service';
 import { ApiService } from './api.service';
+import { USE_MOCK_DATA } from '../config/mock.config';
 import { 
   AccommodationDetails, 
   AirportTransfer, 
@@ -57,6 +58,7 @@ export class TripService {
   }
 
   public loadTripsByGroup(groupId: string): void {
+    if (USE_MOCK_DATA) return;
     this.apiService.get<Trip[]>(`/api/v1/trips/group/${groupId}`).subscribe({
       next: (trips) => {
         if (trips) {
@@ -67,7 +69,7 @@ export class TripService {
         }
       },
       error: (err) => {
-        console.warn('Backend unavailable, using cached trips:', err);
+        console.warn('Backend unavailable, using cached trips:', err.status, err.error?.message || err.message);
       }
     });
   }

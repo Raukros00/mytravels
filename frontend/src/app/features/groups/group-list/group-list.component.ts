@@ -1,10 +1,13 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, HostListener, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { TranslatePipe } from '@ngx-translate/core';
+import { AuthService } from '../../../core/services/auth.service';
 import { GroupService } from '../../../core/services/group.service';
 import { TripService } from '../../../core/services/trip.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { Group } from '../../../core/models/group.model';
 import { GroupCreateModalComponent } from '../group-create-modal/group-create-modal.component';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
@@ -13,24 +16,58 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
   selector: 'app-group-list',
   standalone: true,
   imports: [
-    CommonModule, 
-    RouterModule, 
-    FormsModule, 
-    GroupCreateModalComponent, 
-    ModalComponent, 
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    TranslatePipe,
+    GroupCreateModalComponent,
+    ModalComponent,
     EmptyStateComponent
   ],
   templateUrl: './group-list.component.html',
   styleUrl: './group-list.component.css'
 })
 export class GroupListComponent {
+  public authService = inject(AuthService);
   public groupService = inject(GroupService);
   public tripService = inject(TripService);
   private toastService = inject(ToastService);
 
+  public deleteConfirmGroup = signal<Group | null>(null);
+
+  confirmDelete(): void {
+    const group = this.deleteConfirmGroup();
+    if (!group) return;
+    this.groupService.deleteGroup(group.id);
+    this.deleteConfirmGroup.set(null);
+    this.toastService.success(`Gruppo "${group.name}" eliminato.`);
+  }
+
+  readonly MAX_AVATARS = 4;
+
   public isCreateModalOpen = signal(false);
   public isJoinModalOpen = signal(false);
+  public openMenuId = signal<string | null>(null);
+  public revealedCodes = signal<Set<string>>(new Set());
+
+  toggleCode(groupId: string): void {
+    this.revealedCodes.update(s => {
+      const next = new Set(s);
+      next.has(groupId) ? next.delete(groupId) : next.add(groupId);
+      return next;
+    });
+  }
   public inviteCodeInput = '';
+
+  @HostListener('document:click')
+  closeMenu(): void {
+    this.openMenuId.set(null);
+  }
+
+  toggleMenu(groupId: string, event: MouseEvent): void {
+    event.stopPropagation();
+    this.openMenuId.set(this.openMenuId() === groupId ? null : groupId);
+  }
 
   selectActiveGroup(groupId: string): void {
     this.groupService.setActiveGroup(groupId);
@@ -39,6 +76,16 @@ export class GroupListComponent {
   copyCode(code: string): void {
     navigator.clipboard.writeText(code);
     this.toastService.success(`Codice ${code} copiato negli appunti! 📋`);
+  }
+
+  shareGroup(group: { name: string; inviteCode: string }): void {
+    const text = `Unisciti al gruppo "${group.name}" su WanderBite! Codice: ${group.inviteCode}`;
+    if (navigator.share) {
+      navigator.share({ title: group.name, text });
+    } else {
+      navigator.clipboard.writeText(text);
+      this.toastService.success('Link di condivisione copiato negli appunti!');
+    }
   }
 
   onJoinGroup(): void {

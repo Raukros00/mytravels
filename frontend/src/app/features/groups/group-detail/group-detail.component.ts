@@ -1,108 +1,137 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router, ActivatedRoute } from '@angular/router';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { GroupService } from '../../../core/services/group.service';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
-import { ToastService } from '../../../core/services/toast.service';
+import { GroupService } from '../../../core/services/group.service';
 import { TripService } from '../../../core/services/trip.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { ModalComponent } from '../../../shared/components/modal/modal.component';
 
 @Component({
   selector: 'app-group-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ModalComponent],
   templateUrl: './group-detail.component.html',
   styleUrl: './group-detail.component.css'
 })
 export class GroupDetailComponent {
-  private fb = inject(FormBuilder);
-  public groupService = inject(GroupService);
-  public authService = inject(AuthService);
-  public tripService = inject(TripService);
-  private toastService = inject(ToastService);
-  private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  public authService = inject(AuthService);
+  public groupService = inject(GroupService);
+  private tripService = inject(TripService);
+  private toastService = inject(ToastService);
 
-  public isEditing = signal(false);
-  public showDeleteConfirm = signal(false);
+  private groupId = toSignal(this.route.paramMap.pipe(map(p => p.get('id') ?? '')));
 
-  public emojiPresets = ['✈️', '🍕', '🍜', '🍷', '🏖️', '🎒', '🏰', '🍣', '🍦', '☕', '🏕️', '🌮', '🍸', '🏔️', '🚂', '🥐'];
-  public colorPresets = ['#AB2F0A', '#2D6A4F', '#B45309', '#2563EB', '#7C3AED', '#0D9488', '#DC2626'];
+  public group = computed(() =>
+    this.groupService.userGroups().find(g => g.id === this.groupId()) ?? null
+  );
 
-  public group = computed(() => {
-    const id = this.route.snapshot.paramMap.get('id');
-    return id ? this.groupService.getGroupById(id) : undefined;
-  });
+  public groupTrips = computed(() =>
+    this.tripService.trips().filter(t => t.groupId === this.groupId())
+  );
 
-  public groupTrips = computed(() => {
-    const g = this.group();
-    if (!g) return [];
-    return this.tripService.trips().filter(t => t.groupId === g.id);
-  });
+  public codeVisible = signal(false);
+  public deleteConfirmVisible = signal(false);
+  public shareModalVisible = signal(false);
+  public activeMemberMenu = signal<string | null>(null);
+  public customMessage = signal('');
+  public membersModalVisible = signal(false);
 
-  public isCurrentUserAdmin = computed(() => {
-    const user = this.authService.currentUser();
-    const g = this.group();
-    if (!user || !g) return false;
-    const me = g.members.find(m => m.id === user.id);
-    return me?.role === 'admin' || g.creatorId === user.id;
-  });
-
-  public editForm = this.fb.group({
-    name: ['', [Validators.required, Validators.minLength(3)]],
-    description: [''],
-    icon: ['', Validators.required],
-    color: ['', Validators.required]
-  });
-
-  startEdit(): void {
-    const g = this.group();
-    if (!g) return;
-    this.editForm.patchValue({ name: g.name, description: g.description, icon: g.icon, color: g.color });
-    this.isEditing.set(true);
-  }
-
-  cancelEdit(): void {
-    this.isEditing.set(false);
-  }
-
-  saveEdit(): void {
-    if (this.editForm.invalid) return;
-    const g = this.group();
-    if (!g) return;
-    const val = this.editForm.value;
-    this.groupService.updateGroup(g.id, {
-      name: val.name!,
-      description: val.description || '',
-      icon: val.icon!,
-      color: val.color!
-    });
-    this.isEditing.set(false);
-  }
-
-  removeMember(memberId: string): void {
-    const g = this.group();
-    if (!g) return;
-    this.groupService.removeMember(g.id, memberId);
-  }
-
-  copyCode(code: string): void {
-    navigator.clipboard.writeText(code);
-    this.toastService.success('Codice copiato! 📋');
-  }
-
-  confirmDelete(): void {
-    this.showDeleteConfirm.set(true);
-  }
-
-  cancelDelete(): void {
-    this.showDeleteConfirm.set(false);
-  }
+  public isCreator = computed(() =>
+    !!this.group() && this.group()!.creatorId === this.authService.currentUser()?.id
+  );
 
   deleteGroup(): void {
     const g = this.group();
     if (!g) return;
     this.groupService.deleteGroup(g.id);
+    this.deleteConfirmVisible.set(false);
+    this.toastService.success(`Gruppo "${g.name}" eliminato.`);
+    this.router.navigate(['/groups']);
+  }
+
+  copyCode(): void {
+    const code = this.group()?.inviteCode;
+    if (!code) return;
+    navigator.clipboard.writeText(code);
+    this.toastService.success(`Codice ${code} copiato negli appunti! 📋`);
+  }
+
+  openShareModal(): void {
+    const g = this.group();
+    if (!g) return;
+    this.customMessage.set(
+      `Unisciti al gruppo "${g.name}" su WanderBite! 🌍\nUsa il codice invito: ${g.inviteCode}`
+    );
+    this.shareModalVisible.set(true);
+  }
+
+  onShareModalClose(): void {
+    this.shareModalVisible.set(false);
+    this.codeVisible.set(false);
+  }
+
+  shareGroup(): void {
+    const g = this.group();
+    if (!g) return;
+    const text = this.customMessage();
+    if (navigator.share) {
+      navigator.share({ title: g.name, text });
+    } else {
+      navigator.clipboard.writeText(text);
+      this.toastService.success('Messaggio copiato!');
+    }
+  }
+
+  shareWhatsApp(): void {
+    const text = encodeURIComponent(this.customMessage());
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  }
+
+  shareSms(): void {
+    const text = encodeURIComponent(this.customMessage());
+    window.open(`sms:?body=${text}`, '_blank');
+  }
+
+  copyMessage(): void {
+    navigator.clipboard.writeText(this.customMessage());
+    this.toastService.success('Messaggio copiato negli appunti!');
+  }
+
+  makeAdmin(memberId: string): void {
+    const g = this.group();
+    if (!g) return;
+    this.groupService.setMemberRole(g.id, memberId, 'admin');
+  }
+
+  removeMemberFromGroup(memberId: string): void {
+    const g = this.group();
+    if (!g) return;
+    this.groupService.removeMember(g.id, memberId);
+  }
+
+  leaveGroup(): void {
+    const g = this.group();
+    const user = this.authService.currentUser();
+    if (!g || !user) return;
+    this.membersModalVisible.set(false);
+    this.groupService.removeMember(g.id, user.id);
+    this.router.navigate(['/groups']);
+  }
+
+  toggleMemberMenu(memberId: string): void {
+    this.activeMemberMenu.update(current => current === memberId ? null : memberId);
+  }
+
+  createTrip(): void {
+    this.router.navigate(['/trips', 'new'], { queryParams: { groupId: this.groupId() } });
+  }
+
+  goBack(): void {
     this.router.navigate(['/groups']);
   }
 }

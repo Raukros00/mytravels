@@ -4,6 +4,7 @@ import { ToastService } from './toast.service';
 import { AuthService } from './auth.service';
 import { ApiService } from './api.service';
 import { CreateGroupDto, Group } from '../models/group.model';
+import { USE_MOCK_DATA } from '../config/mock.config';
 
 @Injectable({
   providedIn: 'root'
@@ -47,6 +48,7 @@ export class GroupService {
   }
 
   public loadGroups(): void {
+    if (USE_MOCK_DATA) return;
     this.apiService.get<Group[]>('/api/v1/groups').subscribe({
       next: (groups) => {
         if (groups && groups.length > 0) {
@@ -58,7 +60,7 @@ export class GroupService {
         }
       },
       error: (err) => {
-        console.warn('Backend unavailable, using cached groups:', err);
+        console.warn('Backend unavailable, using cached groups:', err.status, err.error?.message || err.message);
       }
     });
   }
@@ -153,6 +155,18 @@ export class GroupService {
       error: (err) => console.error('Error deleting group:', err)
     });
     if (group) this.toastService.success(`Gruppo "${group.name}" eliminato.`);
+  }
+
+  public setMemberRole(groupId: string, memberId: string, role: 'admin' | 'member'): void {
+    const updated = this.groupsSignal().map(g =>
+      g.id === groupId ? {
+        ...g,
+        members: g.members.map(m => m.id === memberId ? { ...m, role } : m)
+      } : g
+    );
+    this.groupsSignal.set(updated);
+    this.storageService.setGroups(updated);
+    this.toastService.success(role === 'admin' ? 'Membro promosso ad admin.' : 'Ruolo aggiornato.');
   }
 
   public removeMember(groupId: string, memberId: string): void {

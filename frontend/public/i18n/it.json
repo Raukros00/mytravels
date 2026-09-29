@@ -1,0 +1,30 @@
+{
+  "nav": {
+    "trips": "Viaggi",
+    "groups": "Gruppi",
+    "profile": "Profilo",
+    "logout": "Disconnetti",
+    "login": "Accedi",
+    "register": "Registrati"
+  },
+  "groups": {
+    "title": "I tuoi gruppi",
+    "description": "Pianifica nuovi viaggi insieme ai tuoi compagni di avventure, segnate i ristoranti e organizzate le varie tappe per un viaggio indimenticabile.",
+    "join_btn": "Unisciti con codice",
+    "new_btn": "Nuovo Gruppo",
+    "invite_code_label": "Codice Invito",
+    "copy": "Copia",
+    "members": "Membri ({{ count }})",
+    "detail_btn": "Dettaglio",
+    "no_description": "Nessuna descrizione specificata.",
+    "empty_title": "Non fai ancora parte di nessun gruppo",
+    "empty_description": "Crea il tuo primo gruppo di viaggio per iniziare a pianificare insieme ai tuoi amici.",
+    "empty_action": "Crea il tuo primo gruppo",
+    "join_modal_title": "Unisciti a un Gruppo con Codice",
+    "join_modal_info": "Inserisci il codice di invito fornito dal creatore del gruppo (es. FOODIE-2026).",
+    "join_modal_label": "Codice Gruppo",
+    "join_modal_placeholder": "GRP-XXXXX",
+    "cancel": "Annulla",
+    "join_now": "Unisciti Ora"
+  }
+}

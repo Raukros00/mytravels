@@ -1,186 +1,297 @@
-@if (group(); as g) {
 <div class="page-wrapper">
-  <div class="app-container max-w-2xl">
+  <div class="app-container detail-container">
 
-    <!-- Back + Actions header -->
-    <div class="detail-header animate-fade-in">
-      <a routerLink="/groups" class="btn btn-ghost back-btn">
-        <span class="material-symbols-outlined">arrow_back</span>
-        Gruppi
-      </a>
-      @if (!isEditing() && isCurrentUserAdmin()) {
-        <button type="button" class="btn btn-outline" (click)="startEdit()">
-          <span class="material-symbols-outlined">edit</span>
-          Modifica
-        </button>
-      }
-    </div>
+    <a routerLink="/groups" class="back-link">
+      <span class="material-symbols-outlined">arrow_back</span>
+      I tuoi gruppi
+    </a>
 
-    <!-- Group Hero Card -->
-    @if (!isEditing()) {
-      <div class="card group-hero animate-fade-in">
-        <div class="group-hero-body">
-          <div class="group-icon-wrap" [style.background-color]="g.color + '22'" [style.border-color]="g.color + '55'">
-            <span class="group-icon-emoji">{{ g.icon }}</span>
+    @if (group(); as g) {
+
+      <!-- Hero -->
+      <div class="group-hero card">
+        <div class="group-hero-top">
+          <div class="group-hero-icon" [style.background-color]="g.color + '22'" [style.border-color]="g.color">
+            {{ g.icon }}
           </div>
           <div class="group-hero-info">
             <h1 class="group-hero-name">{{ g.name }}</h1>
-            <p class="group-hero-desc">{{ g.description || 'Nessuna descrizione.' }}</p>
-            <span class="group-hero-date">Creato il {{ g.createdAt }}</span>
-          </div>
-        </div>
-      </div>
-    }
-
-    <!-- Edit Form Card -->
-    @if (isEditing()) {
-      <div class="card form-card animate-fade-in">
-        <div class="form-card-header">
-          <h2 class="form-card-title">Modifica Gruppo</h2>
-        </div>
-        <div class="form-card-body">
-          <form [formGroup]="editForm">
-            <div class="form-group">
-              <label class="form-label">Nome del Gruppo *</label>
-              <input type="text" formControlName="name" class="form-input" placeholder="Nome del gruppo">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Descrizione</label>
-              <textarea formControlName="description" class="form-textarea" rows="3" placeholder="Descrizione..."></textarea>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Icona</label>
-              <div class="emoji-grid">
-                @for (emoji of emojiPresets; track emoji) {
-                  <button type="button" class="emoji-btn" [class.selected]="editForm.get('icon')?.value === emoji" (click)="editForm.patchValue({ icon: emoji })">{{ emoji }}</button>
-                }
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Colore</label>
-              <div class="color-grid">
-                @for (color of colorPresets; track color) {
-                  <button type="button" class="color-btn" [style.background-color]="color" [class.selected]="editForm.get('color')?.value === color" (click)="editForm.patchValue({ color: color })">
-                    @if (editForm.get('color')?.value === color) { <span>✓</span> }
-                  </button>
-                }
-              </div>
-            </div>
-          </form>
-          <div class="form-actions">
-            <button type="button" class="btn btn-outline" (click)="cancelEdit()">Annulla</button>
-            <button type="button" class="btn btn-primary" [disabled]="editForm.invalid" (click)="saveEdit()">
-              <span class="material-symbols-outlined">check</span>
-              Salva Modifiche
-            </button>
-          </div>
-        </div>
-      </div>
-    }
-
-    <!-- Invite Code Card -->
-    <div class="card invite-card animate-fade-in">
-      <div class="invite-card-inner">
-        <div class="invite-info">
-          <span class="material-symbols-outlined invite-icon">key</span>
-          <div>
-            <p class="invite-label">Codice invito</p>
-            <strong class="invite-code">{{ g.inviteCode }}</strong>
-          </div>
-        </div>
-        <button type="button" class="btn btn-outline" (click)="copyCode(g.inviteCode)">
-          <span class="material-symbols-outlined">content_copy</span>
-          Copia
-        </button>
-      </div>
-      <p class="invite-hint">Condividi questo codice per invitare nuovi membri al gruppo.</p>
-    </div>
-
-    <!-- Members Card -->
-    <div class="card members-card animate-fade-in">
-      <div class="members-header">
-        <h2 class="members-title">Membri</h2>
-        <span class="badge badge-slate">{{ g.members.length }}</span>
-      </div>
-      <div class="members-list">
-        @for (member of g.members; track member.id) {
-          <div class="member-row">
-            <div class="member-avatar" [style.background-color]="member.color">
-              {{ member.name.charAt(0).toUpperCase() }}
-            </div>
-            <div class="member-info">
-              <span class="member-name">{{ member.name }}</span>
-              @if (member.role === 'admin') {
-                <span class="badge badge-sunset">Admin</span>
-              } @else {
-                <span class="badge badge-slate">Membro</span>
-              }
-            </div>
-            @if (isCurrentUserAdmin() && member.id !== authService.currentUser()?.id) {
-              <button type="button" class="remove-btn" (click)="removeMember(member.id)" title="Rimuovi membro">
-                <span class="material-symbols-outlined">person_remove</span>
-              </button>
+            @if (g.description) {
+              <p class="group-hero-desc">{{ g.description }}</p>
             }
           </div>
-        }
-      </div>
-    </div>
-
-    <!-- Trips summary -->
-    <div class="card trips-summary-card animate-fade-in">
-      <div class="members-header">
-        <h2 class="members-title">Viaggi del Gruppo</h2>
-        <span class="badge badge-indigo">{{ groupTrips().length }}</span>
-      </div>
-      @if (groupTrips().length > 0) {
-        <div class="trips-list">
-          @for (trip of groupTrips(); track trip.id) {
-            <a [routerLink]="['/trips', trip.id]" class="trip-row no-underline">
-              <div class="trip-row-img">
-                <img [src]="trip.coverUrl" [alt]="trip.title" loading="lazy">
-              </div>
-              <div class="trip-row-info">
-                <span class="trip-row-name">{{ trip.title }}</span>
-                <span class="trip-row-dest">{{ trip.destination }}</span>
-              </div>
-              <span class="material-symbols-outlined trip-row-arrow">chevron_right</span>
-            </a>
-          }
-        </div>
-      } @else {
-        <p class="empty-trips">Nessun viaggio ancora per questo gruppo.</p>
-      }
-    </div>
-
-    <!-- Danger Zone -->
-    @if (isCurrentUserAdmin()) {
-      <div class="danger-zone animate-fade-in">
-        @if (!showDeleteConfirm()) {
-          <button type="button" class="btn-danger-outline" (click)="confirmDelete()">
-            <span class="material-symbols-outlined">delete</span>
-            Elimina Gruppo
+          <button type="button" class="btn btn-outline hero-share-btn" (click)="openShareModal()">
+            <span class="material-symbols-outlined" style="font-size:18px">share</span>
+            Condividi
           </button>
-        } @else {
-          <div class="delete-confirm">
-            <p class="delete-confirm-msg">Sei sicuro di voler eliminare <strong>{{ g.name }}</strong>? Questa azione è irreversibile.</p>
-            <div class="delete-confirm-actions">
-              <button type="button" class="btn btn-outline" (click)="cancelDelete()">Annulla</button>
-              <button type="button" class="btn-danger" (click)="deleteGroup()">
-                <span class="material-symbols-outlined">delete</span>
-                Sì, elimina
+        </div>
+        <div class="group-hero-stats">
+          <span class="hero-stat">
+            <span class="material-symbols-outlined">group</span>
+            {{ g.members.length }} membri
+          </span>
+          <span class="hero-stat-sep"></span>
+          <span class="hero-stat">
+            <span class="material-symbols-outlined">luggage</span>
+            {{ groupTrips().length }} viaggi
+          </span>
+          <span class="hero-stat-sep"></span>
+          <span class="hero-stat">
+            <span class="material-symbols-outlined">calendar_today</span>
+            Creato {{ g.createdAt | date:'MMM y' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Viaggi + Membri (two-column grid) -->
+      <div class="main-grid">
+
+        <!-- Viaggi (sinistra) -->
+        <div class="section-card card">
+          <div class="section-header">
+            <span class="material-symbols-outlined section-icon">luggage</span>
+            <div>
+              <h2 class="section-title">Viaggi</h2>
+              <p class="section-desc">Pianificati con questo gruppo.</p>
+            </div>
+            <span class="trip-counter">{{ groupTrips().length }}</span>
+          </div>
+
+          @if (groupTrips().length > 0) {
+            <div class="trips-grid">
+              @for (trip of groupTrips(); track trip.id) {
+                <div class="trip-card">
+                  <div class="trip-cover" [style.background-image]="'url(' + trip.coverUrl + ')'">
+                    <div class="trip-cover-overlay"></div>
+                    <div class="trip-cover-content">
+                      <h3 class="trip-dest">{{ trip.destination }}</h3>
+                      <p class="trip-dates">{{ trip.startDate | date:'d MMM' }} — {{ trip.endDate | date:'d MMM y' }}</p>
+                    </div>
+                    <a [routerLink]="['/trips', trip.id]" class="trip-link-btn" title="Apri viaggio">
+                      <span class="material-symbols-outlined">arrow_outward</span>
+                    </a>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="trips-empty">
+              <span class="material-symbols-outlined trips-empty-icon">flight_takeoff</span>
+              <p>Nessun viaggio ancora. Crea il primo!</p>
+            </div>
+          }
+
+          <button type="button" class="new-trip-btn" (click)="createTrip()">
+            <span class="material-symbols-outlined">add</span>
+            Nuovo viaggio
+          </button>
+        </div>
+
+        <!-- Colonna destra: Membri + Zona pericolosa -->
+        <div class="right-col">
+
+          <div class="section-card card">
+            <div class="section-header">
+              <span class="material-symbols-outlined section-icon">group</span>
+              <div>
+                <h2 class="section-title">Membri</h2>
+                <p class="section-desc">{{ g.members.length }} persone</p>
+              </div>
+              <button type="button" class="link-btn" (click)="membersModalVisible.set(true)">
+                Gestisci
+                <span class="material-symbols-outlined">arrow_forward</span>
               </button>
             </div>
+
+            <ul class="members-list">
+              @for (member of g.members.slice(0, 6); track member.id) {
+                <li class="member-row">
+                  <div class="avatar member-avatar" [style.background-color]="member.color">
+                    {{ member.avatar }}
+                  </div>
+                  <div class="member-info">
+                    <span class="member-name">{{ member.name }}</span>
+                    @if (member.role === 'admin') {
+                      <span class="role-badge">Admin</span>
+                    }
+                    @if (authService.currentUser()?.id === member.id) {
+                      <span class="you-badge">Tu</span>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+
+            @if (g.members.length > 6) {
+              <p class="members-overflow">+{{ g.members.length - 6 }} altri membri</p>
+            }
           </div>
-        }
+
+          @if (isCreator()) {
+          <div class="section-card section-card--danger card">
+            <h2 class="section-title section-title--danger">Zona pericolosa</h2>
+            <div class="danger-action">
+                <div>
+                  <p class="danger-action-label">Elimina il gruppo</p>
+                  <p class="section-desc">Azione irreversibile. Il gruppo verrà rimosso per tutti i membri.</p>
+                </div>
+                <button type="button" class="btn btn-danger btn-danger--solid" (click)="deleteConfirmVisible.set(true)">
+                  <span class="material-symbols-outlined">delete</span>
+                  Elimina
+                </button>
+              </div>
+          </div>
+          }
+
+        </div>
+
+      </div>
+
+    } @else {
+      <div class="not-found card">
+        <p>Gruppo non trovato.</p>
+        <a routerLink="/groups" class="btn btn-primary">Torna ai gruppi</a>
       </div>
     }
 
   </div>
 </div>
-} @else {
-  <div class="page-wrapper">
-    <div class="app-container">
-      <p style="color: var(--wb-text-secondary); padding: 2rem 0;">Gruppo non trovato.</p>
-    </div>
+
+<!-- Members Modal -->
+<app-modal
+  [isOpen]="membersModalVisible()"
+  title="Membri del gruppo"
+  icon="group"
+  (close)="membersModalVisible.set(false)">
+
+  @if (group(); as g) {
+    <ul class="modal-members-list">
+      @for (member of g.members; track member.id) {
+        <li class="modal-member-row">
+          <div class="avatar member-avatar" [style.background-color]="member.color">
+            {{ member.avatar }}
+          </div>
+          <div class="member-info">
+            <span class="member-name">{{ member.name }}</span>
+            @if (member.role === 'admin') {
+              <span class="role-badge">Admin</span>
+            }
+            @if (authService.currentUser()?.id === member.id) {
+              <span class="you-badge">Tu</span>
+            }
+          </div>
+          <div class="modal-member-actions">
+            @if (authService.currentUser()?.id === member.id) {
+              <button type="button" class="btn btn-danger btn-sm" (click)="leaveGroup()">
+                <span class="material-symbols-outlined">logout</span>
+                Lascia
+              </button>
+            } @else {
+              @if (member.role !== 'admin') {
+                <button type="button" class="btn btn-outline btn-sm" (click)="makeAdmin(member.id)">
+                  <span class="material-symbols-outlined">star</span>
+                  Admin
+                </button>
+              }
+              <button type="button" class="icon-btn-danger" (click)="removeMemberFromGroup(member.id)" title="Rimuovi membro">
+                <span class="material-symbols-outlined">person_remove</span>
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+
+  <div modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="membersModalVisible.set(false)">Chiudi</button>
   </div>
-}
+</app-modal>
+
+<!-- Share Modal -->
+<app-modal
+  [isOpen]="shareModalVisible()"
+  title="Condividi gruppo"
+  icon="share"
+  (close)="onShareModalClose()">
+
+  @if (group(); as g) {
+    <div class="share-body">
+
+      <div class="share-section">
+        <p class="share-label">Codice invito</p>
+        <div class="invite-row">
+          <code class="invite-code">{{ codeVisible() ? g.inviteCode : '••••••••' }}</code>
+          <div class="invite-actions">
+            <button
+              type="button"
+              class="btn-ghost"
+              (click)="codeVisible.set(!codeVisible())"
+              [title]="codeVisible() ? 'Nascondi' : 'Mostra'">
+              <span class="material-symbols-outlined">{{ codeVisible() ? 'visibility_off' : 'visibility' }}</span>
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" (click)="copyCode()">
+              <span class="material-symbols-outlined">content_copy</span>
+              Copia
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="share-section">
+        <p class="share-label">Messaggio</p>
+        <p class="share-hint">Personalizza il testo prima di inviarlo.</p>
+        <textarea
+          class="share-textarea"
+          rows="4"
+          [value]="customMessage()"
+          (input)="customMessage.set($any($event.target).value)">
+        </textarea>
+      </div>
+
+      <div class="share-section">
+        <p class="share-label">Invia tramite</p>
+        <div class="share-channels">
+          <button type="button" class="share-channel-btn share-channel-btn--whatsapp" (click)="shareWhatsApp()">
+            <span class="material-symbols-outlined">chat_bubble</span>
+            WhatsApp
+          </button>
+          <button type="button" class="share-channel-btn share-channel-btn--sms" (click)="shareSms()">
+            <span class="material-symbols-outlined">sms</span>
+            SMS
+          </button>
+        </div>
+      </div>
+
+    </div>
+  }
+
+  <div modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="onShareModalClose()">Chiudi</button>
+    <button type="button" class="btn btn-outline" (click)="copyMessage()">
+      <span class="material-symbols-outlined">content_copy</span>
+      Copia testo
+    </button>
+  </div>
+</app-modal>
+
+<!-- Delete Confirm Modal -->
+<app-modal
+  [isOpen]="deleteConfirmVisible()"
+  title="Elimina gruppo"
+  icon="delete"
+  (close)="deleteConfirmVisible.set(false)">
+
+  <p style="font-size:0.9rem; color:var(--wb-text-secondary); line-height:1.6">
+    Stai per eliminare <strong>{{ group()?.name }}</strong>.<br>
+    Questa azione è irreversibile e rimuoverà il gruppo per tutti i membri.
+  </p>
+
+  <div modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="deleteConfirmVisible.set(false)">Annulla</button>
+    <button type="button" class="btn btn-primary" style="background:#dc2626; border-color:#dc2626" (click)="deleteGroup()">
+      <span class="material-symbols-outlined">delete</span>
+      Elimina definitivamente
+    </button>
+  </div>
+</app-modal>

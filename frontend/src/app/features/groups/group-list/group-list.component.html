@@ -3,17 +3,21 @@
     <!-- Header & Action Bar -->
     <div class="page-header animate-fade-in">
       <div class="header-left">
-        <span class="badge badge-indigo">I Tuoi Gruppi di Viaggio</span>
-        <h1 class="page-title">Gestione Gruppi & Compagni</h1>
-        <p class="page-desc">Condividi la pianificazione dei viaggi, vota i ristoranti e organizza le tappe con gli amici.</p>
+        <div class="title-row">
+          <h1 class="page-title">{{ 'groups.title' | translate }}</h1>
+          @if (groupService.userGroups().length > 0) {
+            <span class="groups-count-badge">{{ groupService.userGroups().length }}</span>
+          }
+        </div>
+        <p class="page-desc">{{ 'groups.description' | translate }}</p>
       </div>
 
       <div class="header-actions">
         <button type="button" class="btn btn-outline " (click)="isJoinModalOpen.set(true)">
-          <span class="material-symbols-outlined">person_add</span> Unisciti con codice
+          <span class="material-symbols-outlined">person_add</span> {{ 'groups.join_btn' | translate }}
         </button>
         <button type="button" class="btn btn-primary " (click)="isCreateModalOpen.set(true)">
-          <span class="material-symbols-outlined">add</span> Nuovo Gruppo
+          <span class="material-symbols-outlined">add</span> {{ 'groups.new_btn' | translate }}
         </button>
       </div>
     </div>
@@ -22,83 +26,104 @@
     @if (groupService.userGroups().length > 0) {
       <div class="groups-grid">
         @for (group of groupService.userGroups(); track group.id) {
-          <div 
-            class="group-card card animate-fade-in" 
+          <div
+            class="group-card card animate-fade-in"
             [class.is-active]="group.id === groupService.activeGroupId()">
-            
-            <!-- Card Header with Icon & Active Tag -->
+
+            <!-- Three-dots menu -->
+            <div class="card-menu-wrapper">
+              <button
+                type="button"
+                class="card-menu-btn"
+                (click)="toggleMenu(group.id, $event)">
+                <span class="material-symbols-outlined">more_vert</span>
+              </button>
+
+              @if (openMenuId() === group.id) {
+                <div class="card-dropdown" (click)="$event.stopPropagation()">
+                  <button
+                    type="button"
+                    class="dropdown-item"
+                    (click)="shareGroup(group); openMenuId.set(null)">
+                    <span class="material-symbols-outlined">share</span>
+                    Condividi gruppo
+                  </button>
+                  <button type="button" class="dropdown-item dropdown-item--danger" (click)="openMenuId.set(null)">
+                    <span class="material-symbols-outlined">logout</span>
+                    Lascia gruppo
+                  </button>
+                </div>
+              }
+            </div>
+
+            <!-- Card Header: Icon + Group Name -->
             <div class="group-card-header">
               <div class="group-icon-bubble" [style.background-color]="group.color + '22'" [style.border-color]="group.color">
                 <span class="group-emoji">{{ group.icon }}</span>
               </div>
-
-              @if (group.id === groupService.activeGroupId()) {
-                <span class="badge badge-emerald active-badge">
-                  <span>✓</span> Attivo Ora
-                </span>
-              } @else {
-                <button 
-                  type="button" 
-                  class="btn btn-secondary select-active-btn"
-                  (click)="selectActiveGroup(group.id)">
-                  Imposta Attivo
-                </button>
-              }
+              <div class="group-header-info">
+                <h3 class="group-name">{{ group.name }}</h3>
+              </div>
             </div>
 
             <!-- Content -->
             <div class="group-card-body">
-              <h3 class="group-name">{{ group.name }}</h3>
-              <p class="group-desc">{{ group.description || 'Nessuna descrizione specificata.' }}</p>
-              
+              <p class="group-desc">{{ group.description || ('groups.no_description' | translate) }}</p>
+
               <!-- Invite Code Pill -->
               <div class="invite-code-box">
                 <div class="code-details">
-                  <span class="code-label">Codice Invito:</span>
-                  <strong class="code-val">{{ group.inviteCode }}</strong>
+                  <span class="code-label">{{ 'groups.invite_code_label' | translate }}</span>
+                  <strong class="code-val">
+                    {{ revealedCodes().has(group.id) ? group.inviteCode : '••••••••' }}
+                  </strong>
                 </div>
-                <button 
-                  type="button" 
-                  class="btn-copy" 
-                  (click)="copyCode(group.inviteCode)" 
-                  title="Copia codice negli appunti">
-                  <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">content_copy</span> Copia
+                <button
+                  type="button"
+                  class="btn-copy"
+                  (click)="toggleCode(group.id)"
+                  [title]="revealedCodes().has(group.id) ? 'Nascondi codice' : 'Mostra codice'">
+                  <span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle">
+                    {{ revealedCodes().has(group.id) ? 'visibility_off' : 'visibility' }}
+                  </span>
                 </button>
               </div>
             </div>
 
-            <!-- Footer: Members Stack & Trip Link -->
+            <!-- Footer -->
             <div class="group-card-footer">
-              <div class="members-section">
-                <span class="section-label">Membri ({{ group.members.length }})</span>
                 <div class="avatar-group">
-                  @for (member of group.members; track member.id) {
-                    <div 
-                      class="avatar avatar-sm" 
-                      [style.background-color]="member.color" 
-                      [title]="member.name + ' (' + member.role + ')'">
+                  @for (member of group.members.slice(0, MAX_AVATARS); track member.id) {
+                    <div
+                      class="avatar avatar-sm"
+                      [style.background-color]="member.color"
+                      [title]="member.name">
                       {{ member.avatar }}
                     </div>
                   }
+                  @if (group.members.length > MAX_AVATARS) {
+                    <div
+                      class="avatar avatar-sm avatar-overflow"
+                      [title]="(group.members.length - MAX_AVATARS) + ' altri membri'">
+                      +{{ group.members.length - MAX_AVATARS }}
+                    </div>
+                  }
                 </div>
-              </div>
-
-              <div class="group-card-footer-actions">
-                <a [routerLink]="['/groups', group.id]" class="btn btn-primary">
-                  <span class="material-symbols-outlined" style="font-size:18px">open_in_new</span>
-                  Dettaglio
-                </a>
-              </div>
+                <button type="button" [routerLink]="['/groups', group.id]" class="btn btn-primary">
+                  Entra
+                  <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span>
+                </button>
             </div>
+
           </div>
         }
       </div>
     } @else {
       <app-empty-state
         materialIcon="group"
-        title="Non fai ancora parte di nessun gruppo"
-        description="Crea il tuo primo gruppo di viaggio per iniziare a pianificare insieme ai tuoi amici."
-        actionLabel="Crea il tuo primo gruppo"
+        [title]="'groups.empty_title' | translate"
+        [description]="'groups.empty_description' | translate"
+        [actionLabel]="'groups.empty_action' | translate"
         (action)="isCreateModalOpen.set(true)">
       </app-empty-state>
     }
@@ -106,40 +131,61 @@
 </div>
 
 <!-- Modals -->
-<app-group-create-modal 
-  [isOpen]="isCreateModalOpen()" 
+<app-group-create-modal
+  [isOpen]="isCreateModalOpen()"
   (closeModal)="isCreateModalOpen.set(false)">
 </app-group-create-modal>
 
+<!-- Delete Confirm Modal -->
+<app-modal
+  [isOpen]="!!deleteConfirmGroup()"
+  title="Elimina gruppo"
+  icon="delete"
+  (close)="deleteConfirmGroup.set(null)">
+
+  <p style="font-size:0.9rem; color:var(--wb-text-secondary); line-height:1.6">
+    Stai per eliminare <strong>{{ deleteConfirmGroup()?.name }}</strong>.<br>
+    Questa azione è irreversibile e rimuoverà il gruppo per tutti i membri.
+  </p>
+
+  <div modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="deleteConfirmGroup.set(null)">Annulla</button>
+    <button type="button" class="btn btn-primary" style="background:#dc2626; border-color:#dc2626" (click)="confirmDelete()">
+      <span class="material-symbols-outlined">delete</span>
+      Elimina definitivamente
+    </button>
+  </div>
+</app-modal>
+
 <!-- Join Group Modal -->
-<app-modal 
-  [isOpen]="isJoinModalOpen()" 
-  title="Unisciti a un Gruppo con Codice" 
-  icon="key" 
+<app-modal
+  [isOpen]="isJoinModalOpen()"
+  [title]="'groups.join_modal_title' | translate"
+  icon="key"
   (close)="isJoinModalOpen.set(false)">
-  
+
   <div class="join-modal-content">
-    <p class="modal-info">Inserisci il codice di invito fornito dal creatore del gruppo (es. <code>FOODIE-2026</code>).</p>
-    
+    <p class="modal-info">{{ 'groups.join_modal_info' | translate }}</p>
+
     <div class="form-group mt-3">
-      <label class="form-label" for="inviteCodeInput">Codice Gruppo</label>
-      <input 
-        type="text" 
+      <label class="form-label" for="inviteCodeInput">{{ 'groups.join_modal_label' | translate }}</label>
+      <input
+        type="text"
         id="inviteCodeInput"
-        [(ngModel)]="inviteCodeInput" 
-        class="form-input text-uppercase" 
-        placeholder="GRP-XXXXX">
+        [(ngModel)]="inviteCodeInput"
+        class="form-input text-uppercase"
+        [placeholder]="'groups.join_modal_placeholder' | translate">
     </div>
   </div>
 
   <div modal-footer>
-    <button type="button" class="btn btn-secondary" (click)="isJoinModalOpen.set(false)">Annulla</button>
-    <button 
-      type="button" 
-      class="btn btn-primary" 
-      [disabled]="!inviteCodeInput.trim()" 
+    <button type="button" class="btn btn-secondary" (click)="isJoinModalOpen.set(false)">{{ 'groups.cancel' | translate }}</button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="!inviteCodeInput.trim()"
       (click)="onJoinGroup()">
-      Unisciti Ora
+      {{ 'groups.join_now' | translate }}
     </button>
   </div>
 </app-modal>
