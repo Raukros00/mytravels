@@ -108,7 +108,7 @@ export class StorageService {
   }
 
   private initializeSeedData(): void {
-    const SEED_VERSION = '5';
+    const SEED_VERSION = '8';
     if (this.getItem<string>('wb_seed_version') === SEED_VERSION) return;
     // Clear stale data before re-seeding
     Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
@@ -141,11 +141,11 @@ export class StorageService {
       joinedDate: '2026-02-15'
     };
 
-    const explorer1 = { id: 'usr_demo_4', name: 'Sofia Conti', avatar: '🌸', color: '#ec4899', role: 'member' as const };
-    const explorer2 = { id: 'usr_demo_5', name: 'Luca Ferrari', avatar: '🏔️', color: '#0ea5e9', role: 'member' as const };
-    const explorer3 = { id: 'usr_demo_6', name: 'Martina Greco', avatar: '🌊', color: '#14b8a6', role: 'member' as const };
-    const explorer4 = { id: 'usr_demo_7', name: 'Davide Esposito', avatar: '🦅', color: '#f59e0b', role: 'member' as const };
-    const explorer5 = { id: 'usr_demo_8', name: 'Chiara Mancini', avatar: '🦋', color: '#a855f7', role: 'member' as const };
+    const explorer1: User & { role: 'member' } = { id: 'usr_demo_4', name: 'Sofia Conti', email: 'sofia@example.com', avatar: '🌸', color: '#ec4899', joinedDate: '2026-03-01', role: 'member' };
+    const explorer2: User & { role: 'member' } = { id: 'usr_demo_5', name: 'Luca Ferrari', email: 'luca@example.com', avatar: '🏔️', color: '#0ea5e9', joinedDate: '2026-03-05', role: 'member' };
+    const explorer3: User & { role: 'member' } = { id: 'usr_demo_6', name: 'Martina Greco', email: 'martina@example.com', avatar: '🌊', color: '#14b8a6', joinedDate: '2026-03-10', role: 'member' };
+    const explorer4: User & { role: 'member' } = { id: 'usr_demo_7', name: 'Davide Esposito', email: 'davide@example.com', avatar: '🦅', color: '#f59e0b', joinedDate: '2026-03-15', role: 'member' };
+    const explorer5: User & { role: 'member' } = { id: 'usr_demo_8', name: 'Chiara Mancini', email: 'chiara@example.com', avatar: '🦋', color: '#a855f7', joinedDate: '2026-03-20', role: 'member' };
 
     const groups: Group[] = [
       {
@@ -503,7 +503,19 @@ export class StorageService {
       }
     ];
 
-    this.setUsers([defaultUser, friend1, friend2]);
+    const tester1: User = { id: 'usr_test_1', name: 'Francesca Romano', email: 'francesca@example.com', avatar: '🌺', color: '#e11d48', joinedDate: '2026-04-01' };
+    const tester2: User = { id: 'usr_test_2', name: 'Andrea Moretti', email: 'andrea@example.com', avatar: '🎵', color: '#7c3aed', joinedDate: '2026-04-05' };
+    const tester3: User = { id: 'usr_test_3', name: 'Elena Ricci', email: 'elena@example.com', avatar: '🦉', color: '#059669', joinedDate: '2026-04-10' };
+    const tester4: User = { id: 'usr_test_4', name: 'Matteo Colombo', email: 'matteo@example.com', avatar: '🚀', color: '#dc2626', joinedDate: '2026-04-15' };
+    const tester5: User = { id: 'usr_test_5', name: 'Valentina Serra', email: 'valentina@example.com', avatar: '🌙', color: '#d97706', joinedDate: '2026-04-20' };
+    const tester6: User = { id: 'usr_test_6', name: 'Roberto Marini', email: 'roberto@example.com', avatar: '🎭', color: '#0891b2', joinedDate: '2026-04-25' };
+
+    // Utenti con nomi duplicati per testare il dropdown dei suggerimenti
+    const dup1: User = { id: 'usr_dup_1', name: 'Marco Rossi', email: 'marco.rossi2@example.com', avatar: '🏕️', color: '#64748b', joinedDate: '2026-05-01' };
+    const dup2: User = { id: 'usr_dup_2', name: 'Giulia Bianchi', email: 'giulia.bianchi2@example.com', avatar: '🎨', color: '#c026d3', joinedDate: '2026-05-03' };
+    const dup3: User = { id: 'usr_dup_3', name: 'Luca Ferrari', email: 'luca.ferrari2@example.com', avatar: '⛷️', color: '#0369a1', joinedDate: '2026-05-05' };
+
+    this.setUsers([defaultUser, friend1, friend2, explorer1, explorer2, explorer3, explorer4, explorer5, tester1, tester2, tester3, tester4, tester5, tester6, dup1, dup2, dup3]);
     this.setGroups(groups);
     this.setActiveGroupId('grp_1');
     this.setTrips(trips);

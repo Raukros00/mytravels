@@ -17,7 +17,10 @@ export class AuthService {
   private apiService = inject(ApiService);
 
   private currentUserSignal = signal<User | null>(this.storageService.getCurrentUser());
+  private allUsersSignal = signal<User[]>(this.storageService.getUsers());
+
   public readonly currentUser = this.currentUserSignal.asReadonly();
+  public readonly platformUsers = this.allUsersSignal.asReadonly();
   public readonly isAuthenticated = computed(() => !!this.currentUserSignal());
 
   constructor() {

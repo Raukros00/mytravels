@@ -26,9 +26,7 @@
     @if (groupService.userGroups().length > 0) {
       <div class="groups-grid">
         @for (group of groupService.userGroups(); track group.id) {
-          <div
-            class="group-card card animate-fade-in"
-            [class.is-active]="group.id === groupService.activeGroupId()">
+          <div class="group-card card animate-fade-in">
 
             <!-- Three-dots menu -->
             <div class="card-menu-wrapper">
@@ -40,17 +38,24 @@
               </button>
 
               @if (openMenuId() === group.id) {
-                <div class="card-dropdown" (click)="$event.stopPropagation()">
+                <div class="card-dropdown" [class.card-dropdown--up]="openMenuDirection() === 'up'" (click)="$event.stopPropagation()">
+                  <button
+                    type="button"
+                    class="dropdown-item"
+                    (click)="openEditModal(group, $event)">
+                    <span class="material-symbols-outlined">edit</span>
+                    {{ 'groups.card_edit' | translate }}
+                  </button>
                   <button
                     type="button"
                     class="dropdown-item"
                     (click)="shareGroup(group); openMenuId.set(null)">
                     <span class="material-symbols-outlined">share</span>
-                    Condividi gruppo
+                    {{ 'groups.card_share' | translate }}
                   </button>
-                  <button type="button" class="dropdown-item dropdown-item--danger" (click)="openMenuId.set(null)">
+                  <button type="button" class="dropdown-item dropdown-item--danger" (click)="openLeaveConfirm(group, $event)">
                     <span class="material-symbols-outlined">logout</span>
-                    Lascia gruppo
+                    {{ 'groups.card_leave' | translate }}
                   </button>
                 </div>
               }
@@ -58,8 +63,13 @@
 
             <!-- Card Header: Icon + Group Name -->
             <div class="group-card-header">
-              <div class="group-icon-bubble" [style.background-color]="group.color + '22'" [style.border-color]="group.color">
-                <span class="group-emoji">{{ group.icon }}</span>
+              <div class="group-icon-bubble"
+                 [class.group-icon-bubble--image]="isImageIcon(group.icon)">
+                @if (isImageIcon(group.icon)) {
+                  <img [src]="group.icon" class="group-icon-img" alt="">
+                } @else {
+                  <span class="group-emoji">{{ group.icon }}</span>
+                }
               </div>
               <div class="group-header-info">
                 <h3 class="group-name">{{ group.name }}</h3>
@@ -82,7 +92,7 @@
                   type="button"
                   class="btn-copy"
                   (click)="toggleCode(group.id)"
-                  [title]="revealedCodes().has(group.id) ? 'Nascondi codice' : 'Mostra codice'">
+                  [title]="(revealedCodes().has(group.id) ? 'groups.card_hide_code' : 'groups.card_show_code') | translate">
                   <span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle">
                     {{ revealedCodes().has(group.id) ? 'visibility_off' : 'visibility' }}
                   </span>
@@ -104,13 +114,13 @@
                   @if (group.members.length > MAX_AVATARS) {
                     <div
                       class="avatar avatar-sm avatar-overflow"
-                      [title]="(group.members.length - MAX_AVATARS) + ' altri membri'">
+                      [title]="'groups.members_overflow' | translate: { count: group.members.length - MAX_AVATARS }">
                       +{{ group.members.length - MAX_AVATARS }}
                     </div>
                   }
                 </div>
                 <button type="button" [routerLink]="['/groups', group.id]" class="btn btn-primary">
-                  Entra
+                  {{ 'groups.card_enter' | translate }}
                   <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span>
                 </button>
             </div>
@@ -136,26 +146,34 @@
   (closeModal)="isCreateModalOpen.set(false)">
 </app-group-create-modal>
 
-<!-- Delete Confirm Modal -->
+<app-group-create-modal
+  [isOpen]="!!editingGroup()"
+  [group]="editingGroup()"
+  (closeModal)="editingGroup.set(null)">
+</app-group-create-modal>
+
+<!-- Leave Confirm Modal -->
 <app-modal
-  [isOpen]="!!deleteConfirmGroup()"
-  title="Elimina gruppo"
-  icon="delete"
-  (close)="deleteConfirmGroup.set(null)">
+  [isOpen]="!!leaveConfirmGroup()"
+  [title]="'groups.leave_title' | translate"
+  icon="logout"
+  (close)="leaveConfirmGroup.set(null)">
 
   <p style="font-size:0.9rem; color:var(--wb-text-secondary); line-height:1.6">
-    Stai per eliminare <strong>{{ deleteConfirmGroup()?.name }}</strong>.<br>
-    Questa azione è irreversibile e rimuoverà il gruppo per tutti i membri.
+    {{ 'groups.leave_text_1' | translate }} <strong>{{ leaveConfirmGroup()?.name }}</strong>.<br>
+    {{ 'groups.leave_text_2' | translate }}
   </p>
 
-  <div modal-footer>
-    <button type="button" class="btn btn-secondary" (click)="deleteConfirmGroup.set(null)">Annulla</button>
-    <button type="button" class="btn btn-primary" style="background:#dc2626; border-color:#dc2626" (click)="confirmDelete()">
-      <span class="material-symbols-outlined">delete</span>
-      Elimina definitivamente
+  <div modal-footer style="display:flex; justify-content:space-between; width:100%">
+    <button type="button" class="btn btn-secondary" (click)="leaveConfirmGroup.set(null)">{{ 'groups.leave_stay' | translate }}</button>
+    <button type="button" class="btn btn-primary" style="background:#dc2626; border-color:#dc2626" (click)="confirmLeave()">
+      <span class="material-symbols-outlined">logout</span>
+      {{ 'groups.leave_btn' | translate }}
     </button>
   </div>
 </app-modal>
+
+
 
 <!-- Join Group Modal -->
 <app-modal
