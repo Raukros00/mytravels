@@ -196,21 +196,7 @@
   flex-direction: column;
   justify-content: space-between;
   border: 1.5px solid var(--wb-border);
-  transition: all 220ms var(--wb-ease);
   position: relative;
-}
-
-@media (hover: hover) {
-  .group-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--wb-shadow-lg);
-    border-color: var(--wb-primary-border);
-  }
-}
-
-.group-card.is-active {
-  border-color: var(--wb-secondary-light);
-  box-shadow: 0 4px 20px rgba(45, 106, 79, 0.14);
 }
 
 .group-card-header {

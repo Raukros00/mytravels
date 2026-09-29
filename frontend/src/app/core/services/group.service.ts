@@ -157,6 +157,18 @@ export class GroupService {
     if (group) this.toastService.success(`Gruppo "${group.name}" eliminato.`);
   }
 
+  public setMemberRole(groupId: string, memberId: string, role: 'admin' | 'member'): void {
+    const updated = this.groupsSignal().map(g =>
+      g.id === groupId ? {
+        ...g,
+        members: g.members.map(m => m.id === memberId ? { ...m, role } : m)
+      } : g
+    );
+    this.groupsSignal.set(updated);
+    this.storageService.setGroups(updated);
+    this.toastService.success(role === 'admin' ? 'Membro promosso ad admin.' : 'Ruolo aggiornato.');
+  }
+
   public removeMember(groupId: string, memberId: string): void {
     const updated = this.groupsSignal().map(g =>
       g.id === groupId ? { ...g, members: g.members.filter(m => m.id !== memberId) } : g

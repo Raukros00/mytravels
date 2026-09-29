@@ -36,6 +36,10 @@ export class GroupDetailComponent {
 
   public codeVisible = signal(false);
   public deleteConfirmVisible = signal(false);
+  public shareModalVisible = signal(false);
+  public activeMemberMenu = signal<string | null>(null);
+  public customMessage = signal('');
+  public membersModalVisible = signal(false);
 
   public isCreator = computed(() =>
     !!this.group() && this.group()!.creatorId === this.authService.currentUser()?.id
@@ -57,16 +61,74 @@ export class GroupDetailComponent {
     this.toastService.success(`Codice ${code} copiato negli appunti! 📋`);
   }
 
+  openShareModal(): void {
+    const g = this.group();
+    if (!g) return;
+    this.customMessage.set(
+      `Unisciti al gruppo "${g.name}" su WanderBite! 🌍\nUsa il codice invito: ${g.inviteCode}`
+    );
+    this.shareModalVisible.set(true);
+  }
+
+  onShareModalClose(): void {
+    this.shareModalVisible.set(false);
+    this.codeVisible.set(false);
+  }
+
   shareGroup(): void {
     const g = this.group();
     if (!g) return;
-    const text = `Unisciti al gruppo "${g.name}" su WanderBite! Codice: ${g.inviteCode}`;
+    const text = this.customMessage();
     if (navigator.share) {
       navigator.share({ title: g.name, text });
     } else {
       navigator.clipboard.writeText(text);
-      this.toastService.success('Link di condivisione copiato!');
+      this.toastService.success('Messaggio copiato!');
     }
+  }
+
+  shareWhatsApp(): void {
+    const text = encodeURIComponent(this.customMessage());
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  }
+
+  shareSms(): void {
+    const text = encodeURIComponent(this.customMessage());
+    window.open(`sms:?body=${text}`, '_blank');
+  }
+
+  copyMessage(): void {
+    navigator.clipboard.writeText(this.customMessage());
+    this.toastService.success('Messaggio copiato negli appunti!');
+  }
+
+  makeAdmin(memberId: string): void {
+    const g = this.group();
+    if (!g) return;
+    this.groupService.setMemberRole(g.id, memberId, 'admin');
+  }
+
+  removeMemberFromGroup(memberId: string): void {
+    const g = this.group();
+    if (!g) return;
+    this.groupService.removeMember(g.id, memberId);
+  }
+
+  leaveGroup(): void {
+    const g = this.group();
+    const user = this.authService.currentUser();
+    if (!g || !user) return;
+    this.membersModalVisible.set(false);
+    this.groupService.removeMember(g.id, user.id);
+    this.router.navigate(['/groups']);
+  }
+
+  toggleMemberMenu(memberId: string): void {
+    this.activeMemberMenu.update(current => current === memberId ? null : memberId);
+  }
+
+  createTrip(): void {
+    this.router.navigate(['/trips', 'new'], { queryParams: { groupId: this.groupId() } });
   }
 
   goBack(): void {

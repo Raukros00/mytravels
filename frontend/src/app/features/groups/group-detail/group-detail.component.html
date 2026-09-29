@@ -20,7 +20,7 @@
               <p class="group-hero-desc">{{ g.description }}</p>
             }
           </div>
-          <button type="button" class="btn btn-outline hero-share-btn" (click)="shareGroup()">
+          <button type="button" class="btn btn-outline hero-share-btn" (click)="openShareModal()">
             <span class="material-symbols-outlined" style="font-size:18px">share</span>
             Condividi
           </button>
@@ -43,113 +43,108 @@
         </div>
       </div>
 
-      <!-- Invite code -->
-      <div class="section-card card">
-        <div class="section-header">
-          <span class="material-symbols-outlined section-icon">key</span>
-          <div>
-            <h2 class="section-title">Codice invito</h2>
-            <p class="section-desc">Condividi con chi vuoi aggiungere al gruppo.</p>
-          </div>
-        </div>
-        <div class="invite-row">
-          <code class="invite-code">
-            {{ codeVisible() ? g.inviteCode : '••••••••' }}
-          </code>
-          <div class="invite-actions">
-            <button
-              type="button"
-              class="btn btn-ghost"
-              (click)="codeVisible.set(!codeVisible())"
-              [title]="codeVisible() ? 'Nascondi' : 'Mostra'">
-              <span class="material-symbols-outlined">{{ codeVisible() ? 'visibility_off' : 'visibility' }}</span>
-            </button>
-            <button type="button" class="btn btn-outline" (click)="copyCode()">
-              <span class="material-symbols-outlined">content_copy</span>
-              Copia
-            </button>
-          </div>
-        </div>
-      </div>
+      <!-- Viaggi + Membri (two-column grid) -->
+      <div class="main-grid">
 
-      <!-- Members -->
-      <div class="section-card card">
-        <div class="section-header">
-          <span class="material-symbols-outlined section-icon">group</span>
-          <div>
-            <h2 class="section-title">Membri</h2>
-            <p class="section-desc">{{ g.members.length }} persone in questo gruppo.</p>
-          </div>
-        </div>
-        <ul class="members-list">
-          @for (member of g.members; track member.id) {
-            <li class="member-row">
-              <div class="avatar member-avatar" [style.background-color]="member.color">
-                {{ member.avatar }}
-              </div>
-              <span class="member-name">{{ member.name }}</span>
-              @if (member.role === 'admin') {
-                <span class="role-badge">Admin</span>
-              }
-            </li>
-          }
-        </ul>
-      </div>
-
-      <!-- Viaggi del gruppo -->
-      @if (groupTrips().length > 0) {
+        <!-- Viaggi (sinistra) -->
         <div class="section-card card">
           <div class="section-header">
             <span class="material-symbols-outlined section-icon">luggage</span>
             <div>
               <h2 class="section-title">Viaggi</h2>
-              <p class="section-desc">Viaggi pianificati con questo gruppo.</p>
+              <p class="section-desc">Pianificati con questo gruppo.</p>
             </div>
+            <span class="trip-counter">{{ groupTrips().length }}</span>
           </div>
-          <ul class="trips-list">
-            @for (trip of groupTrips(); track trip.id) {
-              <li class="trip-row">
-                <div class="trip-info">
-                  <span class="trip-dest">{{ trip.destination }}</span>
-                  <span class="trip-dates">{{ trip.startDate | date:'d MMM' }} — {{ trip.endDate | date:'d MMM y' }}</span>
+
+          @if (groupTrips().length > 0) {
+            <div class="trips-grid">
+              @for (trip of groupTrips(); track trip.id) {
+                <div class="trip-card">
+                  <div class="trip-cover" [style.background-image]="'url(' + trip.coverUrl + ')'">
+                    <div class="trip-cover-overlay"></div>
+                    <div class="trip-cover-content">
+                      <h3 class="trip-dest">{{ trip.destination }}</h3>
+                      <p class="trip-dates">{{ trip.startDate | date:'d MMM' }} — {{ trip.endDate | date:'d MMM y' }}</p>
+                    </div>
+                    <a [routerLink]="['/trips', trip.id]" class="trip-link-btn" title="Apri viaggio">
+                      <span class="material-symbols-outlined">arrow_outward</span>
+                    </a>
+                  </div>
                 </div>
-                <span class="badge" [class]="'badge-' + (trip.status === 'upcoming' ? 'emerald' : 'indigo')">
-                  {{ trip.status === 'upcoming' ? 'In partenza' : 'In pianificazione' }}
-                </span>
-              </li>
-            }
-          </ul>
-        </div>
-      }
+              }
+            </div>
+          } @else {
+            <div class="trips-empty">
+              <span class="material-symbols-outlined trips-empty-icon">flight_takeoff</span>
+              <p>Nessun viaggio ancora. Crea il primo!</p>
+            </div>
+          }
 
-      <!-- Danger zone -->
-      <div class="section-card section-card--danger card">
-        <h2 class="section-title section-title--danger">Zona pericolosa</h2>
-
-        <div class="danger-action">
-          <div>
-            <p class="danger-action-label">Lascia il gruppo</p>
-            <p class="section-desc">Perderai accesso ai viaggi e alle attività condivise.</p>
-          </div>
-          <button type="button" class="btn btn-danger">
-            <span class="material-symbols-outlined">logout</span>
-            Lascia
+          <button type="button" class="new-trip-btn" (click)="createTrip()">
+            <span class="material-symbols-outlined">add</span>
+            Nuovo viaggio
           </button>
         </div>
 
-        @if (isCreator()) {
-          <div class="danger-divider"></div>
-          <div class="danger-action">
-            <div>
-              <p class="danger-action-label">Elimina il gruppo</p>
-              <p class="section-desc">Azione irreversibile. Il gruppo verrà rimosso per tutti i membri.</p>
+        <!-- Colonna destra: Membri + Zona pericolosa -->
+        <div class="right-col">
+
+          <div class="section-card card">
+            <div class="section-header">
+              <span class="material-symbols-outlined section-icon">group</span>
+              <div>
+                <h2 class="section-title">Membri</h2>
+                <p class="section-desc">{{ g.members.length }} persone</p>
+              </div>
+              <button type="button" class="link-btn" (click)="membersModalVisible.set(true)">
+                Gestisci
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </button>
             </div>
-            <button type="button" class="btn btn-danger btn-danger--solid" (click)="deleteConfirmVisible.set(true)">
-              <span class="material-symbols-outlined">delete</span>
-              Elimina
-            </button>
+
+            <ul class="members-list">
+              @for (member of g.members.slice(0, 6); track member.id) {
+                <li class="member-row">
+                  <div class="avatar member-avatar" [style.background-color]="member.color">
+                    {{ member.avatar }}
+                  </div>
+                  <div class="member-info">
+                    <span class="member-name">{{ member.name }}</span>
+                    @if (member.role === 'admin') {
+                      <span class="role-badge">Admin</span>
+                    }
+                    @if (authService.currentUser()?.id === member.id) {
+                      <span class="you-badge">Tu</span>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+
+            @if (g.members.length > 6) {
+              <p class="members-overflow">+{{ g.members.length - 6 }} altri membri</p>
+            }
           </div>
-        }
+
+          @if (isCreator()) {
+          <div class="section-card section-card--danger card">
+            <h2 class="section-title section-title--danger">Zona pericolosa</h2>
+            <div class="danger-action">
+                <div>
+                  <p class="danger-action-label">Elimina il gruppo</p>
+                  <p class="section-desc">Azione irreversibile. Il gruppo verrà rimosso per tutti i membri.</p>
+                </div>
+                <button type="button" class="btn btn-danger btn-danger--solid" (click)="deleteConfirmVisible.set(true)">
+                  <span class="material-symbols-outlined">delete</span>
+                  Elimina
+                </button>
+              </div>
+          </div>
+          }
+
+        </div>
+
       </div>
 
     } @else {
@@ -161,6 +156,124 @@
 
   </div>
 </div>
+
+<!-- Members Modal -->
+<app-modal
+  [isOpen]="membersModalVisible()"
+  title="Membri del gruppo"
+  icon="group"
+  (close)="membersModalVisible.set(false)">
+
+  @if (group(); as g) {
+    <ul class="modal-members-list">
+      @for (member of g.members; track member.id) {
+        <li class="modal-member-row">
+          <div class="avatar member-avatar" [style.background-color]="member.color">
+            {{ member.avatar }}
+          </div>
+          <div class="member-info">
+            <span class="member-name">{{ member.name }}</span>
+            @if (member.role === 'admin') {
+              <span class="role-badge">Admin</span>
+            }
+            @if (authService.currentUser()?.id === member.id) {
+              <span class="you-badge">Tu</span>
+            }
+          </div>
+          <div class="modal-member-actions">
+            @if (authService.currentUser()?.id === member.id) {
+              <button type="button" class="btn btn-danger btn-sm" (click)="leaveGroup()">
+                <span class="material-symbols-outlined">logout</span>
+                Lascia
+              </button>
+            } @else {
+              @if (member.role !== 'admin') {
+                <button type="button" class="btn btn-outline btn-sm" (click)="makeAdmin(member.id)">
+                  <span class="material-symbols-outlined">star</span>
+                  Admin
+                </button>
+              }
+              <button type="button" class="icon-btn-danger" (click)="removeMemberFromGroup(member.id)" title="Rimuovi membro">
+                <span class="material-symbols-outlined">person_remove</span>
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+
+  <div modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="membersModalVisible.set(false)">Chiudi</button>
+  </div>
+</app-modal>
+
+<!-- Share Modal -->
+<app-modal
+  [isOpen]="shareModalVisible()"
+  title="Condividi gruppo"
+  icon="share"
+  (close)="onShareModalClose()">
+
+  @if (group(); as g) {
+    <div class="share-body">
+
+      <div class="share-section">
+        <p class="share-label">Codice invito</p>
+        <div class="invite-row">
+          <code class="invite-code">{{ codeVisible() ? g.inviteCode : '••••••••' }}</code>
+          <div class="invite-actions">
+            <button
+              type="button"
+              class="btn-ghost"
+              (click)="codeVisible.set(!codeVisible())"
+              [title]="codeVisible() ? 'Nascondi' : 'Mostra'">
+              <span class="material-symbols-outlined">{{ codeVisible() ? 'visibility_off' : 'visibility' }}</span>
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" (click)="copyCode()">
+              <span class="material-symbols-outlined">content_copy</span>
+              Copia
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="share-section">
+        <p class="share-label">Messaggio</p>
+        <p class="share-hint">Personalizza il testo prima di inviarlo.</p>
+        <textarea
+          class="share-textarea"
+          rows="4"
+          [value]="customMessage()"
+          (input)="customMessage.set($any($event.target).value)">
+        </textarea>
+      </div>
+
+      <div class="share-section">
+        <p class="share-label">Invia tramite</p>
+        <div class="share-channels">
+          <button type="button" class="share-channel-btn share-channel-btn--whatsapp" (click)="shareWhatsApp()">
+            <span class="material-symbols-outlined">chat_bubble</span>
+            WhatsApp
+          </button>
+          <button type="button" class="share-channel-btn share-channel-btn--sms" (click)="shareSms()">
+            <span class="material-symbols-outlined">sms</span>
+            SMS
+          </button>
+        </div>
+      </div>
+
+    </div>
+  }
+
+  <div modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="onShareModalClose()">Chiudi</button>
+    <button type="button" class="btn btn-outline" (click)="copyMessage()">
+      <span class="material-symbols-outlined">content_copy</span>
+      Copia testo
+    </button>
+  </div>
+</app-modal>
 
 <!-- Delete Confirm Modal -->
 <app-modal
