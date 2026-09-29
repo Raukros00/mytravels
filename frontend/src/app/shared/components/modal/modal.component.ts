@@ -14,6 +14,7 @@ export class ModalComponent implements OnChanges {
   @Input() icon = '';
   @Input() maxWidth = '560px';
   @Input() hasFooter = true;
+  @Input() allowOverflow = false;
   @Output() close = new EventEmitter<void>();
 
   @HostListener('document:keydown.escape')

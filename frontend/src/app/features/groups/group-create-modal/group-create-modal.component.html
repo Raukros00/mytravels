@@ -1,75 +1,169 @@
-<app-modal 
-  [isOpen]="isOpen" 
-  title="Crea Nuovo Gruppo di Viaggio" 
-  icon="group"
+<app-modal
+  [isOpen]="isOpen"
+  [title]="(isEditMode ? 'groups.form_edit_title' : 'groups.form_create_title') | translate"
+  [hasFooter]="true"
   (close)="onClose()">
-  
+
   <form [formGroup]="groupForm" (ngSubmit)="onSubmit()">
+
+    <!-- Name + thumbnail row -->
     <div class="form-group">
-      <label class="form-label" for="name">Nome del Gruppo *</label>
-      <input 
-        type="text" 
-        id="name" 
-        formControlName="name" 
-        class="form-input" 
-        placeholder="Es. Foodies on Tour, Weekend Fuoriporta...">
-      @if (groupForm.get('name')?.touched && groupForm.get('name')?.invalid) {
-        <span class="form-error">Il nome del gruppo è obbligatorio (minimo 3 caratteri).</span>
+      <label class="form-label" for="gcm-name">{{ 'groups.form_name_label' | translate }}</label>
+      <div class="name-thumb-row">
+        <!-- Thumbnail with pick menu -->
+        <div class="img-thumb-wrap">
+          <div class="img-thumb"
+               [class.img-thumb--placeholder]="!imagePreview() && !hasSelectedEmoji()"
+               (click)="toggleThumbMenu($event)"
+               role="button"
+               [title]="'groups.form_pick_image' | translate">
+            @if (imagePreview()) {
+              <img [src]="imagePreview()!" class="img-thumb-img" alt="">
+            } @else if (hasSelectedEmoji()) {
+              <span class="img-thumb-emoji">{{ groupForm.get('icon')?.value }}</span>
+            } @else {
+              <span class="material-symbols-outlined img-thumb-camera">photo_camera</span>
+            }
+            <div class="img-thumb-overlay">
+              <span class="material-symbols-outlined">edit</span>
+            </div>
+            @if (imagePreview() || hasSelectedEmoji()) {
+              <button type="button" class="img-thumb-remove" (click)="clearIcon(); $event.stopPropagation()" title="Rimuovi">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            }
+          </div>
+
+          @if (showThumbMenu()) {
+            <div class="thumb-menu" (click)="$event.stopPropagation()">
+              <button type="button" class="thumb-menu-item" (click)="onPickGallery(); showThumbMenu.set(false)">
+                <span class="material-symbols-outlined">photo_camera</span>
+                {{ 'groups.form_pick_image' | translate }}
+              </button>
+              <button type="button" class="thumb-menu-item" (click)="onPickEmoji(); showThumbMenu.set(false)">
+                <span class="material-symbols-outlined">mood</span>
+                {{ 'groups.form_pick_emoji' | translate }}
+              </button>
+            </div>
+          }
+
+          <input #fileInput type="file" accept="image/*" class="file-input-hidden" (change)="onImageChange($event)">
+        </div>
+
+        <!-- Name input -->
+        <div class="name-input-col">
+          <input
+            type="text"
+            id="gcm-name"
+            formControlName="name"
+            class="form-input"
+            [placeholder]="'groups.form_name_placeholder' | translate">
+          @if (groupForm.get('name')?.touched && groupForm.get('name')?.invalid) {
+            <span class="form-error">{{ 'groups.form_name_error' | translate }}</span>
+          }
+        </div>
+      </div>
+
+      <!-- Emoji picker -->
+      @if (showEmojiPicker()) {
+        <div class="emoji-grid">
+          @for (emoji of emojiPresets; track emoji) {
+            <button
+              type="button"
+              class="emoji-btn"
+              [class.selected]="groupForm.get('icon')?.value === emoji"
+              (click)="selectEmoji(emoji)">
+              {{ emoji }}
+            </button>
+          }
+        </div>
       }
     </div>
 
+    <!-- Description -->
     <div class="form-group">
-      <label class="form-label" for="description">Descrizione & Obiettivo</label>
-      <textarea 
-        id="description" 
-        formControlName="description" 
-        class="form-textarea" 
-        rows="3" 
-        placeholder="Es. Viaggi del weekend alla scoperta dei piatti tipici e itinerari panoramici..."></textarea>
+      <label class="form-label" for="gcm-desc">{{ 'groups.form_desc_label' | translate }}</label>
+      <textarea
+        id="gcm-desc"
+        formControlName="description"
+        class="form-textarea"
+        rows="2"
+        [placeholder]="'groups.form_desc_placeholder' | translate"></textarea>
     </div>
 
+    <!-- Invite users -->
     <div class="form-group">
-      <label class="form-label">Scegli un'icona / Emoji</label>
-      <div class="emoji-grid">
-        @for (emoji of emojiPresets; track emoji) {
-          <button 
-            type="button" 
-            class="emoji-btn" 
-            [class.selected]="groupForm.get('icon')?.value === emoji"
-            (click)="groupForm.patchValue({ icon: emoji })">
-            {{ emoji }}
-          </button>
-        }
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">Colore a tema</label>
-      <div class="color-grid">
-        @for (color of colorPresets; track color) {
-          <button 
-            type="button" 
-            class="color-btn" 
-            [style.background-color]="color"
-            [class.selected]="groupForm.get('color')?.value === color"
-            (click)="groupForm.patchValue({ color: color })">
-            @if (groupForm.get('color')?.value === color) {
-              <span>✓</span>
+      <label class="form-label">{{ 'groups.form_invite_label' | translate }}</label>
+      <div class="invite-search-wrap">
+        <span class="material-symbols-outlined invite-search-icon">person_search</span>
+        <input
+          type="text"
+          class="invite-search-input"
+          [placeholder]="'groups.form_invite_placeholder' | translate"
+          [value]="inviteSearch()"
+          (input)="inviteSearch.set($any($event.target).value)">
+        @if (inviteSearch().trim()) {
+          <div class="invite-dropdown">
+            @if (searchResults().length > 0) {
+              <p class="invite-dropdown-header">{{ 'groups.form_users_header' | translate }}</p>
+              <ul class="invite-user-list">
+                @for (user of searchResults(); track user.id) {
+                  <li class="invite-user-row">
+                    <div class="invite-avatar" [style.background-color]="user.color">{{ user.avatar }}</div>
+                    <div class="invite-user-info">
+                      <span class="invite-user-name">{{ user.name }}</span>
+                      <span class="invite-user-email">{{ user.email }}</span>
+                    </div>
+                    @if (pendingRecipientIds().has(user.id)) {
+                      <span class="invite-sent-badge">
+                        <span class="material-symbols-outlined">check</span>
+                        {{ 'groups.form_already_invited' | translate }}
+                      </span>
+                    } @else {
+                      <button type="button" class="btn btn-outline btn-sm" (click)="inviteUser(user)">{{ 'groups.form_invite_action' | translate }}</button>
+                    }
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p class="invite-empty">{{ 'groups.form_no_users' | translate }}</p>
             }
-          </button>
+          </div>
         }
       </div>
+
+      @if (invitedUserDetails().length > 0) {
+        <div class="invite-sent-section">
+          <p class="invite-sent-label">{{ (isEditMode ? 'groups.form_invited' : 'groups.form_will_invite') | translate }}</p>
+          <div class="invite-sent-list">
+            @for (user of invitedUserDetails(); track user.id) {
+              <div class="invite-sent-pill">
+                <div class="invite-avatar" [style.background-color]="user.color">{{ user.avatar }}</div>
+                <div class="invite-user-info">
+                  <span class="invite-user-name">{{ user.name }}</span>
+                  <span class="invite-user-email">{{ user.email }}</span>
+                </div>
+                <button type="button" class="btn-remove-invite" (click)="removeInvite(user.id)" title="Rimuovi">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      }
     </div>
+
   </form>
 
   <div modal-footer>
-    <button type="button" class="btn btn-secondary" (click)="onClose()">Annulla</button>
-    <button 
-      type="button" 
-      class="btn btn-primary" 
-      [disabled]="groupForm.invalid" 
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="groupForm.invalid"
       (click)="onSubmit()">
-      <span class="material-symbols-outlined">add</span> Crea Gruppo
+      <span class="material-symbols-outlined">{{ isEditMode ? 'save' : 'add' }}</span>
+      {{ (isEditMode ? 'groups.form_save' : 'groups.form_create') | translate }}
     </button>
   </div>
+
 </app-modal>
