@@ -108,7 +108,7 @@ export class StorageService {
   }
 
   private initializeSeedData(): void {
-    const SEED_VERSION = '8';
+    const SEED_VERSION = '9';
     if (this.getItem<string>('wb_seed_version') === SEED_VERSION) return;
     // Clear stale data before re-seeding
     Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
@@ -480,6 +480,24 @@ export class StorageService {
         tags: ['Pizza Napoletana', 'Trekking', 'Panorama'],
         notes: 'Pausa pranzo da Gino Sorbillo e cena vista mare a Positano.',
         createdAt: '2026-06-01',
+        activities: [],
+        placesToEat: []
+      },
+      {
+        id: 'trip_4',
+        groupId: 'grp_1',
+        title: 'Weekend a Bologna: Tortellini, Mortadella & Osterie',
+        destination: 'Bologna',
+        country: 'Italia',
+        startDate: '2026-09-29',
+        endDate: '2026-10-04',
+        coverUrl: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80',
+        status: 'ongoing',
+        budgetEstimate: 420,
+        currency: 'EUR',
+        tags: ['Tortellini', 'Osterie', 'Portici'],
+        notes: 'Giro dei Quadrilatero e cena in osteria con tagliere misto.',
+        createdAt: '2026-08-20',
         activities: [],
         placesToEat: []
       },

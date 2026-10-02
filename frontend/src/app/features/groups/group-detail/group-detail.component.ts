@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
+import { Trip, TripStatus, deriveTripStatus, isProposal } from '../../../core/models/trip.model';
 import { User } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -34,16 +35,60 @@ export class GroupDetailComponent implements AfterViewInit, OnDestroy {
   private groupId = toSignal(this.route.paramMap.pipe(map(p => p.get('id') ?? '')));
 
   public group = computed(() =>
-    this.groupService.userGroups().find(g => g.id === this.groupId()) ?? null
+    this.groupService.allUserGroups().find(g => g.id === this.groupId()) ?? null
   );
 
-  public groupTrips = computed(() =>
+  private allGroupTrips = computed(() =>
     this.tripService.trips().filter(t => t.groupId === this.groupId())
   );
 
+  /** Ongoing first, then upcoming (soonest first), completed last (most recent first). */
+  public groupTrips = computed(() => {
+    const rank: Record<TripStatus, number> = { ongoing: 0, planning: 1, upcoming: 1, completed: 2 };
+    return this.allGroupTrips()
+      .filter(t => !isProposal(t))
+      .sort((a, b) => {
+        const sa = deriveTripStatus(a), sb = deriveTripStatus(b);
+        if (rank[sa] !== rank[sb]) return rank[sa] - rank[sb];
+        return sa === 'completed'
+          ? b.endDate.localeCompare(a.endDate)
+          : a.startDate.localeCompare(b.startDate);
+      });
+  });
+  private readonly tripsPreviewCount = 3;
+  private readonly tripsPageSize = 4;
+  public tripsExpanded = signal(false);
+  private tripsLoaded = signal(this.tripsPreviewCount);
+
+  public visibleTrips = computed(() =>
+    this.groupTrips().slice(0, this.tripsExpanded() ? this.tripsLoaded() : this.tripsPreviewCount)
+  );
+  public canExpandTrips = computed(() => this.groupTrips().length > this.tripsPreviewCount);
+  public hasMoreTrips = computed(() => this.tripsExpanded() && this.tripsLoaded() < this.groupTrips().length);
+
+  expandTrips(): void {
+    this.tripsLoaded.set(this.tripsPreviewCount + this.tripsPageSize);
+    this.tripsExpanded.set(true);
+  }
+
+  collapseTrips(scroller: HTMLElement): void {
+    this.tripsExpanded.set(false);
+    scroller.scrollTop = 0;
+  }
+
+  /** Infinite scroll: load the next page when the user nears the bottom of the list. */
+  onTripsScroll(event: Event): void {
+    if (!this.hasMoreTrips()) return;
+    const el = event.target as HTMLElement;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 80) {
+      this.tripsLoaded.update(n => n + this.tripsPageSize);
+    }
+  }
+
+  public groupProposals = computed(() => this.allGroupTrips().filter(t => isProposal(t)));
+
   public codeVisible = signal(false);
   public isEditModalOpen = signal(false);
-  public deleteConfirmVisible = signal(false);
   public leaveConfirmVisible = signal(false);
   public shareModalVisible = signal(false);
   public activeMemberMenu = signal<string | null>(null);
@@ -113,13 +158,60 @@ export class GroupDetailComponent implements AfterViewInit, OnDestroy {
     return this.authService.platformUsers().find(u => u.id === g.creatorId) ?? null;
   });
 
-  deleteGroup(): void {
-    const g = this.group();
-    if (!g) return;
-    this.groupService.deleteGroup(g.id);
-    this.deleteConfirmVisible.set(false);
-    this.toastService.success(`Gruppo "${g.name}" eliminato.`);
-    this.router.navigate(['/groups']);
+  tripStatus(trip: Trip): TripStatus {
+    return deriveTripStatus(trip);
+  }
+
+  private daysBetween(from: string, to: string): number {
+    return Math.round((new Date(to).getTime() - new Date(from).getTime()) / 86400000);
+  }
+
+  /** Extra line shown on the card depending on the trip status. */
+  tripStatusNote(trip: Trip): { key: string; params: Record<string, number>; progress?: number } {
+    const today = new Date().toISOString().split('T')[0];
+    switch (deriveTripStatus(trip)) {
+      case 'ongoing': {
+        const day = this.daysBetween(trip.startDate, today) + 1;
+        const total = this.tripDays(trip);
+        return { key: 'groups.trip_note_ongoing', params: { day, total }, progress: (day / total) * 100 };
+      }
+      case 'completed':
+        return { key: 'groups.trip_note_completed', params: { days: this.daysBetween(trip.endDate, today) } };
+      default: {
+        const days = this.daysBetween(today, trip.startDate);
+        return { key: days === 1 ? 'groups.trip_note_tomorrow' : 'groups.trip_note_upcoming', params: { days } };
+      }
+    }
+  }
+
+  tripStatusIcon(status: TripStatus): string {
+    return { planning: 'edit_note', upcoming: 'schedule', ongoing: 'timelapse', completed: 'check_circle' }[status];
+  }
+
+  proposerName(trip: Trip): string {
+    return this.group()?.members.find(m => m.id === trip.proposedBy)?.name ?? '';
+  }
+
+  votes(trip: Trip): number {
+    return this.tripService.validVotes(trip).length;
+  }
+
+  votesNeeded(trip: Trip): number {
+    return this.tripService.votesNeeded(trip);
+  }
+
+  hasVoted(trip: Trip): boolean {
+    const me = this.authService.currentUser();
+    return !!me && this.tripService.validVotes(trip).includes(me.id);
+  }
+
+  toggleVote(trip: Trip): void {
+    this.tripService.toggleVote(trip.id);
+  }
+
+  tripDays(trip: Trip): number {
+    const ms = new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime();
+    return Math.round(ms / 86400000) + 1;
   }
 
   copyCode(): void {

@@ -37,16 +37,6 @@
                 <dt class="hero-meta-label">{{ 'groups.meta_created_on' | translate }}</dt>
                 <dd class="hero-meta-value">{{ g.createdAt | date:'d MMM y' }}</dd>
               </div>
-              <div class="hero-meta-row">
-                <span class="material-symbols-outlined hero-meta-icon">group</span>
-                <dt class="hero-meta-label">{{ 'groups.meta_members' | translate }}</dt>
-                <dd class="hero-meta-value">{{ g.members.length }}</dd>
-              </div>
-              <div class="hero-meta-row">
-                <span class="material-symbols-outlined hero-meta-icon">luggage</span>
-                <dt class="hero-meta-label">{{ 'groups.meta_trips' | translate }}</dt>
-                <dd class="hero-meta-value">{{ groupTrips().length }}</dd>
-              </div>
             </dl>
           </div>
           <div class="hero-actions">
@@ -60,6 +50,10 @@
               <span class="material-symbols-outlined" style="font-size:18px">person_add</span>
               {{ 'groups.invite_btn' | translate }}
             </button>
+            <a [routerLink]="['/groups', g.id, 'settings']" class="btn btn-secondary btn-icon-only"
+               [title]="'groups.settings_title' | translate" [attr.aria-label]="'groups.settings_title' | translate">
+              <span class="material-symbols-outlined" style="font-size:18px">settings</span>
+            </a>
           </div>
         </div>
       </div>
@@ -73,32 +67,141 @@
             <span class="material-symbols-outlined section-icon">luggage</span>
             <div>
               <h2 class="section-title">{{ 'groups.trips_title' | translate }}</h2>
-              <p class="section-desc">{{ 'groups.trips_desc' | translate }}</p>
             </div>
             <span class="trip-counter">{{ groupTrips().length }}</span>
           </div>
 
           @if (groupTrips().length > 0) {
+            <div #tripsScroller class="trips-scroll" [class.trips-scroll--expanded]="tripsExpanded()"
+                 (scroll)="onTripsScroll($event)">
             <div class="trips-grid">
-              @for (trip of groupTrips(); track trip.id) {
-                <div class="trip-card">
+              @for (trip of visibleTrips(); track trip.id) {
+                <div class="trip-card"
+                   [ngClass]="'trip-card--' + tripStatus(trip)">
                   <div class="trip-cover" [style.background-image]="'url(' + trip.coverUrl + ')'">
-                    <div class="trip-cover-overlay"></div>
-                    <div class="trip-cover-content">
-                      <h3 class="trip-dest">{{ trip.destination }}</h3>
-                      <p class="trip-dates">{{ trip.startDate | date:'d MMM' }} — {{ trip.endDate | date:'d MMM y' }}</p>
+                    <span class="trip-status" [ngClass]="'trip-status--' + tripStatus(trip)">
+                      <span class="material-symbols-outlined">{{ tripStatusIcon(tripStatus(trip)) }}</span>
+                      {{ 'groups.trip_status_' + tripStatus(trip) | translate }}
+                    </span>
+                  </div>
+                  <div class="trip-body">
+                    <h3 class="trip-title">{{ trip.title }}</h3>
+                    <p class="trip-place">
+                      <span class="material-symbols-outlined">location_on</span>
+                      {{ trip.destination }}{{ trip.country ? ', ' + trip.country : '' }}
+                    </p>
+                    <p class="trip-meta">
+                      <span class="material-symbols-outlined">calendar_today</span>
+                      {{ trip.startDate | date:'d MMM' }} — {{ trip.endDate | date:'d MMM y' }}
+                      <span class="trip-meta-sep">·</span>
+                      {{ 'groups.trip_days' | translate: { count: tripDays(trip) } }}
+                    </p>
+                    @if (tripStatusNote(trip); as note) {
+                      <div class="trip-note" [ngClass]="'trip-note--' + tripStatus(trip)">
+                        {{ note.key | translate: note.params }}
+                        @if (note.progress !== undefined) {
+                          <div class="trip-progress"><div class="trip-progress-fill" [style.width.%]="note.progress"></div></div>
+                        }
+                      </div>
+                    }
+                    <div class="trip-stats">
+                      <span class="trip-stat" [title]="'groups.trip_activities' | translate">
+                        <span class="material-symbols-outlined">local_activity</span>{{ trip.activities?.length ?? 0 }}
+                      </span>
+                      <span class="trip-stat" [title]="'groups.trip_places' | translate">
+                        <span class="material-symbols-outlined">restaurant</span>{{ trip.placesToEat?.length ?? 0 }}
+                      </span>
+                      @if (trip.budgetEstimate) {
+                        <span class="trip-stat trip-stat--budget">
+                          {{ trip.budgetEstimate | currency:trip.currency:'symbol':'1.0-0' }}
+                        </span>
+                      }
                     </div>
-                    <a [routerLink]="['/trips', trip.id]" class="trip-link-btn" title="Apri viaggio">
-                      <span class="material-symbols-outlined">arrow_outward</span>
+                    <a [routerLink]="['/trips', trip.id]" class="btn btn-secondary trip-open-btn">
+                      {{ 'groups.trip_view' | translate }}
+                      <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span>
                     </a>
                   </div>
                 </div>
               }
             </div>
+            @if (hasMoreTrips()) {
+              <div class="trips-loading"><span class="material-symbols-outlined">progress_activity</span></div>
+            }
+            </div>
+            @if (canExpandTrips()) {
+              @if (tripsExpanded()) {
+                <button type="button" class="link-btn link-btn--right" (click)="collapseTrips(tripsScroller)">
+                  {{ 'groups.trips_show_less' | translate }}
+                  <span class="material-symbols-outlined">expand_less</span>
+                </button>
+              } @else {
+                <button type="button" class="link-btn link-btn--right" (click)="expandTrips()">
+                  {{ 'groups.trips_see_all' | translate }} ({{ groupTrips().length }})
+                  <span class="material-symbols-outlined">expand_more</span>
+                </button>
+              }
+            }
           } @else {
             <div class="trips-empty">
               <span class="material-symbols-outlined trips-empty-icon">flight_takeoff</span>
               <p>{{ 'groups.trips_empty' | translate }}</p>
+            </div>
+          }
+
+          @if (groupProposals().length > 0) {
+            <div class="proposals-header">
+              <h3 class="proposals-title">{{ 'groups.proposals_title' | translate }}</h3>
+              <span class="trip-counter">{{ groupProposals().length }}</span>
+            </div>
+            <div class="trips-grid">
+              @for (trip of groupProposals(); track trip.id) {
+                <div class="trip-card">
+                  <div class="trip-cover" [style.background-image]="'url(' + trip.coverUrl + ')'">
+                    <span class="trip-status trip-status--proposal">
+                      <span class="material-symbols-outlined">how_to_vote</span>
+                      {{ 'groups.trip_status_proposal' | translate }}
+                    </span>
+                  </div>
+                  <div class="trip-body">
+                    <h3 class="trip-title">{{ trip.title }}</h3>
+                    <p class="trip-place">
+                      <span class="material-symbols-outlined">location_on</span>
+                      {{ trip.destination }}{{ trip.country ? ', ' + trip.country : '' }}
+                    </p>
+                    <p class="trip-meta">
+                      <span class="material-symbols-outlined">calendar_today</span>
+                      {{ trip.startDate | date:'d MMM' }} — {{ trip.endDate | date:'d MMM y' }}
+                      <span class="trip-meta-sep">·</span>
+                      {{ 'groups.trip_days' | translate: { count: tripDays(trip) } }}
+                    </p>
+                    @if (proposerName(trip)) {
+                      <p class="trip-meta">
+                        <span class="material-symbols-outlined">person</span>
+                        {{ 'groups.proposal_by' | translate: { name: proposerName(trip) } }}
+                      </p>
+                    }
+                    <div class="vote-box">
+                      <div class="vote-bar">
+                        <div class="vote-bar-fill" [style.width.%]="(votes(trip) / votesNeeded(trip)) * 100"></div>
+                      </div>
+                      <span class="vote-count">
+                        {{ 'groups.proposal_votes' | translate: { votes: votes(trip), needed: votesNeeded(trip) } }}
+                      </span>
+                    </div>
+                    <div class="proposal-actions">
+                      <button type="button" class="btn" [class.btn-primary]="!hasVoted(trip)" [class.btn-secondary]="hasVoted(trip)"
+                              (click)="toggleVote(trip)">
+                        <span class="material-symbols-outlined" style="font-size:18px">{{ hasVoted(trip) ? 'undo' : 'thumb_up' }}</span>
+                        {{ (hasVoted(trip) ? 'groups.proposal_unvote' : 'groups.proposal_vote') | translate }}
+                      </button>
+                      <a [routerLink]="['/trips', trip.id]" class="btn btn-secondary">
+                        {{ 'groups.trip_view' | translate }}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              }
             </div>
           }
 
@@ -116,12 +219,8 @@
               <span class="material-symbols-outlined section-icon">group</span>
               <div>
                 <h2 class="section-title">{{ 'groups.members_title' | translate }}</h2>
-                <p class="section-desc">{{ 'groups.members_count' | translate: { count: g.members.length } }}</p>
               </div>
-              <button type="button" class="link-btn" (click)="membersModalVisible.set(true)">
-                {{ 'groups.members_manage' | translate }}
-                <span class="material-symbols-outlined">arrow_forward</span>
-              </button>
+              <span class="trip-counter">{{ g.members.length }}</span>
             </div>
 
             <ul class="members-list">
@@ -174,27 +273,12 @@
               }
             </ul>
 
-            @if (g.members.length > 6) {
-              <p class="members-overflow">{{ 'groups.members_overflow' | translate: { count: g.members.length - 6 } }}</p>
-            }
+            <button type="button" class="link-btn link-btn--right" (click)="membersModalVisible.set(true)">
+              {{ 'groups.members_manage' | translate }}
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
 
           </div>
-
-          @if (isCreator()) {
-          <div class="section-card section-card--danger card">
-            <h2 class="section-title section-title--danger">{{ 'groups.danger_title' | translate }}</h2>
-            <div class="danger-action">
-                <div>
-                  <p class="danger-action-label">{{ 'groups.danger_delete_label' | translate }}</p>
-                  <p class="section-desc">{{ 'groups.danger_delete_desc' | translate }}</p>
-                </div>
-                <button type="button" class="btn btn-danger btn-danger--solid" (click)="deleteConfirmVisible.set(true)">
-                  <span class="material-symbols-outlined">delete</span>
-                  {{ 'groups.danger_delete_btn' | translate }}
-                </button>
-              </div>
-          </div>
-          }
 
         </div>
 
@@ -435,26 +519,6 @@
     <button type="button" class="btn btn-primary" style="background:#dc2626; border-color:#dc2626" (click)="leaveGroup()">
       <span class="material-symbols-outlined">logout</span>
       {{ 'groups.leave_btn' | translate }}
-    </button>
-  </div>
-</app-modal>
-
-<!-- Delete Confirm Modal -->
-<app-modal
-  [isOpen]="deleteConfirmVisible()"
-  [title]="'groups.delete_title' | translate"
-  icon="delete"
-  (close)="deleteConfirmVisible.set(false)">
-
-  <p style="font-size:0.9rem; color:var(--wb-text-secondary); line-height:1.6">
-    {{ 'groups.delete_text_1' | translate }} <strong>{{ group()?.name }}</strong>.<br>
-    {{ 'groups.delete_text_2' | translate }}
-  </p>
-
-  <div modal-footer>
-    <button type="button" class="btn btn-primary" style="background:#dc2626; border-color:#dc2626" (click)="deleteGroup()">
-      <span class="material-symbols-outlined">delete</span>
-      {{ 'groups.delete_btn' | translate }}
     </button>
   </div>
 </app-modal>

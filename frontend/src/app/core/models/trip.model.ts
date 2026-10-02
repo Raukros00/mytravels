@@ -1,5 +1,8 @@
 export type TripStatus = 'planning' | 'upcoming' | 'ongoing' | 'completed';
 
+/** 'proposal' = still to be voted by the group; missing value means 'confirmed'. */
+export type TripDecision = 'proposal' | 'confirmed';
+
 export type ActivityCategory = 'monument' | 'museum' | 'nature' | 'experience' | 'shopping' | 'other';
 export type FoodCategory = 'lunch' | 'dinner' | 'snack' | 'breakfast' | 'aperitivo';
 export type PriceRange = '€' | '€€' | '€€€' | '€€€€';
@@ -103,6 +106,9 @@ export interface Trip {
   endDate: string;   // YYYY-MM-DD
   coverUrl: string;
   status: TripStatus;
+  decision?: TripDecision;
+  proposedBy?: string; // user id, only for proposals
+  votes?: string[];    // ids of members who voted in favour
   budgetEstimate?: number;
   currency: string;
   tags: string[];
@@ -129,4 +135,17 @@ export interface CreateTripDto {
   currency: string;
   tags: string[];
   notes?: string;
+  asProposal?: boolean;
+}
+
+/** Timeline status derived from the dates, so it never gets stale. */
+export function deriveTripStatus(trip: Pick<Trip, 'startDate' | 'endDate'>, now = new Date()): TripStatus {
+  const today = now.toISOString().split('T')[0];
+  if (trip.endDate < today) return 'completed';
+  if (trip.startDate <= today) return 'ongoing';
+  return 'upcoming';
+}
+
+export function isProposal(trip: Pick<Trip, 'decision'>): boolean {
+  return trip.decision === 'proposal';
 }

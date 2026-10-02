@@ -128,7 +128,7 @@
           </div>
         }
       </div>
-    } @else {
+    } @else if (groupService.archivedGroups().length === 0) {
       <app-empty-state
         materialIcon="group"
         [title]="'groups.empty_title' | translate"
@@ -136,6 +136,30 @@
         [actionLabel]="'groups.empty_action' | translate"
         (action)="isCreateModalOpen.set(true)">
       </app-empty-state>
+    }
+
+    @if (groupService.archivedGroups().length > 0) {
+      <section class="archived-section">
+        <h2 class="archived-title">{{ 'groups.archived_section' | translate }} ({{ groupService.archivedGroups().length }})</h2>
+        <ul class="archived-list">
+          @for (group of groupService.archivedGroups(); track group.id) {
+            <li class="archived-row">
+              <span class="archived-icon">
+                @if (isImageIcon(group.icon)) {
+                  <img [src]="group.icon" class="group-icon-img" alt="">
+                } @else {
+                  {{ group.icon }}
+                }
+              </span>
+              <span class="archived-name">{{ group.name }}</span>
+              <a [routerLink]="['/groups', group.id, 'settings']" class="btn btn-secondary">
+                <span class="material-symbols-outlined" style="font-size:18px">settings</span>
+                {{ 'groups.settings_title' | translate }}
+              </a>
+            </li>
+          }
+        </ul>
+      </section>
     }
   </div>
 </div>

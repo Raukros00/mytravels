@@ -30,12 +30,16 @@ export class GroupService {
   });
 
   // Current user's groups computed
-  public readonly userGroups = computed(() => {
+  // Includes archived groups
+  public readonly allUserGroups = computed(() => {
     const user = this.authService.currentUser();
     const all = this.groupsSignal();
     if (!user) return [];
     return all.filter(g => g.members && g.members.some(m => m.id === user.id || m.id === user.email));
   });
+
+  public readonly userGroups = computed(() => this.allUserGroups().filter(g => !g.archived));
+  public readonly archivedGroups = computed(() => this.allUserGroups().filter(g => g.archived));
 
   constructor() {
     // When user authenticates or changes, load groups from backend
@@ -139,6 +143,47 @@ export class GroupService {
       error: (err) => console.error('Error updating group:', err)
     });
     this.toastService.success('Gruppo aggiornato con successo!');
+  }
+
+  private patchGroup(id: string, patch: Partial<Group>): void {
+    const updated = this.groupsSignal().map(g => g.id === id ? { ...g, ...patch } : g);
+    this.groupsSignal.set(updated);
+    this.storageService.setGroups(updated);
+    this.apiService.put<Group>(`/api/v1/groups/${id}`, patch).subscribe({
+      error: (err) => console.error('Error updating group settings:', err)
+    });
+  }
+
+  public isMuted(group: Group | null | undefined): boolean {
+    const user = this.authService.currentUser();
+    return !!user && !!group?.mutedBy?.includes(user.id);
+  }
+
+  public setMuted(groupId: string, muted: boolean): void {
+    const user = this.authService.currentUser();
+    const group = this.groupsSignal().find(g => g.id === groupId);
+    if (!user || !group) return;
+    const others = (group.mutedBy ?? []).filter(id => id !== user.id);
+    this.patchGroup(groupId, { mutedBy: muted ? [...others, user.id] : others });
+  }
+
+  public setCurrency(groupId: string, currency: string): void {
+    const caller = this.authService.currentUser();
+    if (!caller || !this.isAdmin(groupId, caller.id)) {
+      this.toastService.error('Solo gli admin possono modificare la valuta.');
+      return;
+    }
+    this.patchGroup(groupId, { currency });
+    this.toastService.success('Valuta aggiornata.');
+  }
+
+  public setArchived(groupId: string, archived: boolean): void {
+    const caller = this.authService.currentUser();
+    if (!caller || !this.isAdmin(groupId, caller.id)) {
+      this.toastService.error('Solo gli admin possono archiviare il gruppo.');
+      return;
+    }
+    this.patchGroup(groupId, { archived });
   }
 
   public deleteGroup(id: string): void {
