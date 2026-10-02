@@ -182,15 +182,6 @@
         In Arrivo
       </button>
       <button class="shrink-0 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm active:scale-95 transition-all"
-        [class.bg-primary]="selectedStatus() === 'planning'"
-        [class.text-on-primary]="selectedStatus() === 'planning'"
-        [class.shadow-sm]="selectedStatus() === 'planning'"
-        [class.bg-surface-container]="selectedStatus() !== 'planning'"
-        [class.text-on-surface-variant]="selectedStatus() !== 'planning'"
-        type="button" (click)="selectedStatus.set('planning')">
-        In Pianificazione
-      </button>
-      <button class="shrink-0 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm active:scale-95 transition-all"
         [class.bg-primary]="selectedStatus() === 'completed'"
         [class.text-on-primary]="selectedStatus() === 'completed'"
         [class.shadow-sm]="selectedStatus() === 'completed'"

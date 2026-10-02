@@ -1,62 +1,54 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges, ViewChild, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslatePipe } from '@ngx-translate/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import { GroupService } from '../../../core/services/group.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Group } from '../../../core/models/group.model';
 import { User } from '../../../core/models/user.model';
 
 @Component({
-  selector: 'app-group-create-modal',
+  selector: 'app-group-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, ModalComponent, TranslatePipe],
-  templateUrl: './group-create-modal.component.html',
-  styleUrl: './group-create-modal.component.css'
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  templateUrl: './group-form.component.html',
+  styleUrl: './group-form.component.css'
 })
-export class GroupCreateModalComponent implements OnChanges {
-  @Input() isOpen = false;
-  @Input() group: Group | null = null;
-  @Output() closeModal = new EventEmitter<void>();
+export class GroupFormComponent implements OnInit {
   @ViewChild('fileInput') fileInputRef!: ElementRef<HTMLInputElement>;
 
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private fb = inject(FormBuilder);
   private groupService = inject(GroupService);
   private notificationService = inject(NotificationService);
   private authService = inject(AuthService);
 
-  get isEditMode(): boolean { return !!this.group; }
+  private groupId = toSignal(this.route.paramMap.pipe(map(p => p.get('id'))));
+
+  public group = computed(() => {
+    const id = this.groupId();
+    if (!id) return null;
+    return this.groupService.allUserGroups().find(g => g.id === id) ?? null;
+  });
+
+  get isEditMode(): boolean { return !!this.groupId(); }
 
   public emojiPresets = ['✈️', '🍕', '🍜', '🍷', '🏖️', '🎒', '🏰', '🍣', '🍦', '☕', '🏕️', '🌮', '🍸', '🏔️', '🚂', '🥐'];
 
-  // Icon picker
   public imagePreview = signal<string | null>(null);
   public hasSelectedEmoji = signal(false);
   public showEmojiPicker = signal(false);
-  public showThumbMenu = signal(false);
-
-  // Invite section
-  private groupSignal = signal<Group | null>(null);
   public inviteSearch = signal('');
   public invitedUsers = signal<string[]>([]);
-
-  public pendingRecipientIds = computed(() => {
-    const g = this.groupSignal();
-    if (!g) return new Set<string>();
-    return new Set(
-      this.notificationService.allNotifications()
-        .filter(n => n.groupId === g.id && n.status === 'pending')
-        .map(n => n.recipientId)
-    );
-  });
 
   public searchResults = computed(() => {
     const q = this.inviteSearch().toLowerCase().trim();
     if (!q) return [];
     const me = this.authService.currentUser();
-    const g = this.groupSignal();
+    const g = this.group();
     const memberIds = new Set(g?.members.map(m => m.id) ?? []);
     const invitedIds = new Set(this.invitedUsers());
     return this.authService.platformUsers()
@@ -69,29 +61,29 @@ export class GroupCreateModalComponent implements OnChanges {
     return this.authService.platformUsers().filter(u => ids.includes(u.id));
   });
 
+  public pendingRecipientIds = computed(() => {
+    const g = this.group();
+    if (!g) return new Set<string>();
+    return new Set(
+      this.notificationService.allNotifications()
+        .filter(n => n.groupId === g.id && n.status === 'pending')
+        .map(n => n.recipientId)
+    );
+  });
+
   public groupForm = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(3)]],
     description: [''],
     icon: ['']
   });
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['isOpen']?.currentValue === true) {
-      this.groupSignal.set(this.group);
-      if (this.group) {
-        const isImage = this.isImageIcon(this.group.icon);
-        this.imagePreview.set(isImage ? this.group.icon : null);
-        this.hasSelectedEmoji.set(!isImage);
-        this.groupForm.patchValue({ name: this.group.name, description: this.group.description, icon: this.group.icon });
-      } else {
-        this.imagePreview.set(null);
-        this.hasSelectedEmoji.set(false);
-        this.groupForm.reset({ name: '', description: '', icon: '' });
-      }
-      this.showEmojiPicker.set(false);
-      this.showThumbMenu.set(false);
-      this.inviteSearch.set('');
-      this.invitedUsers.set([]);
+  ngOnInit(): void {
+    const g = this.group();
+    if (g) {
+      const isImage = this.isImageIcon(g.icon);
+      this.imagePreview.set(isImage ? g.icon : null);
+      this.hasSelectedEmoji.set(!isImage && !!g.icon);
+      this.groupForm.patchValue({ name: g.name, description: g.description, icon: g.icon });
     }
   }
 
@@ -99,24 +91,12 @@ export class GroupCreateModalComponent implements OnChanges {
     return icon.startsWith('data:') || icon.startsWith('http') || icon.startsWith('blob:');
   }
 
-  toggleThumbMenu(event: MouseEvent): void {
-    event.stopPropagation();
-    this.showThumbMenu.update(v => !v);
-  }
-
-  @HostListener('document:click')
-  closeThumbMenu(): void {
-    this.showThumbMenu.set(false);
-  }
-
   onPickGallery(): void {
     this.showEmojiPicker.set(false);
-    this.showThumbMenu.set(false);
     this.fileInputRef.nativeElement.click();
   }
 
   onPickEmoji(): void {
-    this.showThumbMenu.set(false);
     this.showEmojiPicker.update(v => !v);
   }
 
@@ -142,23 +122,10 @@ export class GroupCreateModalComponent implements OnChanges {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
-      const raw = new Image();
-      raw.onload = () => {
-        const canvas = document.createElement('canvas');
-        const size = 240;
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext('2d')!;
-        const aspect = raw.width / raw.height;
-        let sx = 0, sy = 0, sw = raw.width, sh = raw.height;
-        if (aspect > 1) { sx = (raw.width - raw.height) / 2; sw = raw.height; }
-        else { sy = (raw.height - raw.width) / 2; sh = raw.width; }
-        ctx.drawImage(raw, sx, sy, sw, sh, 0, 0, size, size);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
-        this.imagePreview.set(dataUrl);
-        this.groupForm.patchValue({ icon: dataUrl });
-      };
-      raw.src = reader.result as string;
+      const dataUrl = reader.result as string;
+      this.imagePreview.set(dataUrl);
+      this.hasSelectedEmoji.set(false);
+      this.groupForm.patchValue({ icon: dataUrl });
     };
     reader.readAsDataURL(file);
   }
@@ -172,15 +139,9 @@ export class GroupCreateModalComponent implements OnChanges {
     this.invitedUsers.update(ids => ids.filter(id => id !== userId));
   }
 
-  onClose(): void {
-    this.imagePreview.set(null);
-    this.hasSelectedEmoji.set(false);
-    this.showEmojiPicker.set(false);
-    this.showThumbMenu.set(false);
-    this.inviteSearch.set('');
-    this.invitedUsers.set([]);
-    this.groupForm.reset({ name: '', description: '', icon: '' });
-    this.closeModal.emit();
+  onCancel(): void {
+    const g = this.group();
+    this.router.navigate(g ? ['/groups', g.id] : ['/groups']);
   }
 
   onSubmit(): void {
@@ -189,21 +150,22 @@ export class GroupCreateModalComponent implements OnChanges {
     const me = this.authService.currentUser();
     const icon = val.icon || '✈️';
     const safeIcon = this.isImageIcon(icon) ? '🌍' : icon;
+    const g = this.group();
 
     let groupId: string;
     let groupName: string;
     let groupColor: string;
 
-    if (this.isEditMode && this.group) {
-      this.groupService.updateGroup(this.group.id, {
+    if (this.isEditMode && g) {
+      this.groupService.updateGroup(g.id, {
         name: val.name!,
         description: val.description || '',
         icon,
-        color: this.group.color
+        color: g.color
       });
-      groupId = this.group.id;
+      groupId = g.id;
       groupName = val.name!;
-      groupColor = this.group.color;
+      groupColor = g.color;
     } else {
       const newGroup = this.groupService.createGroup({
         name: val.name!,
@@ -224,6 +186,6 @@ export class GroupCreateModalComponent implements OnChanges {
       );
     }
 
-    this.onClose();
+    this.router.navigate(['/groups', groupId]);
   }
 }

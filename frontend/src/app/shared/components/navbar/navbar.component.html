@@ -1,6 +1,6 @@
 <!-- WanderBite Top Header -->
 <header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl shadow-[0_2px_12px_rgba(78,42,29,0.05)]">
-  <div class="h-16 px-gutter flex items-center justify-between gap-space-md">
+  <div class="h-16 px-gutter md:px-16 flex items-center justify-between gap-space-md">
     <!-- Logo -->
     <a routerLink="/trips" class="flex items-center gap-space-sm no-underline shrink-0">
       <span class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Wander<span class="text-primary">Bite</span></span>
@@ -10,19 +10,38 @@
     @if (authService.isAuthenticated()) {
       <nav class="hidden md:flex items-center gap-1">
         <a routerLink="/trips" routerLinkActive="desktop-nav-active" [routerLinkActiveOptions]="{exact: false}" class="desktop-nav-link no-underline">
-          <span class="material-symbols-outlined text-[18px]">luggage</span>
           Viaggi
         </a>
         <a routerLink="/groups" routerLinkActive="desktop-nav-active" class="desktop-nav-link no-underline">
-          <span class="material-symbols-outlined text-[18px]">group</span>
           Gruppi
         </a>
       </nav>
     }
 
-    <!-- Right: User Avatar -->
+    <!-- Right: Lang switcher + User Avatar -->
     @if (authService.isAuthenticated()) {
       <div class="flex items-center gap-space-sm">
+        <!-- Language switcher -->
+        <button
+          type="button"
+          class="px-2 py-1 rounded-md font-mono text-xs font-bold tracking-widest text-on-surface-variant border border-outline-variant/50 hover:border-outline-variant transition-colors"
+          (click)="i18n.toggle(); $event.stopPropagation()"
+          [title]="i18n.currentLang() === 'it' ? 'Switch to English' : 'Passa all\'italiano'">
+          {{ i18n.currentLang() === 'it' ? 'EN' : 'IT' }}
+        </button>
+        <!-- Bell -->
+        <div class="relative">
+          <button
+            type="button"
+            class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors relative"
+            title="Notifiche"
+            (click)="toggleNotifPanel($event)">
+            <span class="material-symbols-outlined text-[20px]">notifications</span>
+            @if (notifService.unreadCount() > 0) {
+              <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-error border-2 border-surface"></span>
+            }
+          </button>
+        </div>
         <!-- User Avatar -->
         <button
           type="button"
@@ -40,6 +59,64 @@
       </div>
     }
   </div>
+
+  <!-- Notification Panel -->
+  @if (isNotifPanelOpen() && authService.isAuthenticated()) {
+    <div class="absolute top-16 right-gutter w-80 bg-surface-container-lowest rounded-xl shadow-[0_16px_36px_rgba(45,30,24,0.14)] border border-outline-variant/40 overflow-hidden z-50 animate-fade-in" (click)="$event.stopPropagation()">
+      <div class="px-4 py-3 border-b border-outline-variant/30 flex items-center justify-between">
+        <span class="font-label-lg text-label-lg text-on-surface">Notifiche</span>
+        @if (notifService.userNotifications().length > 0) {
+          <span class="font-body-sm text-body-sm text-on-surface-variant">{{ notifService.userNotifications().length }}</span>
+        }
+      </div>
+
+      @if (notifService.userNotifications().length === 0) {
+        <div class="px-4 py-8 flex flex-col items-center gap-2 text-center">
+          <span class="material-symbols-outlined text-[32px] text-on-surface-variant/40">notifications_none</span>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">Nessuna notifica</p>
+        </div>
+      } @else {
+        <div class="max-h-96 overflow-y-auto">
+          @for (notif of notifService.userNotifications(); track notif.id) {
+            <div class="px-4 py-3 border-b border-outline-variant/20 last:border-0" [class.bg-surface-container]="!notif.read">
+              <div class="flex items-start gap-3">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center text-base shrink-0 border-2"
+                  [style.background-color]="notif.groupColor + '22'"
+                  [style.border-color]="notif.groupColor">
+                  {{ notif.groupIcon }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-body-sm text-body-sm text-on-surface leading-snug">
+                    <strong>{{ notif.senderName }}</strong> ti ha invitato nel gruppo <strong>{{ notif.groupName }}</strong>
+                  </p>
+                  @if (notif.status === 'pending') {
+                    <div class="flex gap-2 mt-2">
+                      <button type="button"
+                        class="px-3 py-1 rounded-full font-label-sm text-label-sm bg-primary text-on-primary transition-all active:scale-95"
+                        (click)="notifService.acceptInvite(notif.id)">
+                        Accetta
+                      </button>
+                      <button type="button"
+                        class="px-3 py-1 rounded-full font-label-sm text-label-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors"
+                        (click)="notifService.declineInvite(notif.id)">
+                        Rifiuta
+                      </button>
+                    </div>
+                  } @else {
+                    <p class="font-body-sm text-body-sm mt-1"
+                      [class.text-primary]="notif.status === 'accepted'"
+                      [class.text-on-surface-variant]="notif.status === 'declined'">
+                      {{ notif.status === 'accepted' ? '✓ Accettato' : '✕ Rifiutato' }}
+                    </p>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
 
   <!-- User Dropdown -->
   @if (isUserMenuOpen() && authService.isAuthenticated()) {

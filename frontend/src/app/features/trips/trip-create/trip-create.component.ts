@@ -70,10 +70,18 @@ export class TripCreateComponent {
     startDate: [new Date().toISOString().split('T')[0], Validators.required],
     endDate: [new Date(Date.now() + 4 * 86400000).toISOString().split('T')[0], Validators.required],
     budgetEstimate: [500],
-    currency: ['EUR'],
+    currency: [this.groupService.getGroupById(this.groupService.activeGroupId() || this.groupService.userGroups()[0]?.id || '')?.currency || 'EUR'],
     coverUrl: [this.coverPresets[0].url, Validators.required],
-    notes: ['']
+    notes: [''],
+    asProposal: [false]
   });
+
+  constructor() {
+    this.tripForm.controls.groupId.valueChanges.subscribe(id => {
+      const currency = this.groupService.getGroupById(id ?? '')?.currency;
+      if (currency) this.tripForm.patchValue({ currency });
+    });
+  }
 
   addTag(event?: Event): void {
     if (event) event.preventDefault();
@@ -106,9 +114,10 @@ export class TripCreateComponent {
       budgetEstimate: Number(val.budgetEstimate) || 0,
       currency: val.currency || 'EUR',
       tags: this.tagsList,
-      notes: val.notes || ''
+      notes: val.notes || '',
+      asProposal: !!val.asProposal
     });
 
-    this.router.navigate(['/trips', created.id]);
+    this.router.navigate(val.asProposal ? ['/groups', created.groupId] : ['/trips', created.id]);
   }
 }
