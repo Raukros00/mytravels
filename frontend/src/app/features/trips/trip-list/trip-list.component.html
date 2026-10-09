@@ -128,7 +128,7 @@
             <div class="flex items-center justify-between pt-1">
               <div class="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant">
                 <span class="material-symbols-outlined text-[16px]">group</span>
-                <span>{{ (groupService.activeGroup()?.members ?? []).length }} viaggiatori</span>
+                <span>{{ groupService.activeGroup()!.members.length }} viaggiatori</span>
               </div>
               <a [routerLink]="['/trips', trip.id]" class="bg-primary text-on-primary font-label-md text-label-md px-4 py-2 rounded-full shadow-sm active:scale-95 transition-transform flex items-center gap-1 no-underline">
                 <span>Apri Viaggio</span>

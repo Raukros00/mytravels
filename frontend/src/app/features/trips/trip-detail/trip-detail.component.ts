@@ -4,14 +4,18 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TripService } from '../../../core/services/trip.service';
 import { GroupService } from '../../../core/services/group.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { 
   AccommodationDetails, 
+  ActivityCategory,
   AirportTransfer, 
   FlightDetails, 
   FoodCategory, 
   Trip, 
   TripActivity, 
-  TripPlaceToEat 
+  TripPlaceToEat,
+  TripStatus,
+  deriveTripStatus
 } from '../../../core/models/trip.model';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { InteractiveMapComponent, MapStopPoint } from '../../../shared/components/map/interactive-map.component';
@@ -32,6 +36,9 @@ export interface TimelineItem {
   raw: TripActivity | TripPlaceToEat;
 }
 
+import { TripHeroComponent } from './components/trip-hero/trip-hero.component';
+import { TripItineraryComponent } from './components/trip-itinerary/trip-itinerary.component';
+
 @Component({
   selector: 'app-trip-detail',
   standalone: true,
@@ -42,7 +49,9 @@ export interface TimelineItem {
     ReactiveFormsModule, 
     EmptyStateComponent, 
     InteractiveMapComponent, 
-    ModalComponent
+    ModalComponent,
+    TripHeroComponent,
+    TripItineraryComponent
   ],
   templateUrl: './trip-detail.component.html',
   styleUrl: './trip-detail.component.css'
@@ -52,6 +61,7 @@ export class TripDetailComponent implements OnInit {
   private router = inject(Router);
   public tripService = inject(TripService);
   public groupService = inject(GroupService);
+  private toastService = inject(ToastService);
   private fb = inject(FormBuilder);
 
   public trip = signal<Trip | undefined>(undefined);
@@ -59,6 +69,13 @@ export class TripDetailComponent implements OnInit {
   public activeLogisticsTab = signal<'flights' | 'hotel' | 'transfers'>('flights');
   public selectedDay = signal<number>(1);
   public selectedFoodFilter = signal<FoodCategory | 'all'>('all');
+  public foodSearchQuery = signal<string>('');
+  public activitySearchQuery = signal<string>('');
+  public showMobileDetails = signal<boolean>(false);
+
+  public toggleMobileDetails(): void {
+    this.showMobileDetails.update(v => !v);
+  }
 
   // Modal Signals
   public isActivityModalOpen = signal(false);
@@ -147,14 +164,60 @@ export class TripDetailComponent implements OnInit {
     return Array.from({ length: count }, (_, i) => i + 1);
   });
 
+  // Derived status
+  public currentTripStatus = computed<TripStatus>(() => {
+    const t = this.trip();
+    return t ? deriveTripStatus(t) : 'planning';
+  });
+
   // Computed Places To Eat Filtered
   public filteredPlacesToEat = computed(() => {
     const t = this.trip();
     if (!t || !t.placesToEat) return [];
+    let list = t.placesToEat;
     const filter = this.selectedFoodFilter();
-    if (filter === 'all') return t.placesToEat;
-    return t.placesToEat.filter(p => p.category === filter);
+    if (filter !== 'all') {
+      list = list.filter(p => p.category === filter);
+    }
+    const q = this.foodSearchQuery().trim().toLowerCase();
+    if (q) {
+      list = list.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        (p.specialties && p.specialties.toLowerCase().includes(q)) ||
+        (p.address && p.address.toLowerCase().includes(q))
+      );
+    }
+    return list;
   });
+
+  // Computed Activities Filtered
+  public filteredActivities = computed(() => {
+    const t = this.trip();
+    if (!t || !t.activities) return [];
+    const q = this.activitySearchQuery().trim().toLowerCase();
+    if (!q) return t.activities;
+    return t.activities.filter(a =>
+      a.name.toLowerCase().includes(q) ||
+      (a.address && a.address.toLowerCase().includes(q)) ||
+      (a.notes && a.notes.toLowerCase().includes(q))
+    );
+  });
+
+  public selectedDayFoodCount = computed(() =>
+    this.selectedDayTimelineItems().filter(i => i.type === 'food').length
+  );
+
+  public selectedDayActivityCount = computed(() =>
+    this.selectedDayTimelineItems().filter(i => i.type === 'activity').length
+  );
+
+  public countAssignedActivities = computed(() =>
+    (this.trip()?.activities || []).filter(a => !!a.assignedDay).length
+  );
+
+  public countBookingRequiredActivities = computed(() =>
+    (this.trip()?.activities || []).filter(a => a.bookingRequired).length
+  );
 
   // Computed Timeline Items for Selected Day
   public selectedDayTimelineItems = computed(() => {
@@ -295,6 +358,81 @@ export class TripDetailComponent implements OnInit {
     const date = new Date(t.startDate);
     date.setDate(date.getDate() + (dayNum - 1));
     return date.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+
+  public tripStatusIcon(status: TripStatus): string {
+    return { planning: 'edit_note', upcoming: 'schedule', ongoing: 'timelapse', completed: 'check_circle' }[status] || 'luggage';
+  }
+
+  public tripStatusLabel(status: TripStatus): string {
+    return {
+      planning: 'In preparazione',
+      upcoming: 'In arrivo',
+      ongoing: 'In corso',
+      completed: 'Concluso'
+    }[status] || 'Pianificato';
+  }
+
+  public shareTrip(): void {
+    const url = window.location.href;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => {
+        this.toastService.success('Link del viaggio copiato negli appunti!');
+      }).catch(() => {
+        this.toastService.info('Link del viaggio: ' + url);
+      });
+    } else {
+      this.toastService.info('Link del viaggio: ' + url);
+    }
+  }
+
+  public getFoodCategoryLabel(category: FoodCategory): string {
+    switch (category) {
+      case 'breakfast': return 'Colazione';
+      case 'lunch': return 'Pranzo';
+      case 'dinner': return 'Cena';
+      case 'snack': return 'Street Food';
+      case 'aperitivo': return 'Aperitivo';
+      default: return 'Ristorazione';
+    }
+  }
+
+  public countFoodByCategory(category: FoodCategory): number {
+    const t = this.trip();
+    if (!t || !t.placesToEat) return 0;
+    return t.placesToEat.filter(p => p.category === category).length;
+  }
+
+  public getActivityCategoryLabel(category: ActivityCategory): string {
+    switch (category) {
+      case 'monument': return 'Monumento';
+      case 'museum': return 'Museo';
+      case 'nature': return 'Natura / Parco';
+      case 'experience': return 'Esperienza / Tour';
+      case 'shopping': return 'Shopping / Mercato';
+      default: return 'Attrazione';
+    }
+  }
+
+  public getTransferIcon(option?: string): string {
+    switch (option) {
+      case 'metro': return 'subway';
+      case 'train': return 'train';
+      case 'taxi': return 'local_taxi';
+      case 'uber': return 'directions_car';
+      default: return 'directions_bus';
+    }
+  }
+
+  public getTransferLabel(option?: string): string {
+    switch (option) {
+      case 'metro': return 'Metropolitana';
+      case 'train': return 'Treno';
+      case 'taxi': return 'Taxi';
+      case 'uber': return 'Uber / Bolt';
+      case 'bus': return 'Bus / Navetta';
+      default: return 'Da definire';
+    }
   }
 
   public getNavigationUrl(name: string, address?: string): string {
