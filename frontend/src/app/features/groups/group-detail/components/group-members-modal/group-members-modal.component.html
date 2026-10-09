@@ -1,0 +1,50 @@
+<app-modal
+  [isOpen]="isOpen()"
+  [title]="'groups.modal_members_title' | translate"
+  icon="group"
+  [hasFooter]="false"
+  (close)="closeModal.emit()">
+
+  @if (group(); as g) {
+    <app-group-members-list
+      variant="modal"
+      [groupId]="g.id"
+      [members]="g.members"
+      [currentUserId]="currentUserId()"
+      [isAdmin]="isAdmin()"
+      (leave)="leave.emit()" />
+
+    @if (pendingInvites().length > 0) {
+      <div class="modal-pending-section">
+        <p class="modal-pending-label">{{ 'groups.modal_pending_label' | translate }}</p>
+        <ul class="modal-members-list">
+          @for (invite of pendingInvites(); track invite.notifId) {
+            <li class="modal-member-row member-row--pending">
+              <div class="avatar member-avatar member-avatar--pending" [style.background-color]="invite.color">
+                {{ invite.avatar }}
+              </div>
+              <div class="member-info">
+                <span class="member-name">{{ invite.name }}</span>
+              </div>
+              @if (isAdmin()) {
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  style="font-size:0.82rem; padding:0.3rem 0.65rem"
+                  (click)="revokeInvite(invite.notifId)">
+                  {{ 'groups.modal_revoke' | translate }}
+                </button>
+              } @else {
+                <span class="pending-badge">
+                  <span class="material-symbols-outlined">schedule</span>
+                  {{ 'groups.modal_pending_status' | translate }}
+                </span>
+              }
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  }
+
+</app-modal>

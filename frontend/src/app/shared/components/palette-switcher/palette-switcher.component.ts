@@ -1,5 +1,4 @@
 import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 type PaletteTheme = 'viola' | 'terra' | 'foresta' | 'oceano';
 
@@ -14,7 +13,6 @@ interface PaletteOption {
 @Component({
   selector: 'app-palette-switcher',
   standalone: true,
-  imports: [CommonModule],
   templateUrl: './palette-switcher.component.html',
   styleUrl: './palette-switcher.component.css'
 })

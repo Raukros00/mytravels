@@ -1,1203 +1,191 @@
-@if (trip(); as t) {
-<div class="flex flex-col w-full min-h-dvh bg-surface pb-28">
+<div class="page-wrapper">
+  <div class="app-container detail-container">
 
-  <!-- Trip Header Card -->
-  <section class="px-gutter pt-space-sm pb-space-xs">
-    <div class="p-space-md rounded-xl bg-surface-container shadow-sm flex flex-col gap-space-sm">
-      <div class="flex items-start justify-between gap-space-xs">
-        <div class="flex flex-col">
-          <a routerLink="/trips" class="flex items-center gap-1 font-label-sm text-label-sm text-primary mb-1 no-underline">
-            <span class="material-symbols-outlined text-[16px]">arrow_back</span>
-            Tutti i Viaggi
-          </a>
-          <h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">{{ t.title }}</h1>
-        </div>
-        <button aria-label="Condividi itinerario" class="p-2 rounded-full bg-surface-container-high text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center min-w-[40px] min-h-[40px]">
-          <span class="material-symbols-outlined text-[20px]">ios_share</span>
+    <a routerLink="/trips" class="back-link">
+      <span class="material-symbols-outlined">arrow_back</span>
+      Tutti i viaggi
+    </a>
+
+    @if (trip(); as t) {
+      <app-trip-hero
+        [trip]="t"
+        [status]="currentTripStatus()"
+        (share)="shareTrip()" />
+
+      <!-- Navigation Tabs Bar -->
+      <nav class="trip-tabs-nav" aria-label="Sezioni viaggio">
+        <button
+          type="button"
+          class="trip-tab-btn"
+          [class.trip-tab-btn--active]="activeTab() === 'itinerary'"
+          (click)="activeTab.set('itinerary')">
+          <span class="material-symbols-outlined">calendar_month</span>
+          <span>Itinerario</span>
+        </button>
+
+        <button
+          type="button"
+          class="trip-tab-btn"
+          [class.trip-tab-btn--active]="activeTab() === 'food'"
+          (click)="activeTab.set('food')">
+          <span class="material-symbols-outlined">restaurant</span>
+          <span>Food & Drink</span>
+          @if (t.placesToEat?.length) {
+            <span class="trip-tab-counter">{{ t.placesToEat?.length }}</span>
+          }
+        </button>
+
+        <button
+          type="button"
+          class="trip-tab-btn"
+          [class.trip-tab-btn--active]="activeTab() === 'flights'"
+          (click)="activeTab.set('flights')">
+          <span class="material-symbols-outlined">flight_takeoff</span>
+          <span>Logistica</span>
+        </button>
+
+        <button
+          type="button"
+          class="trip-tab-btn"
+          [class.trip-tab-btn--active]="activeTab() === 'expenses'"
+          (click)="activeTab.set('expenses')">
+          <span class="material-symbols-outlined">payments</span>
+          <span>Spese</span>
+          @if (expensesCount()) {
+            <span class="trip-tab-counter">{{ expensesCount() }}</span>
+          }
+        </button>
+
+        <button
+          type="button"
+          class="trip-tab-btn"
+          [class.trip-tab-btn--active]="activeTab() === 'activities'"
+          (click)="activeTab.set('activities')">
+          <span class="material-symbols-outlined">explore</span>
+          <span>Attività</span>
+          @if (t.activities?.length) {
+            <span class="trip-tab-counter">{{ t.activities?.length }}</span>
+          }
+        </button>
+      </nav>
+
+      @switch (activeTab()) {
+        @case ('itinerary') {
+          <app-trip-itinerary
+            [tripDays]="tripDaysNumbers()"
+            [selectedDay]="selectedDay()"
+            [timelineItems]="selectedDayTimelineItems()"
+            [mapStops]="selectedDayMapStops()"
+            [mapCenter]="mapCenter()"
+            [dayFoodCount]="selectedDayFoodCount()"
+            [dayActivityCount]="selectedDayActivityCount()"
+            [startDate]="t.startDate"
+            (daySelected)="selectedDay.set($event)"
+            (addStep)="openPlanFromBacklogModal()"
+            (unassignItem)="unassignFromDay($event)" />
+        }
+
+        @case ('food') {
+          <app-trip-food-tab
+            [places]="t.placesToEat"
+            [activities]="t.activities"
+            [mapCenter]="mapCenter()"
+            [(searchQuery)]="foodSearchQuery"
+            [(filter)]="selectedFoodFilter"
+            (addPlace)="isPlaceModalOpen.set(true)"
+            (assignPlace)="openAssignDayModal($event, 'food')"
+            (deletePlace)="deletePlaceToEat($event)" />
+        }
+
+        @case ('flights') {
+          <app-trip-logistics-tab
+            [trip]="t"
+            [(subTab)]="activeLogisticsTab"
+            (editFlights)="isFlightsModalOpen.set(true)"
+            (editHotel)="isAccommodationModalOpen.set(true)"
+            (editTransfers)="isTransfersModalOpen.set(true)" />
+        }
+
+        @case ('expenses') {
+          <app-trip-expenses-tab
+            [trip]="t"
+            [members]="expenseMembers()"
+            [currentUserId]="currentUserId()"
+            (addExpense)="openExpenseModal()"
+            (editExpense)="openExpenseModal($event)"
+            (deleteExpense)="deleteExpense($event)"
+            (settle)="settleTransfer($event)" />
+        }
+
+        @case ('activities') {
+          <app-trip-activities-tab
+            [activities]="t.activities"
+            [(searchQuery)]="activitySearchQuery"
+            (addActivity)="isActivityModalOpen.set(true)"
+            (assignActivity)="openAssignDayModal($event, 'activity')"
+            (deleteActivity)="deleteActivity($event)" />
+        }
+      }
+
+    } @else {
+      <!-- Trip Not Found Card -->
+      <div class="not-found card">
+        <span class="material-symbols-outlined not-found-icon">search_off</span>
+        <h2 class="not-found-title">Viaggio non trovato</h2>
+        <p class="not-found-desc">Il viaggio richiesto non esiste o è stato rimosso.</p>
+        <button type="button" class="btn btn-primary" (click)="goToTrips()">
+          Torna ai viaggi
         </button>
       </div>
-      <div class="flex flex-wrap items-center gap-space-sm">
-        <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-lowest text-on-surface shadow-sm">
-          <span class="material-symbols-outlined text-[16px] text-primary">calendar_month</span>
-          <span class="font-label-md text-label-md">{{ formatDateRange(t.startDate, t.endDate) }}</span>
-        </div>
-        <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-fixed-variant shadow-sm">
-          <span class="material-symbols-outlined text-[16px] text-secondary">location_on</span>
-          <span class="font-label-md text-label-md">{{ t.destination }}{{ t.country ? ', ' + t.country : '' }}</span>
-        </div>
-        @if (t.budgetEstimate) {
-          <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-lowest text-on-surface shadow-sm ml-auto">
-            <span class="material-symbols-outlined text-[16px] text-tertiary">payments</span>
-            <span class="font-label-md text-label-md">{{ t.budgetEstimate }} {{ t.currency || 'EUR' }}</span>
-          </div>
-        }
-      </div>
-    </div>
-  </section>
+    }
 
-  <!-- Tab Navigation -->
-  <div class="py-space-sm">
-    <div class="flex items-center gap-space-xs overflow-x-auto px-gutter no-scrollbar py-1">
-      <button
-        class="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md text-label-md shadow-sm transition-all active:scale-95"
-        [class.bg-primary]="activeTab() === 'itinerary'"
-        [class.text-on-primary]="activeTab() === 'itinerary'"
-        [class.bg-surface-container]="activeTab() !== 'itinerary'"
-        [class.text-on-surface]="activeTab() !== 'itinerary'"
-        type="button" (click)="activeTab.set('itinerary')">
-        <span class="material-symbols-outlined text-[18px]">calendar_month</span>
-        <span>Itinerario</span>
-      </button>
-      <button
-        class="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md text-label-md shadow-sm transition-all active:scale-95"
-        [class.bg-primary]="activeTab() === 'food'"
-        [class.text-on-primary]="activeTab() === 'food'"
-        [class.bg-surface-container]="activeTab() !== 'food'"
-        [class.text-on-surface]="activeTab() !== 'food'"
-        type="button" (click)="activeTab.set('food')">
-        <span class="material-symbols-outlined text-[18px]">restaurant</span>
-        <span>Food & Drink</span>
-        @if ((t.placesToEat?.length || 0) > 0) {
-          <span class="bg-surface-container-lowest text-on-surface font-label-sm text-[11px] px-1.5 py-0.5 rounded-full">{{ t.placesToEat?.length }}</span>
-        }
-      </button>
-      <button
-        class="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md text-label-md shadow-sm transition-all active:scale-95"
-        [class.bg-primary]="activeTab() === 'flights'"
-        [class.text-on-primary]="activeTab() === 'flights'"
-        [class.bg-surface-container]="activeTab() !== 'flights'"
-        [class.text-on-surface]="activeTab() !== 'flights'"
-        type="button" (click)="activeTab.set('flights')">
-        <span class="material-symbols-outlined text-[18px]">flight_takeoff</span>
-        <span>Logistica</span>
-      </button>
-      <button
-        class="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md text-label-md shadow-sm transition-all active:scale-95"
-        [class.bg-primary]="activeTab() === 'activities'"
-        [class.text-on-primary]="activeTab() === 'activities'"
-        [class.bg-surface-container]="activeTab() !== 'activities'"
-        [class.text-on-surface]="activeTab() !== 'activities'"
-        type="button" (click)="activeTab.set('activities')">
-        <span class="material-symbols-outlined text-[18px]">explore</span>
-        <span>Attività</span>
-        @if ((t.activities?.length || 0) > 0) {
-          <span class="bg-surface-container-lowest text-on-surface font-label-sm text-[11px] px-1.5 py-0.5 rounded-full">{{ t.activities?.length }}</span>
-        }
-      </button>
-      <button
-        class="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md text-label-md shadow-sm transition-all active:scale-95"
-        [class.bg-primary]="activeTab() === 'hotel'"
-        [class.text-on-primary]="activeTab() === 'hotel'"
-        [class.bg-surface-container]="activeTab() !== 'hotel'"
-        [class.text-on-surface]="activeTab() !== 'hotel'"
-        type="button" (click)="activeTab.set('hotel')">
-        <span class="material-symbols-outlined text-[18px]">hotel</span>
-        <span>Alloggio</span>
-      </button>
-    </div>
   </div>
-
-  <!-- =====================================================================
-       TAB: ITINERARIO GIORNALIERO
-       ===================================================================== -->
-  @if (activeTab() === 'itinerary') {
-    <div class="animate-fade-in">
-      <!-- Day selector (horizontal scroll) -->
-      <section class="py-space-xs">
-        <div class="flex items-center gap-space-xs overflow-x-auto px-gutter no-scrollbar" id="day-selector-track">
-          @for (dayNum of tripDaysNumbers(); track dayNum) {
-            <button
-              class="flex-shrink-0 px-4 py-2 rounded-full font-label-md text-label-md transition-all"
-              [class.bg-primary]="selectedDay() === dayNum"
-              [class.text-on-primary]="selectedDay() === dayNum"
-              [class.shadow-md]="selectedDay() === dayNum"
-              [class.bg-surface-container-high]="selectedDay() !== dayNum"
-              [class.text-on-surface-variant]="selectedDay() !== dayNum"
-              type="button" (click)="selectedDay.set(dayNum)">
-              <span>Giorno {{ dayNum }}</span>
-              <span class="font-body-sm text-body-sm opacity-80 ml-1">({{ getDayDateFormatted(dayNum) }})</span>
-            </button>
-          }
-        </div>
-      </section>
-
-      <!-- Day Focus Banner -->
-      <section class="px-gutter pt-space-xs pb-space-sm">
-        <div class="p-space-md rounded-xl bg-gradient-to-r from-surface-container-high via-surface-container to-surface-container-high flex flex-col gap-1">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-[18px] text-tertiary">flare</span>
-            <span class="font-label-sm text-label-sm text-tertiary uppercase tracking-wider">Giorno {{ selectedDay() }}</span>
-          </div>
-          <h2 class="font-headline-md text-headline-md text-on-surface">{{ getDayDateFormatted(selectedDay()) }}</h2>
-          <p class="font-body-sm text-body-sm text-on-surface-variant">
-            {{ selectedDayTimelineItems().length }} tappe pianificate
-          </p>
-        </div>
-      </section>
-
-      <!-- Chronological Timeline Stream -->
-      <section class="px-gutter pb-8 relative">
-        @if (selectedDayTimelineItems().length > 0) {
-          <!-- Vertical backbone line -->
-          <div class="absolute left-[31px] top-2 bottom-4 w-[2px] bg-outline-variant/50"></div>
-          <div class="flex flex-col gap-space-lg relative">
-            @for (item of selectedDayTimelineItems(); track item.id) {
-              <div class="flex items-start gap-space-md">
-                <!-- Timeline node -->
-                <div class="relative z-10 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-md"
-                  [class.bg-primary]="item.type === 'food'"
-                  [class.text-on-primary]="item.type === 'food'"
-                  [class.bg-secondary]="item.type === 'activity'"
-                  [class.text-on-secondary]="item.type === 'activity'">
-                  <span class="material-symbols-outlined text-[18px]">
-                    {{ item.type === 'food' ? 'restaurant' : 'explore' }}
-                  </span>
-                </div>
-                <!-- Content card -->
-                <div class="flex-1 min-w-0 bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col gap-space-xs" [class.opacity-60]="item.isCompleted">
-                  <div class="flex items-center justify-between gap-1">
-                    <span class="font-label-sm text-label-sm uppercase font-bold tracking-wide"
-                      [class.text-primary]="item.type === 'food'"
-                      [class.text-secondary]="item.type === 'activity'">
-                      {{ item.timeSlot || 'Orario Flessibile' }} • {{ item.type === 'food' ? 'Pasto' : 'Visita' }}
-                    </span>
-                    @if (item.isCompleted) {
-                      <span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed-variant font-label-sm text-[11px] flex items-center gap-1">
-                        <span class="material-symbols-outlined text-[13px]">check_circle</span> Completato
-                      </span>
-                    }
-                  </div>
-                  <h3 class="font-headline-sm text-headline-sm text-on-surface truncate">{{ item.name }}</h3>
-                  @if (item.address) {
-                    <div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm">
-                      <span class="material-symbols-outlined text-[15px] text-primary">location_on</span>
-                      <span class="truncate">{{ item.address }}</span>
-                    </div>
-                  }
-                  @if (item.priceInfo) {
-                    <span class="self-start px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">{{ item.priceInfo }}</span>
-                  }
-                  @if (item.notes) {
-                    <p class="font-body-sm text-body-sm text-on-surface-variant">{{ item.notes }}</p>
-                  }
-                  <div class="flex items-center justify-between pt-2">
-                    <a [href]="getNavigationUrl(item.name, item.address)" target="_blank" rel="noopener"
-                      class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container text-primary font-label-sm text-label-sm no-underline">
-                      <span class="material-symbols-outlined text-[16px]">directions_car</span>
-                      Naviga
-                    </a>
-                    <button class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1" type="button" (click)="unassignFromDay(item)">
-                      <span class="material-symbols-outlined text-[16px]">undo</span>
-                      Backlog
-                    </button>
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
-        } @else {
-          <app-empty-state
-            materialIcon="event_note"
-            title="Giorno {{ selectedDay() }} libero"
-            description="Nessuna tappa pianificata per questo giorno."
-            actionLabel="Pianifica dal Backlog"
-            actionMaterialIcon="add"
-            (action)="openPlanFromBacklogModal()">
-          </app-empty-state>
-        }
-      </section>
-
-      <!-- Mappa (collassata in basso) -->
-      <section class="px-gutter py-space-md">
-        <div class="flex items-center justify-between mb-space-sm">
-          <h3 class="font-headline-sm text-headline-sm text-on-surface">Mappa del Giorno {{ selectedDay() }}</h3>
-        </div>
-        <app-interactive-map
-          [stops]="selectedDayMapStops()"
-          [defaultCenter]="getMapCenterCoordinates()">
-        </app-interactive-map>
-      </section>
-
-      <!-- FAB per aggiungere tappa -->
-      <div class="fixed bottom-20 right-4 z-40">
-        <button class="flex items-center gap-2 px-4 py-3 rounded-full bg-primary text-on-primary font-label-lg text-label-lg shadow-xl active:scale-95 transition-all"
-          type="button" (click)="openPlanFromBacklogModal()">
-          <span class="material-symbols-outlined text-[20px]">add</span>
-          Aggiungi Tappa
-        </button>
-      </div>
-    </div>
-  }
-
-  <!-- =====================================================================
-       TAB: FOOD & DRINK
-       ===================================================================== -->
-  @if (activeTab() === 'food') {
-    <div class="animate-fade-in flex flex-col w-full pb-8">
-      <!-- Search bar -->
-      <div class="px-gutter pt-space-md pb-space-sm flex items-center gap-space-sm">
-        <div class="flex-1 flex items-center gap-space-xs bg-surface-container px-space-md py-2.5 rounded-full shadow-sm focus-within:bg-surface-container-lowest transition-colors">
-          <span class="material-symbols-outlined text-outline text-[20px]">search</span>
-          <input class="bg-transparent border-none outline-none font-body-md text-body-md text-on-surface placeholder:text-outline w-full"
-            placeholder="Cerca ristoranti o piatti..."
-            type="text">
-        </div>
-        <button class="w-11 h-11 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center shrink-0 active:scale-95 transition-transform shadow-sm"
-          aria-label="Filtri" type="button">
-          <span class="material-symbols-outlined text-[20px]">tune</span>
-        </button>
-      </div>
-
-      <!-- Meal Category Pills -->
-      <div class="pt-space-sm pb-space-xs">
-        <div class="flex items-center gap-space-xs overflow-x-auto px-gutter no-scrollbar py-1">
-          <button class="shrink-0 px-4 py-1.5 rounded-full font-label-sm text-label-sm active:scale-95 transition-all"
-            [class.bg-primary]="selectedFoodFilter() === 'all'"
-            [class.text-on-primary]="selectedFoodFilter() === 'all'"
-            [class.shadow-sm]="selectedFoodFilter() === 'all'"
-            [class.bg-surface-container]="selectedFoodFilter() !== 'all'"
-            [class.text-on-surface-variant]="selectedFoodFilter() !== 'all'"
-            type="button" (click)="selectedFoodFilter.set('all')">
-            Tutti ({{ t.placesToEat?.length || 0 }})
-          </button>
-          <button class="shrink-0 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm active:scale-95 transition-all"
-            [class.bg-primary]="selectedFoodFilter() === 'breakfast'"
-            [class.text-on-primary]="selectedFoodFilter() === 'breakfast'"
-            [class.bg-surface-container]="selectedFoodFilter() !== 'breakfast'"
-            [class.text-on-surface-variant]="selectedFoodFilter() !== 'breakfast'"
-            type="button" (click)="selectedFoodFilter.set('breakfast')">
-            Colazione
-          </button>
-          <button class="shrink-0 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm active:scale-95 transition-all"
-            [class.bg-primary]="selectedFoodFilter() === 'lunch'"
-            [class.text-on-primary]="selectedFoodFilter() === 'lunch'"
-            [class.bg-surface-container]="selectedFoodFilter() !== 'lunch'"
-            [class.text-on-surface-variant]="selectedFoodFilter() !== 'lunch'"
-            type="button" (click)="selectedFoodFilter.set('lunch')">
-            Pranzo
-          </button>
-          <button class="shrink-0 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm active:scale-95 transition-all"
-            [class.bg-primary]="selectedFoodFilter() === 'dinner'"
-            [class.text-on-primary]="selectedFoodFilter() === 'dinner'"
-            [class.bg-surface-container]="selectedFoodFilter() !== 'dinner'"
-            [class.text-on-surface-variant]="selectedFoodFilter() !== 'dinner'"
-            type="button" (click)="selectedFoodFilter.set('dinner')">
-            Cena
-          </button>
-          <button class="shrink-0 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm active:scale-95 transition-all"
-            [class.bg-primary]="selectedFoodFilter() === 'aperitivo'"
-            [class.text-on-primary]="selectedFoodFilter() === 'aperitivo'"
-            [class.bg-surface-container]="selectedFoodFilter() !== 'aperitivo'"
-            [class.text-on-surface-variant]="selectedFoodFilter() !== 'aperitivo'"
-            type="button" (click)="selectedFoodFilter.set('aperitivo')">
-            Aperitivo
-          </button>
-          <button class="shrink-0 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm active:scale-95 transition-all"
-            [class.bg-primary]="selectedFoodFilter() === 'snack'"
-            [class.text-on-primary]="selectedFoodFilter() === 'snack'"
-            [class.bg-surface-container]="selectedFoodFilter() !== 'snack'"
-            [class.text-on-surface-variant]="selectedFoodFilter() !== 'snack'"
-            type="button" (click)="selectedFoodFilter.set('snack')">
-            Street Food
-          </button>
-        </div>
-      </div>
-
-      <!-- Food Cards Feed -->
-      <div class="px-gutter pt-space-sm flex flex-col gap-space-md">
-        @if (filteredPlacesToEat().length > 0) {
-          @for (place of filteredPlacesToEat(); track place.id) {
-            <article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm transition-all duration-200 hover:shadow-md">
-              <div class="flex flex-col gap-1">
-                <div class="flex items-start justify-between gap-space-sm">
-                  <div class="min-w-0">
-                    <h2 class="font-headline-md text-headline-md text-on-surface truncate">{{ place.name }}</h2>
-                    @if (place.address) {
-                      <div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm">
-                        <span class="material-symbols-outlined text-[15px] text-primary">location_on</span>
-                        <span class="truncate">{{ place.address }}</span>
-                      </div>
-                    }
-                  </div>
-                  <span class="shrink-0 px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm shadow-sm font-bold">
-                    {{ place.priceRange }}
-                  </span>
-                </div>
-
-                <!-- Category & meal type chips -->
-                <div class="flex flex-wrap gap-1.5 mt-1">
-                  <span class="px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-fixed-variant font-label-sm text-label-sm shadow-sm flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[13px]">restaurant</span>
-                    @switch (place.category) {
-                      @case ('breakfast') { Colazione }
-                      @case ('lunch') { Pranzo }
-                      @case ('dinner') { Cena }
-                      @case ('snack') { Street Food }
-                      @case ('aperitivo') { Aperitivo }
-                    }
-                  </span>
-                  @if (place.assignedDay) {
-                    <span class="px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm shadow-sm">
-                      Giorno {{ place.assignedDay }}
-                    </span>
-                  }
-                </div>
-
-                @if (place.specialties) {
-                  <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">{{ place.specialties }}</p>
-                }
-
-                @if (place.notes) {
-                  <div class="p-2.5 rounded-lg bg-surface-container-low flex items-start gap-2 mt-1">
-                    <span class="material-symbols-outlined text-[18px] text-primary mt-0.5">edit_note</span>
-                    <p class="font-body-sm text-body-sm text-on-surface-variant">{{ place.notes }}</p>
-                  </div>
-                }
-
-                <div class="flex items-center justify-between pt-2">
-                  <a [href]="getNavigationUrl(place.name, place.address)" target="_blank" rel="noopener"
-                    class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-surface-container text-primary font-label-sm text-label-sm no-underline">
-                    <span class="material-symbols-outlined text-[16px]">directions_car</span>
-                    Naviga
-                  </a>
-                  <div class="flex items-center gap-2">
-                    <button class="font-label-sm text-label-sm text-secondary flex items-center gap-1" type="button"
-                      (click)="openAssignDayModal(place, 'food')">
-                      <span class="material-symbols-outlined text-[16px]">calendar_add_on</span>
-                      {{ place.assignedDay ? 'Giorno ' + place.assignedDay : 'Pianifica' }}
-                    </button>
-                    <button class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-error transition-colors"
-                      type="button" (click)="deletePlaceToEat(place.id)">
-                      <span class="material-symbols-outlined text-[18px]">delete_outline</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </article>
-          }
-        } @else {
-          <app-empty-state
-            materialIcon="restaurant"
-            title="Nessun locale in lista"
-            description="Aggiungi ristoranti, bar o mercati per questa categoria.">
-          </app-empty-state>
-        }
-      </div>
-
-      <!-- FAB -->
-      <div class="fixed bottom-20 right-4 z-40">
-        <button class="flex items-center gap-2 px-4 py-3 rounded-full bg-primary text-on-primary font-label-lg text-label-lg shadow-xl active:scale-95 transition-all"
-          type="button" (click)="openAddPlaceModal()">
-          <span class="material-symbols-outlined text-[20px]">add</span>
-          Aggiungi Locale
-        </button>
-      </div>
-    </div>
-  }
-
-  <!-- =====================================================================
-       TAB: LOGISTICA (Voli + Alloggio)
-       ===================================================================== -->
-  @if (activeTab() === 'flights') {
-    <div class="animate-fade-in px-gutter flex flex-col gap-space-lg py-space-md">
-
-      <!-- Header -->
-      <div class="flex flex-col gap-space-xs">
-        <div class="flex items-center gap-space-xs">
-          <span class="material-symbols-outlined text-primary text-[20px]">luggage</span>
-          <span class="font-label-sm text-label-sm uppercase tracking-wider text-primary">Logistica & Spostamenti</span>
-        </div>
-        <p class="font-body-sm text-body-sm text-on-surface-variant">Voli, trasferimenti e riferimenti di prenotazione per il gruppo.</p>
-      </div>
-
-      <!-- Logistics Tabs -->
-      <div class="flex items-center gap-space-sm overflow-x-auto no-scrollbar">
-        <button
-          class="flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md text-label-md shadow-sm transition-all active:scale-95"
-          [class.bg-primary]="activeLogisticsTab() === 'flights'"
-          [class.text-on-primary]="activeLogisticsTab() === 'flights'"
-          [class.bg-surface-container]="activeLogisticsTab() !== 'flights'"
-          [class.text-on-surface]="activeLogisticsTab() !== 'flights'"
-          type="button" (click)="activeLogisticsTab.set('flights')">
-          <span class="material-symbols-outlined text-[18px]">flight_takeoff</span>
-          Voli
-        </button>
-        <button
-          class="flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md text-label-md shadow-sm transition-all active:scale-95"
-          [class.bg-primary]="activeLogisticsTab() === 'hotel'"
-          [class.text-on-primary]="activeLogisticsTab() === 'hotel'"
-          [class.bg-surface-container]="activeLogisticsTab() !== 'hotel'"
-          [class.text-on-surface]="activeLogisticsTab() !== 'hotel'"
-          type="button" (click)="activeLogisticsTab.set('hotel')">
-          <span class="material-symbols-outlined text-[18px]">hotel</span>
-          Alloggio
-        </button>
-        <button
-          class="flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md text-label-md shadow-sm transition-all active:scale-95"
-          [class.bg-primary]="activeLogisticsTab() === 'transfers'"
-          [class.text-on-primary]="activeLogisticsTab() === 'transfers'"
-          [class.bg-surface-container]="activeLogisticsTab() !== 'transfers'"
-          [class.text-on-surface]="activeLogisticsTab() !== 'transfers'"
-          type="button" (click)="activeLogisticsTab.set('transfers')">
-          <span class="material-symbols-outlined text-[18px]">train</span>
-          Trasporti
-        </button>
-      </div>
-
-      <!-- Voli Section -->
-      @if (activeLogisticsTab() === 'flights') {
-        <section class="flex flex-col gap-space-md">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-space-xs">
-              <span class="material-symbols-outlined text-secondary text-[22px]">flight</span>
-              <h2 class="font-headline-sm text-headline-sm text-on-surface">Voli A/R</h2>
-            </div>
-            <button class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm"
-              type="button" (click)="openEditFlightsModal()">
-              <span class="material-symbols-outlined text-[16px]">edit</span>
-              Modifica
-            </button>
-          </div>
-
-          <!-- Outbound Flight -->
-          <div class="flex flex-col bg-surface-container-lowest rounded-xl shadow-[0_2px_12px_rgba(78,42,29,0.06)] overflow-hidden">
-            <div class="p-space-md flex flex-col gap-space-sm bg-gradient-to-r from-surface-container-low to-surface-container-lowest">
-              <div class="flex items-center justify-between">
-                <span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">Andata</span>
-                <span class="font-label-md text-label-md text-on-surface">{{ t.flights?.outboundFlight?.flightNumber || 'Da inserire' }}</span>
-              </div>
-              <div class="flex items-center justify-between pt-space-xs">
-                <div class="flex flex-col">
-                  <span class="font-headline-md text-headline-md text-on-surface">{{ getAirportCode(t.flights?.outboundFlight?.departureAirport) }}</span>
-                  <span class="font-label-sm text-label-sm text-on-surface-variant">{{ t.flights?.outboundFlight?.departureCity || 'Partenza' }}</span>
-                  <span class="font-label-md text-label-md text-primary mt-1">{{ formatFlightDateTime(t.flights?.outboundFlight?.departureDateTime) }}</span>
-                </div>
-                <div class="flex flex-col items-center flex-1 px-3">
-                  <div class="relative w-full flex items-center my-1">
-                    <div class="h-[2px] w-full bg-outline-variant"></div>
-                    <span class="material-symbols-outlined text-primary text-[18px] absolute inset-x-0 mx-auto bg-surface-container-lowest px-1">flight</span>
-                  </div>
-                  <span class="font-label-sm text-label-sm text-secondary">{{ t.flights?.outboundFlight?.airline || 'Compagnia' }}</span>
-                </div>
-                <div class="flex flex-col items-end text-right">
-                  <span class="font-headline-md text-headline-md text-on-surface">{{ getAirportCode(t.flights?.outboundFlight?.arrivalAirport) }}</span>
-                  <span class="font-label-sm text-label-sm text-on-surface-variant">{{ t.flights?.outboundFlight?.arrivalCity || 'Arrivo' }}</span>
-                  <span class="font-label-md text-label-md text-primary mt-1">{{ formatFlightDateTime(t.flights?.outboundFlight?.arrivalDateTime) }}</span>
-                </div>
-              </div>
-            </div>
-            @if (t.flights?.outboundFlight?.bookingReference) {
-              <div class="p-space-md bg-surface-container-lowest border-t border-outline-variant/20">
-                <div class="flex items-center justify-between">
-                  <span class="font-label-sm text-label-sm text-on-surface-variant">Codice PNR</span>
-                  <strong class="font-label-lg text-label-lg text-on-surface font-mono">{{ t.flights?.outboundFlight?.bookingReference }}</strong>
-                </div>
-              </div>
-            }
-          </div>
-
-          <!-- Return Flight -->
-          <div class="flex flex-col bg-surface-container-lowest rounded-xl shadow-[0_2px_12px_rgba(78,42,29,0.06)] overflow-hidden">
-            <div class="p-space-md flex flex-col gap-space-sm bg-gradient-to-r from-surface-container-low to-surface-container-lowest">
-              <div class="flex items-center justify-between">
-                <span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm">Ritorno</span>
-                <span class="font-label-md text-label-md text-on-surface">{{ t.flights?.returnFlight?.flightNumber || 'Da inserire' }}</span>
-              </div>
-              <div class="flex items-center justify-between pt-space-xs">
-                <div class="flex flex-col">
-                  <span class="font-headline-md text-headline-md text-on-surface">{{ getAirportCode(t.flights?.returnFlight?.departureAirport) }}</span>
-                  <span class="font-label-sm text-label-sm text-on-surface-variant">{{ t.flights?.returnFlight?.departureCity || 'Partenza' }}</span>
-                  <span class="font-label-md text-label-md text-primary mt-1">{{ formatFlightDateTime(t.flights?.returnFlight?.departureDateTime) }}</span>
-                </div>
-                <div class="flex flex-col items-center flex-1 px-3">
-                  <div class="relative w-full flex items-center my-1">
-                    <div class="h-[2px] w-full bg-outline-variant"></div>
-                    <span class="material-symbols-outlined text-primary text-[18px] absolute inset-x-0 mx-auto bg-surface-container-lowest px-1">flight</span>
-                  </div>
-                  <span class="font-label-sm text-label-sm text-secondary">{{ t.flights?.returnFlight?.airline || 'Compagnia' }}</span>
-                </div>
-                <div class="flex flex-col items-end text-right">
-                  <span class="font-headline-md text-headline-md text-on-surface">{{ getAirportCode(t.flights?.returnFlight?.arrivalAirport) }}</span>
-                  <span class="font-label-sm text-label-sm text-on-surface-variant">{{ t.flights?.returnFlight?.arrivalCity || 'Arrivo' }}</span>
-                  <span class="font-label-md text-label-md text-primary mt-1">{{ formatFlightDateTime(t.flights?.returnFlight?.arrivalDateTime) }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      }
-
-      <!-- Alloggio Section -->
-      @if (activeLogisticsTab() === 'hotel') {
-        <section class="flex flex-col gap-space-md">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-space-xs">
-              <span class="material-symbols-outlined text-secondary text-[22px]">hotel</span>
-              <h2 class="font-headline-sm text-headline-sm text-on-surface">Alloggio</h2>
-            </div>
-            <button class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm"
-              type="button" (click)="openEditAccommodationModal()">
-              <span class="material-symbols-outlined text-[16px]">edit</span>
-              Modifica
-            </button>
-          </div>
-
-          <div class="bg-surface-container-lowest rounded-xl shadow-[0_2px_12px_rgba(78,42,29,0.06)] overflow-hidden">
-            <div class="p-space-md flex flex-col gap-space-md">
-              <div class="flex items-center gap-space-md">
-                <div class="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center shrink-0">
-                  <span class="material-symbols-outlined text-[24px] text-secondary">apartment</span>
-                </div>
-                <div class="flex flex-col min-w-0">
-                  <h3 class="font-headline-sm text-headline-sm text-on-surface">{{ t.accommodation?.name || 'Struttura non specificata' }}</h3>
-                  @if (t.accommodation?.address) {
-                    <div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm mt-0.5">
-                      <span class="material-symbols-outlined text-[14px] text-primary">location_on</span>
-                      <span class="truncate">{{ t.accommodation?.address }}</span>
-                    </div>
-                  }
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-space-sm">
-                <div class="p-space-sm rounded-xl bg-secondary-container/40 flex flex-col gap-1">
-                  <div class="flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[16px] text-secondary">key</span>
-                    <span class="font-label-sm text-label-sm text-secondary">Check-in</span>
-                  </div>
-                  <strong class="font-label-md text-label-md text-on-surface">{{ t.accommodation?.checkInDate || t.startDate }}</strong>
-                  <span class="font-body-sm text-body-sm text-on-surface-variant">dalle ore {{ t.accommodation?.checkInTime || '14:00' }}</span>
-                </div>
-                <div class="p-space-sm rounded-xl bg-tertiary-fixed/30 flex flex-col gap-1">
-                  <div class="flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[16px] text-tertiary">door_open</span>
-                    <span class="font-label-sm text-label-sm text-tertiary">Check-out</span>
-                  </div>
-                  <strong class="font-label-md text-label-md text-on-surface">{{ t.accommodation?.checkOutDate || t.endDate }}</strong>
-                  <span class="font-body-sm text-body-sm text-on-surface-variant">entro le {{ t.accommodation?.checkOutTime || '11:00' }}</span>
-                </div>
-              </div>
-
-              @if (t.accommodation?.bookingCode) {
-                <div class="flex items-center justify-between p-space-sm rounded-xl bg-surface-container">
-                  <span class="font-label-sm text-label-sm text-on-surface-variant">Codice Prenotazione</span>
-                  <strong class="font-label-lg text-label-lg text-on-surface font-mono">{{ t.accommodation?.bookingCode }}</strong>
-                </div>
-              }
-
-              @if (t.accommodation?.notes) {
-                <div class="p-2.5 rounded-lg bg-surface-container-low flex items-start gap-2">
-                  <span class="material-symbols-outlined text-[18px] text-primary mt-0.5">info</span>
-                  <p class="font-body-sm text-body-sm text-on-surface-variant">{{ t.accommodation?.notes }}</p>
-                </div>
-              }
-
-              <a [href]="getNavigationUrl(t.accommodation?.name || '', t.accommodation?.address || '')" target="_blank" rel="noopener"
-                class="flex items-center justify-center gap-2 w-full py-3 rounded-full bg-primary text-on-primary font-label-lg text-label-lg no-underline active:scale-95 transition-all">
-                <span class="material-symbols-outlined text-[20px]">directions_car</span>
-                Naviga all'Hotel
-              </a>
-            </div>
-          </div>
-
-          @if (t.accommodation?.coordinates) {
-            <div class="rounded-xl overflow-hidden shadow-sm">
-              <app-interactive-map
-                [stops]="getHotelMapStop()"
-                [defaultCenter]="[t.accommodation!.coordinates!.lat, t.accommodation!.coordinates!.lng]"
-                [defaultZoom]="15">
-              </app-interactive-map>
-            </div>
-          }
-        </section>
-      }
-
-      <!-- Trasporti Section -->
-      @if (activeLogisticsTab() === 'transfers') {
-        <section class="flex flex-col gap-space-md">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-space-xs">
-              <span class="material-symbols-outlined text-secondary text-[22px]">train</span>
-              <h2 class="font-headline-sm text-headline-sm text-on-surface">Trasporti</h2>
-            </div>
-            <button class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm"
-              type="button" (click)="openEditTransfersModal()">
-              <span class="material-symbols-outlined text-[16px]">edit</span>
-              Modifica
-            </button>
-          </div>
-
-          <div class="bg-surface-container-lowest rounded-xl shadow-[0_2px_12px_rgba(78,42,29,0.06)] p-space-md flex flex-col gap-space-md">
-            <div class="grid grid-cols-2 gap-space-sm">
-              <div class="p-space-sm rounded-xl bg-surface-container flex flex-col gap-1">
-                <span class="font-label-sm text-label-sm text-on-surface-variant">Opzione Consigliata</span>
-                <strong class="font-label-md text-label-md text-on-surface flex items-center gap-1">
-                  <span class="material-symbols-outlined text-[18px] text-primary">
-                    @switch (t.transfers?.recommendedOption) {
-                      @case ('metro') { subway }
-                      @case ('train') { train }
-                      @case ('taxi') { local_taxi }
-                      @case ('uber') { directions_car }
-                      @default { directions_bus }
-                    }
-                  </span>
-                  @switch (t.transfers?.recommendedOption) {
-                    @case ('metro') { Metro }
-                    @case ('bus') { Bus }
-                    @case ('train') { Treno }
-                    @case ('taxi') { Taxi }
-                    @case ('uber') { Uber/Bolt }
-                    @default { Da definire }
-                  }
-                </strong>
-              </div>
-              <div class="p-space-sm rounded-xl bg-surface-container flex flex-col gap-1">
-                <span class="font-label-sm text-label-sm text-on-surface-variant">Durata / Costo</span>
-                <strong class="font-label-md text-label-md text-on-surface">{{ t.transfers?.estimatedDuration || 'N/A' }}</strong>
-                <span class="font-body-sm text-body-sm text-on-surface-variant">{{ t.transfers?.estimatedCost || '' }}</span>
-              </div>
-            </div>
-
-            @if (t.transfers?.passDetails) {
-              <div class="p-2.5 rounded-xl bg-tertiary-fixed/30 flex items-start gap-2">
-                <span class="material-symbols-outlined text-[18px] text-tertiary mt-0.5">confirmation_number</span>
-                <div class="flex flex-col">
-                  <span class="font-label-md text-label-md text-tertiary">Abbonamenti & Pass</span>
-                  <p class="font-body-sm text-body-sm text-on-surface mt-0.5">{{ t.transfers?.passDetails }}</p>
-                </div>
-              </div>
-            }
-
-            @if (t.transfers?.instructions) {
-              <div class="p-2.5 rounded-xl bg-surface-container-low flex items-start gap-2">
-                <span class="material-symbols-outlined text-[18px] text-secondary mt-0.5">route</span>
-                <div class="flex flex-col">
-                  <span class="font-label-md text-label-md text-secondary">Indicazioni</span>
-                  <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">{{ t.transfers?.instructions }}</p>
-                </div>
-              </div>
-            }
-
-            @if (t.transfers?.taxiVsUberAdvice) {
-              <div class="p-2.5 rounded-xl bg-primary-fixed/40 flex items-start gap-2">
-                <span class="material-symbols-outlined text-[18px] text-primary mt-0.5">warning</span>
-                <p class="font-body-sm text-body-sm text-on-surface">{{ t.transfers?.taxiVsUberAdvice }}</p>
-              </div>
-            }
-          </div>
-        </section>
-      }
-    </div>
-  }
-
-  <!-- =====================================================================
-       TAB: ATTIVITÀ
-       ===================================================================== -->
-  @if (activeTab() === 'activities') {
-    <div class="animate-fade-in px-gutter py-space-md flex flex-col gap-space-md">
-      <div class="flex items-center justify-between">
-        <h2 class="font-headline-sm text-headline-sm text-on-surface">Cose da Vedere & Fare</h2>
-        <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm active:scale-95 transition-all"
-          type="button" (click)="openAddActivityModal()">
-          <span class="material-symbols-outlined text-[16px]">add</span>
-          Aggiungi
-        </button>
-      </div>
-
-      @if (t.activities && t.activities.length > 0) {
-        @for (act of t.activities; track act.id) {
-          <article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
-            <div class="flex items-start justify-between gap-space-sm">
-              <div class="flex flex-col min-w-0">
-                <h3 class="font-headline-sm text-headline-sm text-on-surface">{{ act.name }}</h3>
-                @if (act.address) {
-                  <div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm mt-0.5">
-                    <span class="material-symbols-outlined text-[14px] text-primary">location_on</span>
-                    <span class="truncate">{{ act.address }}</span>
-                  </div>
-                }
-              </div>
-              @if (act.assignedDay) {
-                <span class="shrink-0 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed-variant font-label-sm text-[11px]">Giorno {{ act.assignedDay }}</span>
-              } @else {
-                <span class="shrink-0 px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-[11px]">Backlog</span>
-              }
-            </div>
-
-            <div class="flex flex-wrap gap-1.5">
-              @if (act.ticketsRequired) {
-                <span class="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-label-sm text-[11px]">
-                  Biglietto {{ act.ticketPrice ? '€' + act.ticketPrice : 'Richiesto' }}
-                </span>
-              }
-              @if (act.bookingRequired) {
-                <span class="px-2 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-[11px]">Prenotazione Anticipo</span>
-              }
-              @if (act.openingHours) {
-                <span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-[11px]">{{ act.openingHours }}</span>
-              }
-            </div>
-
-            @if (act.notes) {
-              <p class="font-body-sm text-body-sm text-on-surface-variant">{{ act.notes }}</p>
-            }
-
-            <div class="flex items-center justify-between pt-1">
-              <a [href]="getNavigationUrl(act.name, act.address)" target="_blank" rel="noopener"
-                class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-surface-container text-primary font-label-sm text-label-sm no-underline">
-                <span class="material-symbols-outlined text-[16px]">directions_car</span>
-                Naviga
-              </a>
-              <div class="flex items-center gap-2">
-                <button class="font-label-sm text-label-sm text-secondary flex items-center gap-1" type="button"
-                  (click)="openAssignDayModal(act, 'activity')">
-                  <span class="material-symbols-outlined text-[16px]">calendar_add_on</span>
-                  {{ act.assignedDay ? 'Cambia Giorno' : 'Pianifica' }}
-                </button>
-                <button class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-error transition-colors"
-                  type="button" (click)="deleteActivity(act.id)">
-                  <span class="material-symbols-outlined text-[18px]">delete_outline</span>
-                </button>
-              </div>
-            </div>
-          </article>
-        }
-      } @else {
-        <app-empty-state
-          materialIcon="explore"
-          title="Nessuna attrazione"
-          description="Aggiungi musei, monumenti e esperienze.">
-        </app-empty-state>
-      }
-
-      <div class="fixed bottom-20 right-4 z-40">
-        <button class="flex items-center gap-2 px-4 py-3 rounded-full bg-primary text-on-primary font-label-lg text-label-lg shadow-xl active:scale-95 transition-all"
-          type="button" (click)="openAddActivityModal()">
-          <span class="material-symbols-outlined text-[20px]">add</span>
-          Aggiungi Attrazione
-        </button>
-      </div>
-    </div>
-  }
-
-  <!-- =====================================================================
-       TAB: HOTEL (standalone, legacy compat)
-       ===================================================================== -->
-  @if (activeTab() === 'hotel') {
-    <div class="animate-fade-in px-gutter py-space-md">
-      <!-- Redirect to logistics hotel sub-tab via button -->
-      <div class="flex flex-col items-center justify-center py-8 gap-space-md text-center">
-        <span class="font-body-md text-body-md text-on-surface-variant">Visita la sezione Logistica per i dettagli sull'alloggio.</span>
-        <button class="flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-on-primary font-label-md text-label-md"
-          type="button" (click)="activeTab.set('flights'); activeLogisticsTab.set('hotel')">
-          <span class="material-symbols-outlined text-[18px]">hotel</span>
-          Vai all'Alloggio
-        </button>
-      </div>
-    </div>
-  }
-
 </div>
-} @else {
-  <div class="flex flex-col items-center justify-center py-24 px-gutter gap-space-md text-center">
-    <div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center">
-      <span class="material-symbols-outlined text-[32px] text-on-surface-variant">search_off</span>
-    </div>
-    <h3 class="font-headline-sm text-headline-sm text-on-surface">Viaggio non trovato</h3>
-    <p class="font-body-md text-body-md text-on-surface-variant">Il viaggio richiesto non esiste o è stato rimosso.</p>
-    <button class="flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-on-primary font-label-md text-label-md"
-      type="button" (click)="goToTrips()">
-      Torna ai Viaggi
-    </button>
-  </div>
-}
 
-<!-- =====================================================================
-     MODALS — Unchanged logic, updated style wrappers
-     ===================================================================== -->
-
-<!-- Modal 1: Add/Edit Activity -->
-<app-modal
+<!-- Modals -->
+<app-trip-activity-modal
   [isOpen]="isActivityModalOpen()"
-  title="Aggiungi Attrazione / Cosa da Vedere"
-  icon="account_balance"
-  (close)="isActivityModalOpen.set(false)">
+  (closed)="isActivityModalOpen.set(false)"
+  (saved)="saveActivity($event)" />
 
-  <form [formGroup]="activityForm" (ngSubmit)="saveActivity()">
-    <div class="form-group">
-      <label class="form-label" for="act_name">Nome Attrazione / Luogo *</label>
-      <input type="text" id="act_name" formControlName="name" class="form-input" placeholder="Es. Museo del Prado, Sagrada Família...">
-    </div>
-
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label" for="act_category">Categoria *</label>
-        <select id="act_category" formControlName="category" class="form-select">
-          <option value="monument">Monumento</option>
-          <option value="museum">Museo</option>
-          <option value="nature">Natura / Parco</option>
-          <option value="experience">Esperienza / Tour</option>
-          <option value="shopping">Shopping / Mercato</option>
-          <option value="other">Altro</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="act_address">Indirizzo / Posizione</label>
-        <input type="text" id="act_address" formControlName="address" class="form-input" placeholder="Es. Carrer de Mallorca 401">
-      </div>
-    </div>
-
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Servono Biglietti?</label>
-        <div class="radio-toggle-group">
-          <label class="radio-label">
-            <input type="radio" formControlName="ticketsRequired" [value]="true"> Sì
-          </label>
-          <label class="radio-label">
-            <input type="radio" formControlName="ticketsRequired" [value]="false"> No / Gratuito
-          </label>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="act_price">Prezzo Biglietto (€)</label>
-        <input type="number" id="act_price" formControlName="ticketPrice" class="form-input" placeholder="Es. 26">
-      </div>
-    </div>
-
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Da Prenotare in Anticipo?</label>
-        <div class="radio-toggle-group">
-          <label class="radio-label">
-            <input type="radio" formControlName="bookingRequired" [value]="true"> Sì
-          </label>
-          <label class="radio-label">
-            <input type="radio" formControlName="bookingRequired" [value]="false"> No
-          </label>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="act_bookingUrl">Link Prenotazione</label>
-        <input type="url" id="act_bookingUrl" formControlName="bookingUrl" class="form-input" placeholder="https://...">
-      </div>
-    </div>
-
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label" for="act_hours">Orari di Apertura</label>
-        <input type="text" id="act_hours" formControlName="openingHours" class="form-input" placeholder="Es. 09:00 - 20:00">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="act_closing">Giorni di Chiusura</label>
-        <input type="text" id="act_closing" formControlName="closingDays" class="form-input" placeholder="Es. Chiuso il Lunedì">
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="act_notes">Note & Consigli</label>
-      <textarea id="act_notes" formControlName="notes" class="form-textarea" rows="2" placeholder="Es. Audioguida consigliata..."></textarea>
-    </div>
-  </form>
-
-  <div modal-footer>
-    <button type="button" class="btn btn-secondary" (click)="isActivityModalOpen.set(false)">Annulla</button>
-    <button type="button" class="btn btn-primary" [disabled]="activityForm.invalid" (click)="saveActivity()">Salva Attrazione</button>
-  </div>
-</app-modal>
-
-<!-- Modal 2: Add/Edit Place to Eat -->
-<app-modal
+<app-trip-place-modal
   [isOpen]="isPlaceModalOpen()"
-  title="Aggiungi Posto Dove Mangiare"
-  icon="restaurant"
-  (close)="isPlaceModalOpen.set(false)">
+  (closed)="isPlaceModalOpen.set(false)"
+  (saved)="savePlaceToEat($event)" />
 
-  <form [formGroup]="placeForm" (ngSubmit)="savePlaceToEat()">
-    <div class="form-group">
-      <label class="form-label" for="food_name">Nome del Locale / Ristorante *</label>
-      <input type="text" id="food_name" formControlName="name" class="form-input" placeholder="Es. Cervecería Catalana...">
-    </div>
+<app-trip-expense-modal
+  [isOpen]="isExpenseModalOpen()"
+  [expense]="editingExpense()"
+  [members]="expenseMembers()"
+  [currentUserId]="currentUserId()"
+  [currency]="trip()?.currency || 'EUR'"
+  (closed)="isExpenseModalOpen.set(false)"
+  (saved)="saveExpense($event)" />
 
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label" for="food_category">Tipo Pasto *</label>
-        <select id="food_category" formControlName="category" class="form-select">
-          <option value="lunch">Pranzo</option>
-          <option value="dinner">Cena</option>
-          <option value="snack">Spuntino / Street Food</option>
-          <option value="breakfast">Colazione</option>
-          <option value="aperitivo">Aperitivo / Tapas</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="food_price">Fascia di Prezzo *</label>
-        <select id="food_price" formControlName="priceRange" class="form-select">
-          <option value="€">€ (Economico)</option>
-          <option value="€€">€€ (Medio)</option>
-          <option value="€€€">€€€ (Gourmet)</option>
-          <option value="€€€€">€€€€ (Alta Cucina)</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="food_address">Indirizzo Completo</label>
-      <input type="text" id="food_address" formControlName="address" class="form-input">
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="food_specialties">Specialità & Piatti Consigliati</label>
-      <input type="text" id="food_specialties" formControlName="specialties" class="form-input">
-    </div>
-
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label" for="food_hours">Orari</label>
-        <input type="text" id="food_hours" formControlName="openingHours" class="form-input">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="food_closing">Giorni di Chiusura</label>
-        <input type="text" id="food_closing" formControlName="closingDays" class="form-input">
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="food_notes">Note & Prenotazione</label>
-      <textarea id="food_notes" formControlName="notes" class="form-textarea" rows="2"></textarea>
-    </div>
-  </form>
-
-  <div modal-footer>
-    <button type="button" class="btn btn-secondary" (click)="isPlaceModalOpen.set(false)">Annulla</button>
-    <button type="button" class="btn btn-primary" [disabled]="placeForm.invalid" (click)="savePlaceToEat()">Salva Locale</button>
-  </div>
-</app-modal>
-
-<!-- Modal 3: Assign Item to Day -->
-<app-modal
+<app-trip-assign-modal
   [isOpen]="isAssignModalOpen()"
-  title="Pianifica nel Giorno"
-  icon="event"
-  (close)="isAssignModalOpen.set(false)">
+  [itemName]="assigningItemName()"
+  [days]="tripDaysNumbers()"
+  [startDate]="trip()?.startDate"
+  [initialDay]="assignInitialDay()"
+  [initialTimeSlot]="assignInitialTimeSlot()"
+  (closed)="isAssignModalOpen.set(false)"
+  (confirmed)="confirmAssignDay($event)" />
 
-  <div class="assign-form">
-    <p class="assign-intro">Seleziona a quale giornata assegnare <strong>{{ currentAssigningItem()?.item?.name }}</strong>:</p>
-
-    <div class="form-group mt-2">
-      <label class="form-label">Scegli Giorno *</label>
-      <select [(ngModel)]="assignDayTarget" class="form-select">
-        <option [value]="0">Mantieni nel Backlog</option>
-        @for (d of tripDaysNumbers(); track d) {
-          <option [value]="d">Giorno {{ d }} ({{ getDayDateFormatted(d) }})</option>
-        }
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">Fascia Oraria</label>
-      <input type="text" [(ngModel)]="assignTimeSlot" class="form-input" placeholder="Es. 10:00 - 12:30">
-    </div>
-  </div>
-
-  <div modal-footer>
-    <button type="button" class="btn btn-secondary" (click)="isAssignModalOpen.set(false)">Annulla</button>
-    <button type="button" class="btn btn-primary" (click)="confirmAssignDay()">Conferma</button>
-  </div>
-</app-modal>
-
-<!-- Modal 4: Edit Flights -->
-<app-modal
+<app-trip-flights-modal
   [isOpen]="isFlightsModalOpen()"
-  title="Dettagli Voli A/R"
-  icon="flight"
-  maxWidth="680px"
-  (close)="isFlightsModalOpen.set(false)">
+  [flights]="trip()?.flights"
+  (closed)="isFlightsModalOpen.set(false)"
+  (saved)="saveFlights($event)" />
 
-  <form [formGroup]="flightsForm" (ngSubmit)="saveFlights()">
-    <h4 class="form-sub-header"><span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle">flight_takeoff</span> Volo di Andata</h4>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Compagnia</label>
-        <input type="text" formControlName="outAirline" class="form-input" placeholder="Es. Vueling">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Codice Volo</label>
-        <input type="text" formControlName="outFlightNum" class="form-input" placeholder="Es. VY6101">
-      </div>
-    </div>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Aeroporto Partenza</label>
-        <input type="text" formControlName="outDepAirport" class="form-input">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Data & Ora Decollo</label>
-        <input type="datetime-local" formControlName="outDepTime" class="form-input">
-      </div>
-    </div>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Aeroporto Arrivo</label>
-        <input type="text" formControlName="outArrAirport" class="form-input">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Data & Ora Atterraggio</label>
-        <input type="datetime-local" formControlName="outArrTime" class="form-input">
-      </div>
-    </div>
-
-    <h4 class="form-sub-header mt-3"><span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle">flight_land</span> Volo di Ritorno</h4>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Compagnia</label>
-        <input type="text" formControlName="retAirline" class="form-input">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Codice Volo</label>
-        <input type="text" formControlName="retFlightNum" class="form-input">
-      </div>
-    </div>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Aeroporto Partenza</label>
-        <input type="text" formControlName="retDepAirport" class="form-input">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Data & Ora Decollo</label>
-        <input type="datetime-local" formControlName="retDepTime" class="form-input">
-      </div>
-    </div>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Aeroporto Arrivo</label>
-        <input type="text" formControlName="retArrAirport" class="form-input">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Data & Ora Atterraggio</label>
-        <input type="datetime-local" formControlName="retArrTime" class="form-input">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Codice PNR</label>
-      <input type="text" formControlName="pnr" class="form-input font-mono">
-    </div>
-  </form>
-
-  <div modal-footer>
-    <button type="button" class="btn btn-secondary" (click)="isFlightsModalOpen.set(false)">Annulla</button>
-    <button type="button" class="btn btn-primary" (click)="saveFlights()">Salva Voli</button>
-  </div>
-</app-modal>
-
-<!-- Modal 5: Edit Transfers -->
-<app-modal
+<app-trip-transfers-modal
   [isOpen]="isTransfersModalOpen()"
-  title="Spostamenti Aeroporto → Hotel"
-  icon="subway"
-  (close)="isTransfersModalOpen.set(false)">
+  [transfers]="trip()?.transfers"
+  (closed)="isTransfersModalOpen.set(false)"
+  (saved)="saveTransfers($event)" />
 
-  <form [formGroup]="transfersForm" (ngSubmit)="saveTransfers()">
-    <div class="form-group">
-      <label class="form-label">Opzione Consigliata</label>
-      <select formControlName="recommendedOption" class="form-select">
-        <option value="bus">Bus / Navetta</option>
-        <option value="metro">Metro</option>
-        <option value="train">Treno</option>
-        <option value="taxi">Taxi</option>
-        <option value="uber">Uber / Bolt</option>
-      </select>
-    </div>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Durata Stimata</label>
-        <input type="text" formControlName="estimatedDuration" class="form-input" placeholder="Es. 35 minuti">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Costo Stimato</label>
-        <input type="text" formControlName="estimatedCost" class="form-input">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Abbonamenti & Pass</label>
-      <input type="text" formControlName="passDetails" class="form-input">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Biglietti Speciali</label>
-      <input type="text" formControlName="specialTickets" class="form-input">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Taxi vs Uber</label>
-      <textarea formControlName="taxiVsUberAdvice" class="form-textarea" rows="2"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Indicazioni Passo-Passo</label>
-      <textarea formControlName="instructions" class="form-textarea" rows="3"></textarea>
-    </div>
-  </form>
-
-  <div modal-footer>
-    <button type="button" class="btn btn-secondary" (click)="isTransfersModalOpen.set(false)">Annulla</button>
-    <button type="button" class="btn btn-primary" (click)="saveTransfers()">Salva</button>
-  </div>
-</app-modal>
-
-<!-- Modal 6: Edit Accommodation -->
-<app-modal
+<app-trip-accommodation-modal
   [isOpen]="isAccommodationModalOpen()"
-  title="Dettagli Alloggio & Hotel"
-  icon="hotel"
-  (close)="isAccommodationModalOpen.set(false)">
-
-  <form [formGroup]="accommodationForm" (ngSubmit)="saveAccommodation()">
-    <div class="form-group">
-      <label class="form-label">Nome Hotel / Struttura *</label>
-      <input type="text" formControlName="name" class="form-input">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Indirizzo Completo *</label>
-      <input type="text" formControlName="address" class="form-input">
-    </div>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Data Check-in</label>
-        <div class="d-flex gap-1">
-          <input type="date" formControlName="checkInDate" class="form-input">
-          <input type="time" formControlName="checkInTime" class="form-input" style="max-width: 110px;">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Data Check-out</label>
-        <div class="d-flex gap-1">
-          <input type="date" formControlName="checkOutDate" class="form-input">
-          <input type="time" formControlName="checkOutTime" class="form-input" style="max-width: 110px;">
-        </div>
-      </div>
-    </div>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Codice Prenotazione</label>
-        <input type="text" formControlName="bookingCode" class="form-input font-mono">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Telefono / Email</label>
-        <input type="text" formControlName="phoneOrContact" class="form-input">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Note</label>
-      <textarea formControlName="notes" class="form-textarea" rows="2"></textarea>
-    </div>
-  </form>
-
-  <div modal-footer>
-    <button type="button" class="btn btn-secondary" (click)="isAccommodationModalOpen.set(false)">Annulla</button>
-    <button type="button" class="btn btn-primary" (click)="saveAccommodation()">Salva Alloggio</button>
-  </div>
-</app-modal>
+  [trip]="trip()"
+  (closed)="isAccommodationModalOpen.set(false)"
+  (saved)="saveAccommodation($event)" />

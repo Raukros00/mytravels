@@ -1,0 +1,100 @@
+:host { display: block; }
+
+.dp { padding: 1.25rem; }
+
+.dp-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.dp-day {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--wb-primary);
+  color: #fff;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.dp--locked .dp-day { background: var(--wb-surface-3); color: var(--wb-text-secondary); }
+
+.dp-titles { flex: 1; min-width: 0; }
+.dp-title { margin: 0; font-size: 1.05rem; color: var(--wb-text-primary); }
+.dp-counts { margin: 0.1rem 0 0; font-size: 0.8rem; color: var(--wb-text-tertiary); }
+.dp-lock { color: var(--wb-text-tertiary); }
+
+.dp-timeline {
+  list-style: none;
+  margin: 1.1rem 0 0;
+  padding: 0 0 0 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  border-left: 2px dashed var(--wb-border);
+  margin-left: 1.1rem;
+}
+
+.dp-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dp-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  margin-left: -2.2rem;
+  border-radius: 50%;
+  background: var(--wb-primary-surface);
+  color: var(--wb-primary);
+  border: 2px solid var(--wb-surface-0);
+  flex-shrink: 0;
+}
+
+.dp-icon--food { background: var(--wb-secondary-surface); color: var(--wb-secondary); }
+.dp-icon .material-symbols-outlined { font-size: 1.1rem; }
+
+.dp-item-text { display: flex; flex-direction: column; min-width: 0; }
+.dp-time { font-size: 0.75rem; font-weight: 600; color: var(--wb-text-tertiary); }
+.dp-name { font-size: 0.925rem; font-weight: 600; color: var(--wb-text-primary); }
+
+/* Locked teaser: placeholder lines only, no real content in the DOM */
+.dp-teaser {
+  position: relative;
+  margin-top: 1rem;
+  padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.dp-teaser-lines {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  filter: blur(3px);
+  opacity: 0.7;
+}
+
+.dp-teaser-lines span {
+  height: 0.9rem;
+  border-radius: var(--wb-radius-full);
+  background: var(--wb-surface-3);
+}
+
+.dp-teaser-lines span:nth-child(1) { width: 85%; }
+.dp-teaser-lines span:nth-child(2) { width: 65%; }
+.dp-teaser-lines span:nth-child(3) { width: 75%; }
+
+.dp-teaser-btn { max-width: 100%; }

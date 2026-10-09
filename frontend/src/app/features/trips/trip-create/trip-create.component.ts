@@ -1,5 +1,4 @@
-import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TripService } from '../../../core/services/trip.service';
@@ -15,7 +14,7 @@ interface CoverPreset {
 @Component({
   selector: 'app-trip-create',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
+  imports: [RouterModule, FormsModule, ReactiveFormsModule],
   templateUrl: './trip-create.component.html',
   styleUrl: './trip-create.component.css'
 })
@@ -26,8 +25,8 @@ export class TripCreateComponent {
   public groupService = inject(GroupService);
   private toastService = inject(ToastService);
 
-  public currentTag = '';
-  public tagsList: string[] = ['Food Tour', 'Tapas & Gusto'];
+  public currentTag = signal('');
+  public tagsList = signal<string[]>(['Food Tour', 'Tapas & Gusto']);
 
   public coverPresets: CoverPreset[] = [
     {
@@ -70,22 +69,30 @@ export class TripCreateComponent {
     startDate: [new Date().toISOString().split('T')[0], Validators.required],
     endDate: [new Date(Date.now() + 4 * 86400000).toISOString().split('T')[0], Validators.required],
     budgetEstimate: [500],
-    currency: ['EUR'],
+    currency: [this.groupService.getGroupById(this.groupService.activeGroupId() || this.groupService.userGroups()[0]?.id || '')?.currency || 'EUR'],
     coverUrl: [this.coverPresets[0].url, Validators.required],
-    notes: ['']
+    notes: [''],
+    asProposal: [false]
   });
+
+  constructor() {
+    this.tripForm.controls.groupId.valueChanges.subscribe(id => {
+      const currency = this.groupService.getGroupById(id ?? '')?.currency;
+      if (currency) this.tripForm.patchValue({ currency });
+    });
+  }
 
   addTag(event?: Event): void {
     if (event) event.preventDefault();
-    const tag = this.currentTag.trim().replace(/^#/, '');
-    if (tag && !this.tagsList.includes(tag)) {
-      this.tagsList.push(tag);
-      this.currentTag = '';
+    const tag = this.currentTag().trim().replace(/^#/, '');
+    if (tag && !this.tagsList().includes(tag)) {
+      this.tagsList.update(list => [...list, tag]);
+      this.currentTag.set('');
     }
   }
 
   removeTag(tag: string): void {
-    this.tagsList = this.tagsList.filter(t => t !== tag);
+    this.tagsList.update(list => list.filter(t => t !== tag));
   }
 
   onSubmit(): void {
@@ -105,10 +112,11 @@ export class TripCreateComponent {
       coverUrl: val.coverUrl || this.coverPresets[0].url,
       budgetEstimate: Number(val.budgetEstimate) || 0,
       currency: val.currency || 'EUR',
-      tags: this.tagsList,
-      notes: val.notes || ''
+      tags: this.tagsList(),
+      notes: val.notes || '',
+      asProposal: !!val.asProposal
     });
 
-    this.router.navigate(['/trips', created.id]);
+    this.router.navigate(val.asProposal ? ['/groups', created.groupId] : ['/trips', created.id]);
   }
 }

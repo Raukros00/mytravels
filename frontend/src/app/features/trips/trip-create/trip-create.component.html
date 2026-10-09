@@ -23,6 +23,17 @@
           </select>
         </div>
 
+        <!-- Proposal toggle -->
+        <div class="form-group">
+          <label class="proposal-check">
+            <input type="checkbox" formControlName="asProposal">
+            <span>
+              <strong>Crea come proposta</strong><br>
+              <small>Il gruppo potrà votarla: sarà confermata quando la maggioranza dei membri è d'accordo.</small>
+            </span>
+          </label>
+        </div>
+
         <!-- Title -->
         <div class="form-group">
           <label class="form-label" for="title">Titolo del Viaggio *</label>
@@ -113,9 +124,9 @@
         </div>
 
         <!-- Active Tags List -->
-        @if (tagsList.length > 0) {
+        @if (tagsList().length > 0) {
           <div class="tags-badge-list">
-            @for (tag of tagsList; track tag) {
+            @for (tag of tagsList(); track tag) {
               <span class="tag-badge">
                 #{{ tag }}
                 <button type="button" class="tag-remove" (click)="removeTag(tag)"><span class="material-symbols-outlined" style="font-size:14px">close</span></button>

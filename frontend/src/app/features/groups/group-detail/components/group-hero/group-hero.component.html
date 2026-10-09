@@ -1,0 +1,48 @@
+@let g = group();
+<div class="group-hero card">
+  <div class="group-hero-top">
+    <div #heroIcon class="group-hero-icon" [class.group-hero-icon--image]="isImageIcon()">
+      @if (isImageIcon()) {
+        <img [src]="g.icon" class="group-hero-img" alt="">
+      } @else {
+        {{ g.icon }}
+      }
+    </div>
+    <div class="group-hero-info">
+      <h1 class="group-hero-name">{{ g.name }}</h1>
+      @if (g.description) {
+        <p class="group-hero-desc">{{ g.description }}</p>
+      }
+      <dl class="group-hero-meta">
+        @if (creator(); as c) {
+          <div class="hero-meta-row">
+            <span class="material-symbols-outlined hero-meta-icon">person</span>
+            <dt class="hero-meta-label">{{ 'groups.meta_created_by' | translate }}</dt>
+            <dd class="hero-meta-value">{{ c.name }}</dd>
+          </div>
+        }
+        <div class="hero-meta-row">
+          <span class="material-symbols-outlined hero-meta-icon">calendar_today</span>
+          <dt class="hero-meta-label">{{ 'groups.meta_created_on' | translate }}</dt>
+          <dd class="hero-meta-value">{{ g.createdAt | date:'d MMM y' }}</dd>
+        </div>
+      </dl>
+    </div>
+    <div class="hero-actions">
+      @if (isAdmin()) {
+        <button type="button" class="btn btn-secondary" (click)="edit.emit()">
+          <span class="material-symbols-outlined" style="font-size:18px">edit</span>
+          {{ 'groups.edit_btn' | translate }}
+        </button>
+      }
+      <button type="button" class="btn btn-primary hero-share-btn" (click)="invite.emit()">
+        <span class="material-symbols-outlined" style="font-size:18px">person_add</span>
+        {{ 'groups.invite_btn' | translate }}
+      </button>
+      <a [routerLink]="['/groups', g.id, 'settings']" class="btn btn-secondary btn-icon-only"
+         [title]="'groups.settings_title' | translate" [attr.aria-label]="'groups.settings_title' | translate">
+        <span class="material-symbols-outlined" style="font-size:18px">settings</span>
+      </a>
+    </div>
+  </div>
+</div>

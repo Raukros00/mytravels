@@ -2,7 +2,10 @@ import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
 import { GroupService } from './group.service';
+import { AuthService } from './auth.service';
 import { ApiService } from './api.service';
+import { USE_MOCK_DATA } from '../config/mock.config';
+import { TripTemplate } from '../models/trip-template.model';
 import { 
   AccommodationDetails, 
   AirportTransfer, 
@@ -10,7 +13,10 @@ import {
   FlightDetails, 
   Trip, 
   TripActivity, 
-  TripPlaceToEat 
+  TripExpense,
+  TripPlaceToEat,
+  deriveTripStatus,
+  isProposal
 } from '../models/trip.model';
 
 @Injectable({
@@ -21,22 +27,25 @@ export class TripService {
   private toastService = inject(ToastService);
   private groupService = inject(GroupService);
   private apiService = inject(ApiService);
+  private authService = inject(AuthService);
 
   private tripsSignal = signal<Trip[]>(this.storageService.getTrips());
   public readonly trips = this.tripsSignal.asReadonly();
 
-  // Trips for active group
+  // Confirmed trips for the active group, with the status derived from their dates
   public readonly activeGroupTrips = computed(() => {
     const activeGroup = this.groupService.activeGroup();
     if (!activeGroup) return [];
-    return this.tripsSignal().filter(t => t.groupId === activeGroup.id);
+    return this.tripsSignal()
+      .filter(t => t.groupId === activeGroup.id && !isProposal(t))
+      .map(t => ({ ...t, status: deriveTripStatus(t) }));
   });
 
   // Stats
   public readonly stats = computed(() => {
     const activeTrips = this.activeGroupTrips();
     const total = activeTrips.length;
-    const upcoming = activeTrips.filter(t => t.status === 'upcoming' || t.status === 'planning').length;
+    const upcoming = activeTrips.filter(t => t.status === 'upcoming').length;
     const uniqueCountries = new Set(activeTrips.map(t => t.country).filter(Boolean)).size;
 
     return {
@@ -57,6 +66,7 @@ export class TripService {
   }
 
   public loadTripsByGroup(groupId: string): void {
+    if (USE_MOCK_DATA) return;
     this.apiService.get<Trip[]>(`/api/v1/trips/group/${groupId}`).subscribe({
       next: (trips) => {
         if (trips) {
@@ -67,7 +77,7 @@ export class TripService {
         }
       },
       error: (err) => {
-        console.warn('Backend unavailable, using cached trips:', err);
+        console.warn('Backend unavailable, using cached trips:', err.status, err.error?.message || err.message);
       }
     });
   }
@@ -83,6 +93,9 @@ export class TripService {
       endDate: dto.endDate,
       coverUrl: dto.coverUrl || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80',
       status: 'planning',
+      decision: dto.asProposal ? 'proposal' : 'confirmed',
+      proposedBy: dto.asProposal ? this.authService.currentUser()?.id : undefined,
+      votes: dto.asProposal ? [] : undefined,
       budgetEstimate: dto.budgetEstimate || 0,
       currency: dto.currency || 'EUR',
       tags: dto.tags && dto.tags.length > 0 ? dto.tags : ['Viaggio', 'Gourmet'],
@@ -97,7 +110,11 @@ export class TripService {
     this.storageService.setTrips(updated);
 
     // Sync to backend
-    this.apiService.post<Trip>('/api/v1/trips', dto).subscribe({
+    this.apiService.post<Trip>('/api/v1/trips', {
+      ...dto,
+      decision: localTrip.decision,
+      proposedBy: localTrip.proposedBy
+    }).subscribe({
       next: (created) => {
         const synced = this.tripsSignal().map(t => t.id === localTrip.id ? created : t);
         this.tripsSignal.set(synced);
@@ -108,8 +125,81 @@ export class TripService {
       }
     });
 
-    this.toastService.success(`Viaggio "${dto.title}" creato con successo! 🎒`);
+    this.toastService.success(dto.asProposal
+      ? `Proposta "${dto.title}" creata: ora il gruppo può votarla.`
+      : `Viaggio "${dto.title}" creato con successo! 🎒`);
     return localTrip;
+  }
+
+  /**
+   * Clones an "Esplora" template into a regular trip of the group (new ids, dates from `startDate`).
+   * Stored locally only: the backend has no template/bulk-activities endpoints yet, and syncing the trip
+   * alone would replace it with a response without activities (see TECHNICAL_DEBT.md).
+   */
+  public createTripFromTemplate(template: TripTemplate, groupId: string, startDate: string): Trip {
+    const stamp = Date.now();
+    const id = 'trip_' + stamp;
+    const end = new Date(startDate + 'T00:00:00Z');
+    end.setUTCDate(end.getUTCDate() + Math.max(template.durationDays, 1) - 1);
+    const endDate = end.toISOString().split('T')[0];
+    const uid = (prefix: string, i: number) => `${prefix}_${stamp}_${i}`;
+
+    const trip: Trip = {
+      id,
+      groupId,
+      title: template.title,
+      destination: template.destination,
+      country: template.country,
+      startDate,
+      endDate,
+      coverUrl: template.coverUrl,
+      status: 'planning',
+      decision: 'confirmed',
+      budgetEstimate: template.budgetEstimate,
+      currency: template.currency,
+      tags: [...template.tags],
+      notes: [`Ispirato all'itinerario di ${template.authorName}.`, template.notes].filter(Boolean).join('\n\n'),
+      createdAt: new Date().toISOString().split('T')[0],
+      activities: template.activities.map((a, i) => ({ ...a, id: uid('act', i), tripId: id, isCompleted: false })),
+      placesToEat: template.placesToEat.map((p, i) => ({ ...p, id: uid('eat', i), tripId: id, isVisited: false })),
+      accommodation: template.accommodation ? { ...template.accommodation } : undefined
+    };
+
+    const updated = [trip, ...this.tripsSignal()];
+    this.tripsSignal.set(updated);
+    this.storageService.setTrips(updated);
+    return trip;
+  }
+
+  /** Votes that still count: only from current members of the group. */
+  public validVotes(trip: Trip): string[] {
+    const members = this.groupService.getGroupById(trip.groupId)?.members ?? [];
+    return (trip.votes ?? []).filter(v => members.some(m => m.id === v));
+  }
+
+  /** Votes required to confirm a proposal: strict majority of the group members. */
+  public votesNeeded(trip: Trip): number {
+    const count = this.groupService.getGroupById(trip.groupId)?.members.length ?? 1;
+    return Math.floor(count / 2) + 1;
+  }
+
+  /** Adds or removes the current user's vote; confirms the proposal when the majority is reached. */
+  public toggleVote(tripId: string): void {
+    const user = this.authService.currentUser();
+    const trip = this.tripsSignal().find(t => t.id === tripId);
+    if (!user || !trip || !isProposal(trip)) return;
+    const group = this.groupService.getGroupById(trip.groupId);
+    if (!group?.members.some(m => m.id === user.id)) return;
+
+    const has = (trip.votes ?? []).includes(user.id);
+    const votes = has ? (trip.votes ?? []).filter(v => v !== user.id) : [...(trip.votes ?? []), user.id];
+    const next: Trip = { ...trip, votes };
+    const confirmed = this.validVotes(next).length >= this.votesNeeded(next);
+
+    this.updateTrip(tripId, confirmed ? { votes, decision: 'confirmed' } : { votes });
+    if (confirmed) {
+      this.toastService.success(`"${trip.title}" è stato scelto dal gruppo! 🎉`);
+    }
   }
 
   public getTripById(id: string): Trip | undefined {
@@ -299,5 +389,41 @@ export class TripService {
     this.apiService.put<Trip>(`/api/v1/trips/${tripId}/accommodation`, accommodation).subscribe({
       error: (err) => console.error('Error updating accommodation on backend:', err)
     });
+  }
+
+  // Expenses Management
+  // NOTE: the backend has no expenses support yet and updateTrip() replaces the trip with the backend
+  // response (which would drop them), so expenses are kept client-side only: tripsSignal + storage.
+  private saveExpenses(tripId: string, expenses: TripExpense[]): void {
+    const updated = this.tripsSignal().map(t => t.id === tripId ? { ...t, expenses } : t);
+    this.tripsSignal.set(updated);
+    this.storageService.setTrips(updated);
+  }
+
+  public addExpense(tripId: string, expense: Omit<TripExpense, 'id' | 'tripId'>): TripExpense | undefined {
+    const trip = this.getTripById(tripId);
+    if (!trip) return undefined;
+    const created: TripExpense = {
+      ...expense,
+      id: 'exp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+      tripId
+    };
+    this.saveExpenses(tripId, [...(trip.expenses ?? []), created]);
+    this.toastService.success(expense.type === 'settlement' ? 'Pagamento registrato!' : `Spesa "${created.title}" aggiunta! 💸`);
+    return created;
+  }
+
+  public updateExpense(tripId: string, expenseId: string, partial: Partial<Omit<TripExpense, 'id' | 'tripId'>>): void {
+    const trip = this.getTripById(tripId);
+    if (!trip?.expenses?.some(e => e.id === expenseId)) return;
+    this.saveExpenses(tripId, trip.expenses.map(e => e.id === expenseId ? { ...e, ...partial } : e));
+    this.toastService.success('Spesa aggiornata!');
+  }
+
+  public deleteExpense(tripId: string, expenseId: string): void {
+    const trip = this.getTripById(tripId);
+    if (!trip?.expenses) return;
+    this.saveExpenses(tripId, trip.expenses.filter(e => e.id !== expenseId));
+    this.toastService.info('Spesa rimossa.');
   }
 }

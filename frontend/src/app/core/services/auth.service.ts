@@ -5,6 +5,7 @@ import { ToastService } from './toast.service';
 import { ApiService } from './api.service';
 import { User } from '../models/user.model';
 import { LoginDto, RegisterDto } from '../models/auth.model';
+import { USE_MOCK_DATA } from '../config/mock.config';
 
 @Injectable({
   providedIn: 'root'
@@ -16,10 +17,14 @@ export class AuthService {
   private apiService = inject(ApiService);
 
   private currentUserSignal = signal<User | null>(this.storageService.getCurrentUser());
+  private allUsersSignal = signal<User[]>(this.storageService.getUsers());
+
   public readonly currentUser = this.currentUserSignal.asReadonly();
+  public readonly platformUsers = this.allUsersSignal.asReadonly();
   public readonly isAuthenticated = computed(() => !!this.currentUserSignal());
 
   constructor() {
+    if (USE_MOCK_DATA) return;
     // If we have a JWT token on startup, verify / refresh current user
     const token = this.storageService.getJwt();
     if (token) {
@@ -37,6 +42,15 @@ export class AuthService {
   }
 
   public login(dto: LoginDto): void {
+    if (USE_MOCK_DATA) {
+      const user = this.storageService.getCurrentUser();
+      if (user) {
+        this.currentUserSignal.set(user);
+        this.toastService.success(`Bentornato, ${user.name}! 👋`);
+        this.router.navigate(['/trips']);
+      }
+      return;
+    }
     this.apiService.post<{ token: string; user: User }>('/auth/login', dto).subscribe({
       next: (res) => {
         this.storageService.setJwt(res.token);

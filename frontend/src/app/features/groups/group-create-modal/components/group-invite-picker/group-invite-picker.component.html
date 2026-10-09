@@ -1,0 +1,58 @@
+<label class="form-label">{{ 'groups.form_invite_label' | translate }}</label>
+<div class="invite-search-wrap">
+  <span class="material-symbols-outlined invite-search-icon">person_search</span>
+  <input
+    type="text"
+    class="invite-search-input"
+    [placeholder]="'groups.form_invite_placeholder' | translate"
+    [value]="search()"
+    (input)="search.set($any($event.target).value)">
+  @if (search().trim()) {
+    <div class="invite-dropdown">
+      @if (searchResults().length > 0) {
+        <p class="invite-dropdown-header">{{ 'groups.form_users_header' | translate }}</p>
+        <ul class="invite-user-list">
+          @for (user of searchResults(); track user.id) {
+            <li class="invite-user-row">
+              <div class="invite-avatar" [style.background-color]="user.color">{{ user.avatar }}</div>
+              <div class="invite-user-info">
+                <span class="invite-user-name">{{ user.name }}</span>
+                <span class="invite-user-email">{{ user.email }}</span>
+              </div>
+              @if (pendingRecipientIds().has(user.id)) {
+                <span class="invite-sent-badge">
+                  <span class="material-symbols-outlined">check</span>
+                  {{ 'groups.form_already_invited' | translate }}
+                </span>
+              } @else {
+                <button type="button" class="btn btn-outline btn-sm" (click)="inviteUser(user.id)">{{ 'groups.form_invite_action' | translate }}</button>
+              }
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="invite-empty">{{ 'groups.form_no_users' | translate }}</p>
+      }
+    </div>
+  }
+</div>
+
+@if (invitedUserDetails().length > 0) {
+  <div class="invite-sent-section">
+    <p class="invite-sent-label">{{ (isEditMode() ? 'groups.form_invited' : 'groups.form_will_invite') | translate }}</p>
+    <div class="invite-sent-list">
+      @for (user of invitedUserDetails(); track user.id) {
+        <div class="invite-sent-pill">
+          <div class="invite-avatar" [style.background-color]="user.color">{{ user.avatar }}</div>
+          <div class="invite-user-info">
+            <span class="invite-user-name">{{ user.name }}</span>
+            <span class="invite-user-email">{{ user.email }}</span>
+          </div>
+          <button type="button" class="btn-remove-invite" (click)="removeInvite(user.id)" title="Rimuovi">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+}
