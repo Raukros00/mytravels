@@ -225,7 +225,7 @@
     <button
       type="button"
       class="btn btn-primary"
-      [disabled]="!inviteCodeInput.trim()"
+      [disabled]="!inviteCodeInput().trim()"
       (click)="onJoinGroup()">
       {{ 'groups.join_now' | translate }}
     </button>

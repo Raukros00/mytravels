@@ -1,15 +1,15 @@
 <div class="page-wrapper">
   <div class="app-container gf-container">
 
-    <a [routerLink]="isEditMode ? ['/groups', group()?.id] : ['/groups']" class="back-link">
+    <a [routerLink]="isEditMode() ? ['/groups', group()?.id] : ['/groups']" class="back-link">
       <span class="material-symbols-outlined">arrow_back</span>
-      {{ isEditMode ? group()?.name ?? 'Gruppo' : 'I tuoi gruppi' }}
+      {{ isEditMode() ? group()?.name ?? 'Gruppo' : 'I tuoi gruppi' }}
     </a>
 
     <div class="gf-header">
-      <h1 class="gf-title">{{ isEditMode ? 'Modifica gruppo' : 'Crea gruppo' }}</h1>
+      <h1 class="gf-title">{{ isEditMode() ? 'Modifica gruppo' : 'Crea gruppo' }}</h1>
       <p class="gf-desc">
-        {{ isEditMode
+        {{ isEditMode()
           ? 'Aggiorna le informazioni del gruppo.'
           : 'Dai un nome al gruppo, aggiungi un\'immagine e invita i primi membri.' }}
       </p>
@@ -134,7 +134,7 @@
 
         @if (invitedUserDetails().length > 0) {
           <div class="invite-sent-section">
-            <p class="invite-sent-label">{{ isEditMode ? 'Invitati' : 'Verranno invitati' }}</p>
+            <p class="invite-sent-label">{{ isEditMode() ? 'Invitati' : 'Verranno invitati' }}</p>
             <div class="invite-sent-list">
               @for (user of invitedUserDetails(); track user.id) {
                 <div class="invite-sent-pill">
@@ -157,8 +157,8 @@
       <div class="gf-actions">
         <button type="button" class="btn btn-secondary" (click)="onCancel()">Annulla</button>
         <button type="submit" class="btn btn-primary" [disabled]="groupForm.invalid">
-          <span class="material-symbols-outlined">{{ isEditMode ? 'save' : 'add' }}</span>
-          {{ isEditMode ? 'Salva modifiche' : 'Crea gruppo' }}
+          <span class="material-symbols-outlined">{{ isEditMode() ? 'save' : 'add' }}</span>
+          {{ isEditMode() ? 'Salva modifiche' : 'Crea gruppo' }}
         </button>
       </div>
 

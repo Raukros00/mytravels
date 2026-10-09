@@ -1,0 +1,62 @@
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  font-size: 1.6rem;
+  margin: 0.4rem 0 0;
+  color: var(--wb-text-primary);
+}
+
+@media (min-width: 768px) {
+  .page-title { font-size: 1.9rem; }
+}
+
+.page-desc {
+  font-size: 0.925rem;
+  color: var(--wb-text-secondary);
+  max-width: 600px;
+  margin: 0;
+}
+
+.ex-count {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--wb-text-tertiary);
+}
+
+.ex-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .ex-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .ex-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.ex-rails {
+  /* 100vw includes the scrollbar: clip the full-bleed rails so they never cause horizontal page scroll */
+  overflow-x: clip;
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+}
+
+.ex-show-all {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.ex-back {
+  margin-bottom: 0.75rem;
+}

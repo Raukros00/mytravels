@@ -1,7 +1,6 @@
-import { Component, ElementRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { GroupService } from '../../../core/services/group.service';
@@ -11,13 +10,13 @@ import { User } from '../../../core/models/user.model';
 
 @Component({
   selector: 'app-group-form',
-  standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './group-form.component.html',
   styleUrl: './group-form.component.css'
 })
-export class GroupFormComponent implements OnInit {
-  @ViewChild('fileInput') fileInputRef!: ElementRef<HTMLInputElement>;
+export class GroupFormComponent {
+  private readonly fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -34,7 +33,7 @@ export class GroupFormComponent implements OnInit {
     return this.groupService.allUserGroups().find(g => g.id === id) ?? null;
   });
 
-  get isEditMode(): boolean { return !!this.groupId(); }
+  readonly isEditMode = computed(() => !!this.groupId());
 
   public emojiPresets = ['✈️', '🍕', '🍜', '🍷', '🏖️', '🎒', '🏰', '🍣', '🍦', '☕', '🏕️', '🌮', '🍸', '🏔️', '🚂', '🥐'];
 
@@ -77,7 +76,7 @@ export class GroupFormComponent implements OnInit {
     icon: ['']
   });
 
-  ngOnInit(): void {
+  constructor() {
     const g = this.group();
     if (g) {
       const isImage = this.isImageIcon(g.icon);
@@ -93,7 +92,7 @@ export class GroupFormComponent implements OnInit {
 
   onPickGallery(): void {
     this.showEmojiPicker.set(false);
-    this.fileInputRef.nativeElement.click();
+    this.fileInput()?.nativeElement.click();
   }
 
   onPickEmoji(): void {
@@ -112,9 +111,8 @@ export class GroupFormComponent implements OnInit {
     this.hasSelectedEmoji.set(false);
     this.groupForm.patchValue({ icon: '' });
     this.showEmojiPicker.set(false);
-    if (this.fileInputRef?.nativeElement) {
-      this.fileInputRef.nativeElement.value = '';
-    }
+    const input = this.fileInput()?.nativeElement;
+    if (input) input.value = '';
   }
 
   onImageChange(event: Event): void {
@@ -156,7 +154,7 @@ export class GroupFormComponent implements OnInit {
     let groupName: string;
     let groupColor: string;
 
-    if (this.isEditMode && g) {
+    if (this.isEditMode() && g) {
       this.groupService.updateGroup(g.id, {
         name: val.name!,
         description: val.description || '',

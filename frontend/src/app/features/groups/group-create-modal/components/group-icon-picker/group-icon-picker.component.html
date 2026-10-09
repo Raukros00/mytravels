@@ -1,0 +1,58 @@
+<div class="name-thumb-row">
+  <!-- Thumbnail with pick menu -->
+  <div class="img-thumb-wrap">
+    <div class="img-thumb"
+         [class.img-thumb--placeholder]="!imagePreview() && !emoji()"
+         (click)="toggleThumbMenu($event)"
+         role="button"
+         [title]="'groups.form_pick_image' | translate">
+      @if (imagePreview(); as preview) {
+        <img [src]="preview" class="img-thumb-img" alt="">
+      } @else if (emoji()) {
+        <span class="img-thumb-emoji">{{ icon() }}</span>
+      } @else {
+        <span class="material-symbols-outlined img-thumb-camera">photo_camera</span>
+      }
+      <div class="img-thumb-overlay">
+        <span class="material-symbols-outlined">edit</span>
+      </div>
+      @if (icon()) {
+        <button type="button" class="img-thumb-remove" (click)="clearIcon(); $event.stopPropagation()" title="Rimuovi">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      }
+    </div>
+
+    @if (showThumbMenu()) {
+      <div class="thumb-menu" (click)="$event.stopPropagation()">
+        <button type="button" class="thumb-menu-item" (click)="onPickGallery()">
+          <span class="material-symbols-outlined">photo_camera</span>
+          {{ 'groups.form_pick_image' | translate }}
+        </button>
+        <button type="button" class="thumb-menu-item" (click)="onPickEmoji()">
+          <span class="material-symbols-outlined">mood</span>
+          {{ 'groups.form_pick_emoji' | translate }}
+        </button>
+      </div>
+    }
+
+    <input #fileInput type="file" accept="image/*" class="file-input-hidden" (change)="onImageChange($event)">
+  </div>
+
+  <ng-content />
+</div>
+
+<!-- Emoji picker -->
+@if (showEmojiPicker()) {
+  <div class="emoji-grid">
+    @for (e of emojiPresets; track e) {
+      <button
+        type="button"
+        class="emoji-btn"
+        [class.selected]="icon() === e"
+        (click)="selectEmoji(e)">
+        {{ e }}
+      </button>
+    }
+  </div>
+}

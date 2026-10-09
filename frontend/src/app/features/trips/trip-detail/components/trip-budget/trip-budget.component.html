@@ -1,0 +1,35 @@
+<section class="trip-budget card" aria-label="Spese per categoria">
+  <header class="budget-header">
+    <span class="material-symbols-outlined budget-header-icon">donut_large</span>
+    <h2 class="budget-title">Spese per categoria</h2>
+    @if (budget() > 0) {
+      <span class="budget-note">budget {{ budget() | currency:currency():'symbol':'1.0-0' }}</span>
+    }
+  </header>
+
+  <div class="budget-body">
+    <div class="budget-donut" [style.background]="donutGradient()" role="img"
+         [attr.aria-label]="'Spesa totale ' + spent()">
+      <div class="budget-donut-hole">
+        <span class="budget-donut-total">{{ spent() | currency:currency():'symbol':'1.0-0' }}</span>
+        <span class="budget-donut-caption">spesi</span>
+      </div>
+    </div>
+
+    @if (slices().length) {
+      <ul class="budget-legend">
+        @for (s of slices(); track s.key) {
+          <li class="budget-legend-item">
+            <span class="budget-dot" [style.background]="s.color"></span>
+            <span class="material-symbols-outlined budget-legend-icon">{{ s.icon }}</span>
+            <span class="budget-legend-label">{{ s.label }}</span>
+            <span class="budget-legend-percent">{{ s.percent | number:'1.0-0' }}%</span>
+            <span class="budget-legend-amount">{{ s.amount | currency:currency():'symbol':'1.0-2' }}</span>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="budget-empty">Nessuna spesa registrata: il grafico si popolerà man mano che aggiungi le spese.</p>
+    }
+  </div>
+</section>

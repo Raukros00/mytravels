@@ -1,6 +1,5 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
@@ -10,9 +9,9 @@ import { ToastService } from '../../../core/services/toast.service';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-group-settings',
-  standalone: true,
-  imports: [CommonModule, RouterModule, ModalComponent, TranslatePipe],
+  imports: [RouterModule, ModalComponent, TranslatePipe],
   templateUrl: './group-settings.component.html',
   styleUrl: './group-settings.component.css'
 })

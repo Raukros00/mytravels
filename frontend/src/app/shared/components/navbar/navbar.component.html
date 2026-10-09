@@ -9,6 +9,9 @@
     <!-- Desktop Nav Links -->
     @if (authService.isAuthenticated()) {
       <nav class="hidden md:flex items-center gap-1">
+        <a routerLink="/explore" routerLinkActive="desktop-nav-active" class="desktop-nav-link no-underline">
+          Esplora
+        </a>
         <a routerLink="/trips" routerLinkActive="desktop-nav-active" [routerLinkActiveOptions]="{exact: false}" class="desktop-nav-link no-underline">
           Viaggi
         </a>
@@ -151,6 +154,11 @@
 @if (authService.isAuthenticated()) {
   <nav class="md:hidden fixed bottom-0 inset-x-0 z-50 bg-surface/95 backdrop-blur-xl border-t border-outline-variant/30 pb-safe shadow-[0_-4px_20px_rgba(78,42,29,0.06)]">
     <div class="flex items-stretch h-16">
+      <a routerLink="/explore" routerLinkActive="active-nav" class="wb-nav-item" #exploreLink="routerLinkActive">
+        <span class="material-symbols-outlined text-[24px]" [style.font-variation-settings]="exploreLink.isActive ? '\'FILL\' 1' : '\'FILL\' 0'">travel_explore</span>
+        <span>Esplora</span>
+      </a>
+
       <a routerLink="/trips" routerLinkActive="active-nav" [routerLinkActiveOptions]="{exact: false}" class="wb-nav-item" #tripsLink="routerLinkActive">
         <span class="material-symbols-outlined text-[24px]" [style.font-variation-settings]="tripsLink.isActive ? '\'FILL\' 1' : '\'FILL\' 0'">luggage</span>
         <span>Viaggi</span>

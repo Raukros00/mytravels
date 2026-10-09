@@ -96,6 +96,27 @@ export interface AccommodationDetails {
   notes?: string;             // e.g. "Tassa di soggiorno €4/notte, deposito bagagli gratuito"
 }
 
+export type BudgetCategory = 'transport' | 'accommodation' | 'food' | 'activities' | 'other';
+
+/** 'settlement' = payment from `paidBy` to the single member in `splitAmong` (not a real expense). */
+export type ExpenseType = 'expense' | 'settlement';
+
+/** A shared expense of the trip (Splitwise-style). Amounts are in the trip currency. */
+export interface TripExpense {
+  id: string;
+  tripId: string;
+  title: string;
+  amount: number;
+  category: BudgetCategory;
+  date: string; // YYYY-MM-DD
+  paidBy: string; // member id
+  splitAmong: string[]; // member ids
+  /** Share owed by each participant; always sums to `amount`. */
+  shares: Record<string, number>;
+  type?: ExpenseType; // missing = 'expense'
+  notes?: string;
+}
+
 export interface Trip {
   id: string;
   groupId: string;
@@ -121,6 +142,7 @@ export interface Trip {
   flights?: FlightDetails;
   transfers?: AirportTransfer;
   accommodation?: AccommodationDetails;
+  expenses?: TripExpense[];
 }
 
 export interface CreateTripDto {

@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideZoneChangeDetection, isDevMode, APP_INITIALIZER, inject } from '@angular/core';
+import { ApplicationConfig, provideZonelessChangeDetection, provideAppInitializer, isDevMode, inject } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors, HttpClient } from '@angular/common/http';
 import { provideServiceWorker } from '@angular/service-worker';
@@ -9,7 +9,7 @@ import { I18nService } from './core/services/i18n.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideZonelessChangeDetection(),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideTranslateService({
@@ -24,12 +24,7 @@ export const appConfig: ApplicationConfig = {
         }
       }
     }),
-    {
-      provide: APP_INITIALIZER,
-      useFactory: (i18n: I18nService) => () => i18n.init(),
-      deps: [I18nService],
-      multi: true
-    },
+    provideAppInitializer(() => inject(I18nService).init()),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000'

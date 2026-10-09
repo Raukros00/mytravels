@@ -2,8 +2,8 @@
 
   <!-- Full-width Cover with dark veil -->
   <div class="hero-cover-banner">
-    @if (trip.coverUrl) {
-      <img [src]="trip.coverUrl" class="hero-cover-img" [alt]="trip.title">
+    @if (trip().coverUrl) {
+      <img [src]="trip().coverUrl" class="hero-cover-img" [alt]="trip().title">
     } @else {
       <!-- Gradient fallback when no image -->
       <div class="hero-cover-gradient"></div>
@@ -14,22 +14,16 @@
 
     <!-- Content overlaid on image -->
     <div class="hero-cover-content">
-      <!-- Status pill -->
-      <span class="trip-status" [ngClass]="'trip-status--' + status">
-        <span class="material-symbols-outlined">{{ statusIcon }}</span>
-        {{ statusLabel }}
-      </span>
-
       <!-- Trip title -->
-      <h1 class="hero-cover-title">{{ trip.title }}</h1>
+      <h1 class="hero-cover-title">{{ trip().title }}</h1>
 
       <!-- Destination + Duration chips -->
       <div class="hero-cover-meta">
         <span class="hero-cover-chip">
           <span class="material-symbols-outlined">location_on</span>
-          {{ trip.destination }}{{ trip.country ? ', ' + trip.country : '' }}
+          {{ trip().destination }}{{ trip().country ? ', ' + trip().country : '' }}
         </span>
-        @if (calculateDuration(trip.startDate, trip.endDate); as dur) {
+        @if (duration(); as dur) {
           <span class="hero-cover-chip">
             <span class="material-symbols-outlined">schedule</span>
             {{ dur }}
@@ -37,7 +31,13 @@
         }
         <span class="hero-cover-chip">
           <span class="material-symbols-outlined">calendar_today</span>
-          {{ formatDateRange(trip.startDate, trip.endDate) }}
+          {{ dateRange() }}
+        </span>
+
+        <!-- Status pill, pushed to the far right of the chips row -->
+        <span class="trip-status" [class]="'trip-status--' + status()">
+          <span class="material-symbols-outlined">{{ statusIcon() }}</span>
+          {{ statusLabel() }}
         </span>
       </div>
     </div>
@@ -47,41 +47,5 @@
       <span class="material-symbols-outlined">share</span>
     </button>
   </div>
-
-  <!-- Collapsible extra details (notes, group, budget) -->
-  @if (trip.notes || trip.groupId || trip.budgetEstimate) {
-    <div class="hero-details-strip" [class.hero-details-strip--open]="showMobileDetails()">
-      <button type="button" class="hero-details-trigger" (click)="toggleMobileDetails()">
-        <span class="material-symbols-outlined section-icon">info</span>
-        <span>{{ showMobileDetails() ? 'Nascondi dettagli' : 'Dettagli viaggio' }}</span>
-        <span class="material-symbols-outlined details-chevron" [class.details-chevron--open]="showMobileDetails()">expand_more</span>
-      </button>
-
-      <div class="hero-details-body">
-        @if (trip.notes) {
-          <p class="hero-detail-notes">{{ trip.notes }}</p>
-        }
-
-        <dl class="hero-detail-list">
-          @if (trip.groupId) {
-            <div class="hero-detail-row">
-              <span class="material-symbols-outlined hero-detail-icon">group</span>
-              <dt class="hero-detail-label">Gruppo:</dt>
-              <dd class="hero-detail-value">
-                <a [routerLink]="['/groups', trip.groupId]" class="hero-group-link">{{ groupName || 'Gruppo' }}</a>
-              </dd>
-            </div>
-          }
-          @if (trip.budgetEstimate) {
-            <div class="hero-detail-row">
-              <span class="material-symbols-outlined hero-detail-icon">payments</span>
-              <dt class="hero-detail-label">Budget:</dt>
-              <dd class="hero-detail-value">{{ trip.budgetEstimate | currency:(trip.currency || 'EUR'):'symbol':'1.0-0' }}</dd>
-            </div>
-          }
-        </dl>
-      </div>
-    </div>
-  }
 
 </div>

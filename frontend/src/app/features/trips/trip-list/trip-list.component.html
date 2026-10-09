@@ -1,310 +1,167 @@
-<div class="flex flex-col w-full pb-28">
-
-  <!-- Group Switcher & Invite Header -->
-  <section class="px-gutter pt-space-md pb-space-sm flex flex-col gap-space-sm">
-    <div class="flex items-center justify-between gap-space-sm">
-      <!-- Active Group Pill -->
-      @if (groupService.activeGroup(); as grp) {
-        <button class="flex items-center gap-space-xs bg-surface-container-high px-space-md py-2 rounded-full shadow-sm active:scale-95 transition-all text-left" type="button">
-          <span class="w-2.5 h-2.5 rounded-full bg-secondary animate-pulse"></span>
-          <div class="flex flex-col">
-            <span class="font-label-lg text-label-lg text-on-surface flex items-center gap-1">
-              {{ grp.name }}
-              <span class="material-symbols-outlined text-[18px] text-on-surface-variant">expand_more</span>
-            </span>
-            <span class="font-body-sm text-body-sm text-on-surface-variant">{{ grp.members.length }} viaggiatori</span>
-          </div>
-        </button>
-      } @else {
-        <div class="flex items-center gap-space-xs bg-surface-container-high px-space-md py-2 rounded-full">
-          <span class="font-label-lg text-label-lg text-on-surface-variant">Nessun gruppo attivo</span>
+<div class="page-wrapper">
+  <div class="app-container">
+    <!-- Header & Action Bar -->
+    <div class="page-header animate-fade-in">
+      <div class="header-left">
+        <div class="title-row">
+          <h1 class="page-title">Viaggi</h1>
+          @if (allTrips().length > 0) {
+            <span class="count-badge">{{ allTrips().length }}</span>
+          }
         </div>
-      }
+        <p class="page-desc">
+          @if (allTrips().length > 0) {
+            Tutti i tuoi viaggi, in {{ groupsCount() }} {{ groupsCount() === 1 ? 'gruppo' : 'gruppi' }}
+          } @else {
+            Tutti i viaggi di tutti i tuoi gruppi
+          }
+        </p>
+      </div>
 
-      <!-- New Trip CTA -->
-      <a routerLink="/trips/new" class="btn btn-primary no-underline">
-        <span class="material-symbols-outlined">add</span> Nuovo Viaggio
-      </a>
+      <div class="header-actions">
+        <a routerLink="/trips/new" class="btn btn-primary">
+          <span class="material-symbols-outlined">add</span> Nuovo viaggio
+        </a>
+      </div>
     </div>
-  </section>
 
-  <!-- Active Trip Hero Card -->
-  @if (tripService.activeGroupTrips().length > 0) {
-    @for (trip of tripService.activeGroupTrips().slice(0, 1); track trip.id) {
-      @if (trip.status === 'ongoing' || trip.status === 'upcoming') {
-        <!-- Live Alert Banner -->
-        <section class="px-gutter my-space-xs">
-          <div class="bg-secondary-container text-on-secondary-fixed-variant rounded-xl p-3 flex items-center justify-between shadow-sm">
-            <div class="flex items-center gap-3 min-w-0">
-              <div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center text-secondary shrink-0 shadow-sm">
-                <span class="material-symbols-outlined text-[22px]">flight_takeoff</span>
-              </div>
-              <div class="flex flex-col min-w-0">
-                <div class="flex items-center gap-1.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
-                  <span class="font-label-sm text-label-sm uppercase tracking-wide text-secondary">
-                    {{ trip.status === 'ongoing' ? 'In Corso' : 'Prossimamente' }}
-                    • {{ formatDateRange(trip.startDate, trip.endDate) }}
-                  </span>
-                </div>
-                <p class="font-label-lg text-label-lg truncate text-on-surface">{{ trip.title }}</p>
-              </div>
-            </div>
-            <a [routerLink]="['/trips', trip.id]" class="flex items-center justify-center w-8 h-8 rounded-full bg-surface-container-lowest text-secondary shrink-0 ml-2 shadow-sm active:scale-95 transition-transform no-underline">
-              <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
-            </a>
-          </div>
-        </section>
-      }
+    @if (currentTrip(); as cur) {
+      <a class="current-hero animate-fade-in" [routerLink]="['/trips', cur.trip.id]">
+        @if (cur.trip.coverUrl) {
+          <img class="current-hero-img" [src]="cur.trip.coverUrl" [alt]="cur.trip.title">
+        } @else {
+          <div class="current-hero-fallback"></div>
+        }
+        <div class="current-hero-veil"></div>
 
-      <!-- Hero Trip Card -->
-      <section class="px-gutter mt-space-sm flex flex-col gap-space-xs">
-        <div class="flex items-center justify-between">
-          <span class="font-label-sm text-label-sm text-on-surface-variant tracking-wider uppercase">Viaggio Attivo</span>
-          <span class="flex items-center gap-1 font-label-sm text-label-sm text-primary">
-            <span class="material-symbols-outlined text-[14px]">sensors</span> Live Sync
+        <div class="current-hero-content">
+          <span class="badge current-hero-status" [class]="cur.status.cls">
+            <span class="material-symbols-outlined">{{ cur.status.icon }}</span>
+            {{ cur.status.label }} · {{ cur.progress }}
           </span>
-        </div>
-        <div class="relative bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(78,42,29,0.08)] overflow-hidden flex flex-col">
-          <!-- Cover Image -->
-          <div class="relative w-full h-48 overflow-hidden bg-surface-container">
-            @if (trip.coverUrl) {
-              <img [alt]="trip.title" class="w-full h-full object-cover" [src]="trip.coverUrl">
-            } @else {
-              <div class="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                <span class="material-symbols-outlined text-[64px] text-primary/40">map</span>
-              </div>
+          <h2 class="current-hero-title">{{ cur.trip.title }}</h2>
+          <div class="current-hero-meta">
+            <span><span class="material-symbols-outlined">location_on</span>{{ cur.location }}</span>
+            <span><span class="material-symbols-outlined">calendar_today</span>{{ cur.dates }}</span>
+            @if (cur.groupName) {
+              <span><span class="material-symbols-outlined">group</span>{{ cur.groupName }}</span>
             }
-            <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent"></div>
-            <!-- Status Pill -->
-            <div class="absolute top-3 left-3 flex items-center gap-1.5 bg-primary text-on-primary px-3 py-1 rounded-full shadow-md">
-              <span class="material-symbols-outlined text-[14px]">
-                {{ trip.status === 'ongoing' ? 'timelapse' : 'schedule' }}
-              </span>
-              <span class="font-label-sm text-label-sm">
-                {{ trip.status === 'ongoing' ? 'In Corso' : 'In Arrivo' }}
-                • {{ calculateDuration(trip.startDate, trip.endDate) }}
-              </span>
-            </div>
-            <!-- Title overlay -->
-            <div class="absolute bottom-3 left-3 right-3 text-on-primary-container">
-              <div class="flex items-center gap-1.5 text-primary-fixed-dim text-xs font-label-md drop-shadow">
-                <span class="material-symbols-outlined text-[16px]">location_on</span>
-                <span>{{ trip.destination }}{{ trip.country ? ', ' + trip.country : '' }}</span>
-              </div>
-              <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-white tracking-tight drop-shadow-md">{{ trip.title }}</h2>
-            </div>
-          </div>
-          <!-- Card Body -->
-          <div class="p-space-md flex flex-col gap-space-md">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
-                <span class="material-symbols-outlined text-[18px] text-primary">calendar_today</span>
-                <span>{{ formatDateRange(trip.startDate, trip.endDate) }} • {{ calculateDuration(trip.startDate, trip.endDate) }}</span>
-              </div>
-            </div>
-
-            @if (trip.budgetEstimate) {
-              <div class="bg-surface-container-low rounded-lg p-3 flex flex-col gap-2">
-                <div class="flex items-center justify-between">
-                  <span class="font-label-md text-label-md text-on-surface flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-[18px] text-tertiary">payments</span>
-                    Budget Stimato
-                  </span>
-                  <span class="font-label-lg text-label-lg text-primary">{{ trip.budgetEstimate }} {{ trip.currency || 'EUR' }}</span>
-                </div>
-              </div>
-            }
-
-            <!-- Tags -->
-            @if (trip.tags.length > 0) {
-              <div class="flex flex-wrap gap-1.5">
-                @for (tag of trip.tags.slice(0, 3); track tag) {
-                  <span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full">#{{ tag }}</span>
-                }
-              </div>
-            }
-
-            <div class="flex items-center justify-between pt-1">
-              <div class="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant">
-                <span class="material-symbols-outlined text-[16px]">group</span>
-                <span>{{ groupService.activeGroup()!.members.length }} viaggiatori</span>
-              </div>
-              <a [routerLink]="['/trips', trip.id]" class="bg-primary text-on-primary font-label-md text-label-md px-4 py-2 rounded-full shadow-sm active:scale-95 transition-transform flex items-center gap-1 no-underline">
-                <span>Apri Viaggio</span>
-                <span class="material-symbols-outlined text-[16px]">chevron_right</span>
-              </a>
-            </div>
           </div>
         </div>
-      </section>
+
+        <span class="current-hero-cta">
+          Apri viaggio <span class="material-symbols-outlined">arrow_forward</span>
+        </span>
+      </a>
     }
-  }
 
-  <!-- Search & Filter Bar -->
-  <section class="px-gutter pt-space-lg pb-space-sm">
-    <div class="flex items-center gap-space-sm">
-      <div class="flex-1 flex items-center gap-space-xs bg-surface-container px-space-md py-2.5 rounded-full shadow-sm">
-        <span class="material-symbols-outlined text-outline text-[20px]">search</span>
-        <input
-          class="bg-transparent border-none outline-none font-body-md text-body-md text-on-surface placeholder:text-outline w-full"
-          placeholder="Cerca per destinazione o tag..."
-          type="text"
-          [(ngModel)]="searchQuery">
-        @if (searchQuery) {
-          <button class="flex items-center justify-center text-outline hover:text-on-surface transition-colors" type="button" (click)="searchQuery = ''">
-            <span class="material-symbols-outlined text-[18px]">close</span>
-          </button>
-        }
+    @if (allTrips().length > 0) {
+      <!-- Search & Filters -->
+      <div class="toolbar animate-fade-in">
+        <div class="search-box">
+          <span class="material-symbols-outlined">search</span>
+          <input
+            class="search-input"
+            placeholder="Cerca per titolo, destinazione o tag..."
+            type="text"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)">
+          @if (searchQuery()) {
+            <button class="search-clear" type="button" aria-label="Cancella ricerca" (click)="searchQuery.set('')">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          }
+        </div>
+
+        <div class="filter-pills-row no-scrollbar">
+          @for (f of filters(); track f.value) {
+            <button
+              type="button"
+              class="filter-pill-btn"
+              [class.filter-pill-btn--active]="selectedStatus() === f.value"
+              (click)="selectedStatus.set(f.value)">
+              {{ f.label }} ({{ f.count }})
+            </button>
+          }
+        </div>
       </div>
-    </div>
-  </section>
+    }
 
-  <!-- Status Filter Chips -->
-  <div class="pt-space-sm pb-space-xs">
-    <div class="flex items-center gap-space-xs overflow-x-auto px-gutter no-scrollbar py-1">
-      <button class="shrink-0 px-4 py-1.5 rounded-full font-label-sm text-label-sm active:scale-95 transition-all"
-        [class.bg-primary]="selectedStatus() === 'all'"
-        [class.text-on-primary]="selectedStatus() === 'all'"
-        [class.shadow-sm]="selectedStatus() === 'all'"
-        [class.bg-surface-container]="selectedStatus() !== 'all'"
-        [class.text-on-surface-variant]="selectedStatus() !== 'all'"
-        type="button" (click)="selectedStatus.set('all')">
-        Tutti ({{ tripService.activeGroupTrips().length }})
-      </button>
-      <button class="shrink-0 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm active:scale-95 transition-all"
-        [class.bg-primary]="selectedStatus() === 'upcoming'"
-        [class.text-on-primary]="selectedStatus() === 'upcoming'"
-        [class.shadow-sm]="selectedStatus() === 'upcoming'"
-        [class.bg-surface-container]="selectedStatus() !== 'upcoming'"
-        [class.text-on-surface-variant]="selectedStatus() !== 'upcoming'"
-        type="button" (click)="selectedStatus.set('upcoming')">
-        In Arrivo
-      </button>
-      <button class="shrink-0 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm active:scale-95 transition-all"
-        [class.bg-primary]="selectedStatus() === 'completed'"
-        [class.text-on-primary]="selectedStatus() === 'completed'"
-        [class.shadow-sm]="selectedStatus() === 'completed'"
-        [class.bg-surface-container]="selectedStatus() !== 'completed'"
-        [class.text-on-surface-variant]="selectedStatus() !== 'completed'"
-        type="button" (click)="selectedStatus.set('completed')">
-        Passati
-      </button>
-    </div>
-  </div>
-
-  <!-- Upcoming Trips Section -->
-  <section class="px-gutter mt-space-md mb-space-xl">
     @if (filteredTrips().length > 0) {
-      <div class="flex items-center justify-between mb-space-sm">
-        <h3 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">
-          {{ selectedStatus() === 'all' ? 'Tutti i Viaggi' : 'Viaggi Filtrati' }}
-        </h3>
-        <span class="font-label-sm text-label-sm text-primary font-bold">{{ filteredTrips().length }} viaggi</span>
-      </div>
-
-      <div class="flex flex-col gap-space-sm">
-        @for (trip of filteredTrips(); track trip.id) {
-          <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm active:bg-surface-container-low transition-colors cursor-pointer"
-            [routerLink]="['/trips', trip.id]">
-            <div class="flex gap-space-md">
-              <!-- Cover Thumbnail -->
-              <div class="relative w-24 h-24 rounded-lg overflow-hidden shrink-0 bg-surface-container">
-                @if (trip.coverUrl) {
-                  <img [alt]="trip.title" class="w-full h-full object-cover" [src]="trip.coverUrl">
-                } @else {
-                  <div class="w-full h-full flex items-center justify-center bg-surface-container-high">
-                    <span class="material-symbols-outlined text-[36px] text-on-surface-variant/40">map</span>
-                  </div>
-                }
-                <div class="absolute top-1 left-1">
-                  @switch (trip.status) {
-                    @case ('ongoing') {
-                      <span class="bg-primary text-on-primary px-1.5 py-0.5 rounded font-label-sm text-[10px]">Live</span>
-                    }
-                    @case ('upcoming') {
-                      <span class="bg-tertiary-container text-on-tertiary-container px-1.5 py-0.5 rounded font-label-sm text-[10px]">{{ formatDateRange(trip.startDate, trip.startDate) }}</span>
-                    }
-                    @case ('planning') {
-                      <span class="bg-secondary-container text-on-secondary-fixed-variant px-1.5 py-0.5 rounded font-label-sm text-[10px]">Planning</span>
-                    }
-                    @case ('completed') {
-                      <span class="bg-surface-container-highest text-on-surface px-1.5 py-0.5 rounded font-label-sm text-[10px]">Passato</span>
-                    }
-                  }
+      <div class="trips-grid">
+        @for (vm of filteredTrips(); track vm.trip.id) {
+          <article class="trip-card card animate-fade-in">
+            <a class="trip-cover" [routerLink]="['/trips', vm.trip.id]">
+              @if (vm.trip.coverUrl) {
+                <img [src]="vm.trip.coverUrl" [alt]="vm.trip.title" loading="lazy">
+              } @else {
+                <div class="cover-placeholder">
+                  <span class="material-symbols-outlined">map</span>
                 </div>
-              </div>
+              }
+              <span class="badge status-badge" [class]="vm.status.cls">
+                <span class="material-symbols-outlined">{{ vm.status.icon }}</span>
+                {{ vm.status.label }}
+              </span>
+            </a>
 
-              <!-- Trip Details -->
-              <div class="flex flex-col justify-between flex-1 min-w-0">
-                <div>
-                  <div class="flex items-center gap-1.5 mb-1">
-                    @switch (trip.status) {
-                      @case ('ongoing') {
-                        <span class="bg-primary/10 text-primary font-label-sm text-label-sm px-2 py-0.5 rounded-full">In Corso</span>
-                      }
-                      @case ('upcoming') {
-                        <span class="bg-secondary-container text-on-secondary-fixed-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full">In Arrivo</span>
-                      }
-                      @case ('planning') {
-                        <span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full">In Pianificazione</span>
-                      }
-                      @case ('completed') {
-                        <span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full">Completato</span>
-                      }
-                    }
-                    <span class="font-label-sm text-label-sm text-on-surface-variant">• {{ calculateDuration(trip.startDate, trip.endDate) }}</span>
-                  </div>
-                  <h4 class="font-headline-sm text-headline-sm text-on-surface truncate">{{ trip.title }}</h4>
-                </div>
-                <div class="flex flex-wrap items-center gap-1.5 mt-1">
-                  <span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[13px] text-primary">location_on</span>
-                    {{ trip.destination }}{{ trip.country ? ', ' + trip.country : '' }}
-                  </span>
-                  @if (trip.budgetEstimate) {
-                    <span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full">
-                      {{ trip.budgetEstimate }} {{ trip.currency || 'EUR' }}
-                    </span>
-                  }
-                </div>
-              </div>
-            </div>
-
-            <!-- Tags & Actions -->
-            <div class="flex items-center justify-between pt-1">
-              <div class="flex flex-wrap gap-1">
-                @for (tag of trip.tags.slice(0, 2); track tag) {
-                  <span class="font-label-sm text-label-sm text-on-surface-variant">#{{ tag }}</span>
-                }
-              </div>
-              <button class="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container-high transition-colors"
-                type="button"
-                (click)="deleteTrip(trip.id, trip.title, $event)">
-                <span class="material-symbols-outlined text-[16px]">delete_outline</span>
+            <div class="card-menu-wrapper">
+              <button type="button" class="card-menu-btn" aria-label="Azioni viaggio" (click)="toggleMenu(vm.trip.id, $event)">
+                <span class="material-symbols-outlined">more_vert</span>
               </button>
+              @if (openMenuId() === vm.trip.id) {
+                <div class="card-dropdown" (click)="$event.stopPropagation()">
+                  <button type="button" class="dropdown-item dropdown-item--danger" (click)="deleteTrip(vm.trip.id, vm.trip.title, $event)">
+                    <span class="material-symbols-outlined">delete_outline</span>
+                    Elimina viaggio
+                  </button>
+                </div>
+              }
             </div>
-          </div>
+
+            <a class="trip-body" [routerLink]="['/trips', vm.trip.id]">
+              <h3 class="trip-title">{{ vm.trip.title }}</h3>
+              <p class="trip-location">
+                <span class="material-symbols-outlined">location_on</span>{{ vm.location }}
+              </p>
+              @if (vm.groupName) {
+                <p class="trip-group">
+                  <span class="material-symbols-outlined">group</span>{{ vm.groupName }}
+                </p>
+              }
+              <div class="trip-meta">
+                <span><span class="material-symbols-outlined">calendar_today</span>{{ vm.dates }}</span>
+                <span><span class="material-symbols-outlined">hourglass_empty</span>{{ vm.duration }}</span>
+                @if (vm.budget) {
+                  <span><span class="material-symbols-outlined">payments</span>{{ vm.budget }}</span>
+                }
+              </div>
+              @if (vm.tags.length > 0) {
+                <div class="trip-tags">
+                  @for (tag of vm.tags; track tag) {
+                    <span class="badge badge-slate">#{{ tag }}</span>
+                  }
+                </div>
+              }
+            </a>
+          </article>
         }
       </div>
+    } @else if (allTrips().length > 0) {
+      <app-empty-state
+        materialIcon="search_off"
+        title="Nessun risultato"
+        description="Nessun viaggio corrisponde ai filtri selezionati.">
+      </app-empty-state>
     } @else {
-      @if (searchQuery) {
-        <app-empty-state
-          materialIcon="search_off"
-          title="Nessun risultato"
-          description="Nessun viaggio corrisponde alla ricerca.">
-        </app-empty-state>
-      } @else {
-        <app-empty-state
-          materialIcon="luggage"
-          title="Nessun viaggio ancora"
-          description="Crea il primo viaggio con il tuo gruppo!"
-          actionLabel="Pianifica un Viaggio"
-          actionMaterialIcon="add"
-          (action)="goToNewTrip()">
-        </app-empty-state>
-      }
+      <app-empty-state
+        materialIcon="luggage"
+        title="Nessun viaggio ancora"
+        description="Crea il primo viaggio con il tuo gruppo!"
+        actionLabel="Pianifica un Viaggio"
+        actionMaterialIcon="add"
+        (action)="goToNewTrip()">
+      </app-empty-state>
     }
-  </section>
-
+  </div>
 </div>

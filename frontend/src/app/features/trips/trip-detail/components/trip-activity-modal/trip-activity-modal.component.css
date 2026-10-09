@@ -1,0 +1,2 @@
+.radio-toggle-group{display:flex;align-items:center;gap:1.15rem;padding:.4rem 0}
+.radio-label{display:inline-flex;align-items:center;gap:.3rem;font-size:.85rem;color:var(--wb-text-primary);cursor:pointer}

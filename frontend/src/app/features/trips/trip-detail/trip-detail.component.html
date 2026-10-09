@@ -7,13 +7,10 @@
     </a>
 
     @if (trip(); as t) {
-      <!-- Trip Hero (Discreet on mobile, overview on desktop) -->
       <app-trip-hero
         [trip]="t"
         [status]="currentTripStatus()"
-        [groupName]="t.groupId ? getGroupName(t.groupId) : null"
-        (share)="shareTrip()">
-      </app-trip-hero>
+        (share)="shareTrip()" />
 
       <!-- Navigation Tabs Bar -->
       <nav class="trip-tabs-nav" aria-label="Sezioni viaggio">
@@ -33,7 +30,7 @@
           (click)="activeTab.set('food')">
           <span class="material-symbols-outlined">restaurant</span>
           <span>Food & Drink</span>
-          @if ((t.placesToEat?.length || 0) > 0) {
+          @if (t.placesToEat?.length) {
             <span class="trip-tab-counter">{{ t.placesToEat?.length }}</span>
           }
         </button>
@@ -50,835 +47,84 @@
         <button
           type="button"
           class="trip-tab-btn"
+          [class.trip-tab-btn--active]="activeTab() === 'expenses'"
+          (click)="activeTab.set('expenses')">
+          <span class="material-symbols-outlined">payments</span>
+          <span>Spese</span>
+          @if (expensesCount()) {
+            <span class="trip-tab-counter">{{ expensesCount() }}</span>
+          }
+        </button>
+
+        <button
+          type="button"
+          class="trip-tab-btn"
           [class.trip-tab-btn--active]="activeTab() === 'activities'"
           (click)="activeTab.set('activities')">
           <span class="material-symbols-outlined">explore</span>
           <span>Attività</span>
-          @if ((t.activities?.length || 0) > 0) {
+          @if (t.activities?.length) {
             <span class="trip-tab-counter">{{ t.activities?.length }}</span>
           }
         </button>
       </nav>
 
-      <!-- TAB 1: ITINERARIO -->
-      @if (activeTab() === 'itinerary') {
-        <div class="itinerary-grid animate-fade-in">
-
-          <!-- 1. Day Selector Bar (Top on both mobile & desktop) -->
-          <div class="itinerary-days-bar">
-            <div class="day-chips-scroll no-scrollbar">
-              @for (dayNum of tripDaysNumbers(); track dayNum) {
-                <button
-                  type="button"
-                  class="day-chip-btn"
-                  [class.day-chip-btn--active]="selectedDay() === dayNum"
-                  (click)="selectedDay.set(dayNum)">
-                  <span class="day-chip-num">Giorno {{ dayNum }}</span>
-                  <span class="day-chip-date">{{ getDayDateFormatted(dayNum) }}</span>
-                </button>
-              }
-            </div>
-          </div>
-
-          <!-- 2. Mappa del Giorno (First thing entering the trip on mobile!) -->
-          <div class="itinerary-map-col">
-            <div class="section-card card map-section-card">
-              <div class="section-header map-header">
-                <span class="material-symbols-outlined section-icon">map</span>
-                <div>
-                  <h2 class="section-title">Mappa del Giorno {{ selectedDay() }}</h2>
-                  <p class="section-desc">Itinerario e posizioni su mappa interattiva.</p>
-                </div>
-                <span class="trip-counter">{{ selectedDayMapStops().length }} tappe</span>
-              </div>
-
-              <div class="map-container-box">
-                <app-interactive-map
-                  [stops]="selectedDayMapStops()"
-                  [defaultCenter]="getMapCenterCoordinates()">
-                </app-interactive-map>
-              </div>
-
-              <!-- Day Quick Stats Summary -->
-              <div class="day-stats-grid">
-                <div class="stat-card">
-                  <span class="stat-number">{{ selectedDayTimelineItems().length }}</span>
-                  <span class="stat-label">Tappe totali</span>
-                </div>
-                <div class="stat-card">
-                  <span class="stat-number">{{ selectedDayFoodCount() }}</span>
-                  <span class="stat-label">Ristoranti / Food</span>
-                </div>
-                <div class="stat-card">
-                  <span class="stat-number">{{ selectedDayActivityCount() }}</span>
-                  <span class="stat-label">Attività / Visite</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3. Step della Giornata (Under the map on mobile; left col on desktop) -->
-          <div class="itinerary-timeline-col">
-            <div class="section-card card">
-              <div class="section-header">
-                <span class="material-symbols-outlined section-icon">calendar_month</span>
-                <div>
-                  <h2 class="section-title">Step della Giornata</h2>
-                  <p class="section-desc">Tappe cronologiche e orari del Giorno {{ selectedDay() }}.</p>
-                </div>
-              </div>
-
-              <!-- Day Banner Focus -->
-              <div class="day-banner-focus">
-                <div class="day-banner-info">
-                  <span class="day-badge-pill">Giorno {{ selectedDay() }}</span>
-                  <h3 class="day-banner-title">{{ getDayDateFormatted(selectedDay()) }}</h3>
-                  <span class="day-banner-sub">{{ selectedDayTimelineItems().length }} tappe pianificate</span>
-                </div>
-                <button type="button" class="btn btn-secondary btn-sm" (click)="openPlanFromBacklogModal()">
-                  <span class="material-symbols-outlined" style="font-size:16px">add</span>
-                  Aggiungi Tappa
-                </button>
-              </div>
-
-              <!-- Timeline Stream -->
-              @if (selectedDayTimelineItems().length > 0) {
-                <div class="timeline-stream">
-                  @for (item of selectedDayTimelineItems(); track item.id) {
-                    <div class="timeline-entry" [class.timeline-entry--completed]="item.isCompleted">
-                      <!-- Timeline Node Icon -->
-                      <div class="timeline-node" [class.timeline-node--food]="item.type === 'food'" [class.timeline-node--activity]="item.type === 'activity'">
-                        <span class="material-symbols-outlined">{{ item.type === 'food' ? 'restaurant' : 'explore' }}</span>
-                      </div>
-
-                      <!-- Timeline Item Body -->
-                      <div class="timeline-card">
-                        <div class="timeline-header-row">
-                          <div class="timeline-slot-pill" [class.timeline-slot-pill--food]="item.type === 'food'">
-                            <span class="material-symbols-outlined" style="font-size:14px">schedule</span>
-                            <span>{{ item.timeSlot || 'Orario Flessibile' }}</span>
-                            <span class="timeline-sep">·</span>
-                            <span>{{ item.type === 'food' ? 'Pasto' : 'Visita' }}</span>
-                          </div>
-                          @if (item.isCompleted) {
-                            <span class="badge-completed">
-                              <span class="material-symbols-outlined" style="font-size:14px">check_circle</span>
-                              Completato
-                            </span>
-                          }
-                        </div>
-
-                        <h4 class="timeline-name">{{ item.name }}</h4>
-
-                        @if (item.address) {
-                          <p class="timeline-address">
-                            <span class="material-symbols-outlined">location_on</span>
-                            {{ item.address }}
-                          </p>
-                        }
-
-                        @if (item.priceInfo || item.bookingInfo) {
-                          <div class="timeline-tags">
-                            @if (item.priceInfo) {
-                              <span class="meta-pill meta-pill--price">{{ item.priceInfo }}</span>
-                            }
-                            @if (item.bookingInfo) {
-                              <span class="meta-pill meta-pill--booking">{{ item.bookingInfo }}</span>
-                            }
-                          </div>
-                        }
-
-                        @if (item.notes) {
-                          <div class="timeline-notes-box">
-                            <span class="material-symbols-outlined" style="font-size:16px">notes</span>
-                            <p>{{ item.notes }}</p>
-                          </div>
-                        }
-
-                        <div class="timeline-footer-row">
-                          <a [href]="getNavigationUrl(item.name, item.address)" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
-                            <span class="material-symbols-outlined" style="font-size:16px">directions_car</span>
-                            Naviga
-                          </a>
-                          <button type="button" class="link-btn" (click)="unassignFromDay(item)">
-                            <span class="material-symbols-outlined" style="font-size:16px">undo</span>
-                            Sposta nel Backlog
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  }
-                </div>
-              } @else {
-                <div class="empty-state-wrapper">
-                  <app-empty-state
-                    materialIcon="event_note"
-                    title="Giorno {{ selectedDay() }} libero"
-                    description="Nessuna tappa pianificata per questo giorno. Aggiungi attività o posti dove mangiare."
-                    actionLabel="Pianifica dalle attività"
-                    actionMaterialIcon="add"
-                    (action)="openPlanFromBacklogModal()">
-                  </app-empty-state>
-                </div>
-              }
-
-              <button type="button" class="new-trip-btn" (click)="openPlanFromBacklogModal()">
-                <span class="material-symbols-outlined">add</span>
-                Aggiungi tappa al Giorno {{ selectedDay() }}
-              </button>
-            </div>
-          </div>
-
-        </div>
-      }
-
-      <!-- TAB 2: FOOD & DRINK -->
-      @if (activeTab() === 'food') {
-        <div class="main-grid animate-fade-in">
-          <!-- Left Column (3fr): Food Places -->
-          <div class="section-card card">
-            <div class="section-header">
-              <span class="material-symbols-outlined section-icon">restaurant</span>
-              <div>
-                <h2 class="section-title">Posti Dove Mangiare</h2>
-                <p class="section-desc">Ristoranti, caffè, street food e tapas salvati per questo viaggio.</p>
-              </div>
-              <span class="trip-counter">{{ filteredPlacesToEat().length }}</span>
-            </div>
-
-            <!-- Search bar -->
-            <div class="search-input-wrapper">
-              <span class="material-symbols-outlined search-icon">search</span>
-              <input
-                type="text"
-                class="form-input search-input"
-                placeholder="Cerca locali, piatti o specialità..."
-                [ngModel]="foodSearchQuery()"
-                (ngModelChange)="foodSearchQuery.set($event)">
-              @if (foodSearchQuery()) {
-                <button type="button" class="clear-search-btn" (click)="foodSearchQuery.set('')">
-                  <span class="material-symbols-outlined">close</span>
-                </button>
-              }
-            </div>
-
-            <!-- Categories filter pills -->
-            <div class="filter-pills-row no-scrollbar">
-              <button
-                type="button"
-                class="filter-pill-btn"
-                [class.filter-pill-btn--active]="selectedFoodFilter() === 'all'"
-                (click)="selectedFoodFilter.set('all')">
-                Tutti ({{ t.placesToEat?.length || 0 }})
-              </button>
-              <button
-                type="button"
-                class="filter-pill-btn"
-                [class.filter-pill-btn--active]="selectedFoodFilter() === 'breakfast'"
-                (click)="selectedFoodFilter.set('breakfast')">
-                Colazione
-              </button>
-              <button
-                type="button"
-                class="filter-pill-btn"
-                [class.filter-pill-btn--active]="selectedFoodFilter() === 'lunch'"
-                (click)="selectedFoodFilter.set('lunch')">
-                Pranzo
-              </button>
-              <button
-                type="button"
-                class="filter-pill-btn"
-                [class.filter-pill-btn--active]="selectedFoodFilter() === 'dinner'"
-                (click)="selectedFoodFilter.set('dinner')">
-                Cena
-              </button>
-              <button
-                type="button"
-                class="filter-pill-btn"
-                [class.filter-pill-btn--active]="selectedFoodFilter() === 'aperitivo'"
-                (click)="selectedFoodFilter.set('aperitivo')">
-                Aperitivo
-              </button>
-              <button
-                type="button"
-                class="filter-pill-btn"
-                [class.filter-pill-btn--active]="selectedFoodFilter() === 'snack'"
-                (click)="selectedFoodFilter.set('snack')">
-                Street Food
-              </button>
-            </div>
-
-            <!-- Food Feed -->
-            @if (filteredPlacesToEat().length > 0) {
-              <div class="items-cards-feed">
-                @for (place of filteredPlacesToEat(); track place.id) {
-                  <div class="item-feed-card">
-                    <div class="item-feed-header">
-                      <div class="item-feed-title-block">
-                        <h3 class="item-feed-title">{{ place.name }}</h3>
-                        @if (place.address) {
-                          <p class="item-feed-address">
-                            <span class="material-symbols-outlined">location_on</span>
-                            {{ place.address }}
-                          </p>
-                        }
-                      </div>
-                      <span class="price-range-badge">{{ place.priceRange }}</span>
-                    </div>
-
-                    <div class="item-feed-chips">
-                      <span class="meta-pill meta-pill--category">
-                        <span class="material-symbols-outlined" style="font-size:14px">restaurant</span>
-                        {{ getFoodCategoryLabel(place.category) }}
-                      </span>
-                      @if (place.assignedDay) {
-                        <span class="meta-pill meta-pill--day">
-                          <span class="material-symbols-outlined" style="font-size:14px">calendar_today</span>
-                          Giorno {{ place.assignedDay }}
-                        </span>
-                      } @else {
-                        <span class="meta-pill meta-pill--backlog">Nel backlog</span>
-                      }
-                    </div>
-
-                    @if (place.specialties) {
-                      <div class="specialties-highlight-box">
-                        <span class="specialties-title">Specialità della casa</span>
-                        <p class="specialties-desc">{{ place.specialties }}</p>
-                      </div>
-                    }
-
-                    @if (place.notes) {
-                      <p class="item-feed-notes">{{ place.notes }}</p>
-                    }
-
-                    <div class="item-feed-footer">
-                      <a [href]="getNavigationUrl(place.name, place.address)" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
-                        <span class="material-symbols-outlined" style="font-size:16px">directions_car</span>
-                        Naviga
-                      </a>
-                      <div class="item-feed-footer-actions">
-                        <button type="button" class="btn btn-secondary btn-sm" (click)="openAssignDayModal(place, 'food')">
-                          <span class="material-symbols-outlined" style="font-size:16px">calendar_add_on</span>
-                          {{ place.assignedDay ? 'Giorno ' + place.assignedDay : 'Pianifica' }}
-                        </button>
-                        <button type="button" class="btn-delete-ghost" (click)="deletePlaceToEat(place.id)" title="Elimina locale">
-                          <span class="material-symbols-outlined" style="font-size:18px">delete</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                }
-              </div>
-            } @else {
-              <div class="empty-state-wrapper">
-                <app-empty-state
-                  materialIcon="restaurant"
-                  title="Nessun locale trovato"
-                  description="Aggiungi nuovi ristoranti o modifica i filtri di ricerca."
-                  actionLabel="Aggiungi Locale"
-                  actionMaterialIcon="add"
-                  (action)="openAddPlaceModal()">
-                </app-empty-state>
-              </div>
-            }
-
-            <button type="button" class="new-trip-btn" (click)="openAddPlaceModal()">
-              <span class="material-symbols-outlined">add</span>
-              Aggiungi Locale o Ristorante
-            </button>
-          </div>
-
-          <!-- Right Column: Food Guide & Stats -->
-          <div class="right-col">
-            <div class="section-card card">
-              <div class="section-header">
-                <span class="material-symbols-outlined section-icon">local_cafe</span>
-                <div>
-                  <h2 class="section-title">Guida Gastronomica</h2>
-                  <p class="section-desc">Consigli e locali salvati a {{ t.destination }}.</p>
-                </div>
-              </div>
-
-              <div class="food-summary-content">
-                <div class="day-stats-grid">
-                  <div class="stat-card">
-                    <span class="stat-number">{{ countFoodByCategory('lunch') }}</span>
-                    <span class="stat-label">Pranzi</span>
-                  </div>
-                  <div class="stat-card">
-                    <span class="stat-number">{{ countFoodByCategory('dinner') }}</span>
-                    <span class="stat-label">Cene</span>
-                  </div>
-                  <div class="stat-card">
-                    <span class="stat-number">{{ countFoodByCategory('aperitivo') + countFoodByCategory('snack') }}</span>
-                    <span class="stat-label">Street / Tapas</span>
-                  </div>
-                </div>
-
-                <button type="button" class="btn btn-primary w-full mt-3" (click)="openAddPlaceModal()">
-                  <span class="material-symbols-outlined">add</span>
-                  Aggiungi Locale
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      }
-
-      <!-- TAB 3: LOGISTICA -->
-      @if (activeTab() === 'flights') {
-        <div class="main-grid animate-fade-in">
-          <!-- Left Column (3fr): Logistics Details -->
-          <div class="section-card card">
-            <div class="section-header">
-              <span class="material-symbols-outlined section-icon">luggage</span>
-              <div>
-                <h2 class="section-title">Logistica & Spostamenti</h2>
-                <p class="section-desc">Dettagli di volo, alloggio e trasporti locali per il viaggio.</p>
-              </div>
-            </div>
-
-            <!-- Logistics sub-tabs -->
-            <div class="filter-pills-row no-scrollbar">
-              <button
-                type="button"
-                class="filter-pill-btn"
-                [class.filter-pill-btn--active]="activeLogisticsTab() === 'flights'"
-                (click)="activeLogisticsTab.set('flights')">
-                <span class="material-symbols-outlined" style="font-size:16px">flight_takeoff</span>
-                Voli A/R
-              </button>
-              <button
-                type="button"
-                class="filter-pill-btn"
-                [class.filter-pill-btn--active]="activeLogisticsTab() === 'hotel'"
-                (click)="activeLogisticsTab.set('hotel')">
-                <span class="material-symbols-outlined" style="font-size:16px">hotel</span>
-                Alloggio
-              </button>
-              <button
-                type="button"
-                class="filter-pill-btn"
-                [class.filter-pill-btn--active]="activeLogisticsTab() === 'transfers'"
-                (click)="activeLogisticsTab.set('transfers')">
-                <span class="material-symbols-outlined" style="font-size:16px">train</span>
-                Trasporti
-              </button>
-            </div>
-
-            <!-- Subtab Voli -->
-            @if (activeLogisticsTab() === 'flights') {
-              <div class="logistics-content-block">
-                <div class="sub-section-header">
-                  <h3 class="sub-section-title">Biglietti e Voli</h3>
-                  <button type="button" class="btn btn-secondary btn-sm" (click)="openEditFlightsModal()">
-                    <span class="material-symbols-outlined" style="font-size:16px">edit</span>
-                    Modifica Voli
-                  </button>
-                </div>
-
-                <!-- Boarding Pass Outbound -->
-                <div class="boarding-pass-card">
-                  <div class="boarding-pass-header boarding-pass-header--outbound">
-                    <div class="boarding-pass-badge">
-                      <span class="material-symbols-outlined" style="font-size:16px">flight_takeoff</span>
-                      <span>Volo di Andata</span>
-                    </div>
-                    <span class="boarding-pass-num">{{ t.flights?.outboundFlight?.flightNumber || 'Da definire' }}</span>
-                  </div>
-
-                  <div class="boarding-pass-body">
-                    <div class="flight-route-flex">
-                      <div class="flight-city-col">
-                        <span class="airport-code-large">{{ getAirportCode(t.flights?.outboundFlight?.departureAirport) }}</span>
-                        <span class="airport-city-name">{{ t.flights?.outboundFlight?.departureCity || 'Partenza' }}</span>
-                        <span class="flight-time-val">{{ formatFlightDateTime(t.flights?.outboundFlight?.departureDateTime) }}</span>
-                      </div>
-
-                      <div class="flight-path-col">
-                        <span class="flight-airline-name">{{ t.flights?.outboundFlight?.airline || 'Compagnia' }}</span>
-                        <div class="flight-line-track">
-                          <span class="material-symbols-outlined flight-plane-icon">flight</span>
-                        </div>
-                      </div>
-
-                      <div class="flight-city-col flight-city-col--right">
-                        <span class="airport-code-large">{{ getAirportCode(t.flights?.outboundFlight?.arrivalAirport) }}</span>
-                        <span class="airport-city-name">{{ t.flights?.outboundFlight?.arrivalCity || 'Arrivo' }}</span>
-                        <span class="flight-time-val">{{ formatFlightDateTime(t.flights?.outboundFlight?.arrivalDateTime) }}</span>
-                      </div>
-                    </div>
-
-                    @if (t.flights?.outboundFlight?.bookingReference) {
-                      <div class="pnr-strip">
-                        <span class="pnr-label">Codice PNR / Prenotazione</span>
-                        <strong class="pnr-code">{{ t.flights?.outboundFlight?.bookingReference }}</strong>
-                      </div>
-                    }
-                  </div>
-                </div>
-
-                <!-- Boarding Pass Return -->
-                <div class="boarding-pass-card mt-3">
-                  <div class="boarding-pass-header boarding-pass-header--return">
-                    <div class="boarding-pass-badge">
-                      <span class="material-symbols-outlined" style="font-size:16px">flight_land</span>
-                      <span>Volo di Ritorno</span>
-                    </div>
-                    <span class="boarding-pass-num">{{ t.flights?.returnFlight?.flightNumber || 'Da definire' }}</span>
-                  </div>
-
-                  <div class="boarding-pass-body">
-                    <div class="flight-route-flex">
-                      <div class="flight-city-col">
-                        <span class="airport-code-large">{{ getAirportCode(t.flights?.returnFlight?.departureAirport) }}</span>
-                        <span class="airport-city-name">{{ t.flights?.returnFlight?.departureCity || 'Partenza' }}</span>
-                        <span class="flight-time-val">{{ formatFlightDateTime(t.flights?.returnFlight?.departureDateTime) }}</span>
-                      </div>
-
-                      <div class="flight-path-col">
-                        <span class="flight-airline-name">{{ t.flights?.returnFlight?.airline || 'Compagnia' }}</span>
-                        <div class="flight-line-track">
-                          <span class="material-symbols-outlined flight-plane-icon">flight</span>
-                        </div>
-                      </div>
-
-                      <div class="flight-city-col flight-city-col--right">
-                        <span class="airport-code-large">{{ getAirportCode(t.flights?.returnFlight?.arrivalAirport) }}</span>
-                        <span class="airport-city-name">{{ t.flights?.returnFlight?.arrivalCity || 'Arrivo' }}</span>
-                        <span class="flight-time-val">{{ formatFlightDateTime(t.flights?.returnFlight?.arrivalDateTime) }}</span>
-                      </div>
-                    </div>
-
-                    @if (t.flights?.returnFlight?.bookingReference) {
-                      <div class="pnr-strip">
-                        <span class="pnr-label">Codice PNR / Prenotazione</span>
-                        <strong class="pnr-code">{{ t.flights?.returnFlight?.bookingReference }}</strong>
-                      </div>
-                    }
-                  </div>
-                </div>
-              </div>
-            }
-
-            <!-- Subtab Alloggio -->
-            @if (activeLogisticsTab() === 'hotel') {
-              <div class="logistics-content-block">
-                <div class="sub-section-header">
-                  <h3 class="sub-section-title">Struttura & Prenotazione</h3>
-                  <button type="button" class="btn btn-secondary btn-sm" (click)="openEditAccommodationModal()">
-                    <span class="material-symbols-outlined" style="font-size:16px">edit</span>
-                    Modifica Alloggio
-                  </button>
-                </div>
-
-                <div class="hotel-details-card">
-                  <div class="hotel-details-header">
-                    <div class="hotel-icon-badge">
-                      <span class="material-symbols-outlined">apartment</span>
-                    </div>
-                    <div>
-                      <h3 class="hotel-title">{{ t.accommodation?.name || 'Struttura non specificata' }}</h3>
-                      @if (t.accommodation?.address) {
-                        <p class="hotel-address">
-                          <span class="material-symbols-outlined">location_on</span>
-                          {{ t.accommodation?.address }}
-                        </p>
-                      }
-                    </div>
-                  </div>
-
-                  <div class="hotel-check-grid">
-                    <div class="check-box check-box--in">
-                      <div class="check-box-header">
-                        <span class="material-symbols-outlined">key</span>
-                        <span>Check-in</span>
-                      </div>
-                      <strong class="check-box-date">{{ t.accommodation?.checkInDate || t.startDate }}</strong>
-                      <span class="check-box-hour">dalle ore {{ t.accommodation?.checkInTime || '14:00' }}</span>
-                    </div>
-
-                    <div class="check-box check-box--out">
-                      <div class="check-box-header">
-                        <span class="material-symbols-outlined">door_open</span>
-                        <span>Check-out</span>
-                      </div>
-                      <strong class="check-box-date">{{ t.accommodation?.checkOutDate || t.endDate }}</strong>
-                      <span class="check-box-hour">entro le {{ t.accommodation?.checkOutTime || '11:00' }}</span>
-                    </div>
-                  </div>
-
-                  @if (t.accommodation?.bookingCode) {
-                    <div class="pnr-strip">
-                      <span class="pnr-label">Codice Prenotazione</span>
-                      <strong class="pnr-code">{{ t.accommodation?.bookingCode }}</strong>
-                    </div>
-                  }
-
-                  @if (t.accommodation?.notes) {
-                    <div class="notes-banner">
-                      <span class="material-symbols-outlined">info</span>
-                      <p>{{ t.accommodation?.notes }}</p>
-                    </div>
-                  }
-
-                  <a [href]="getNavigationUrl(t.accommodation?.name || '', t.accommodation?.address || '')" target="_blank" rel="noopener" class="btn btn-primary w-full">
-                    <span class="material-symbols-outlined">directions_car</span>
-                    Naviga all'Hotel
-                  </a>
-                </div>
-              </div>
-            }
-
-            <!-- Subtab Trasporti -->
-            @if (activeLogisticsTab() === 'transfers') {
-              <div class="logistics-content-block">
-                <div class="sub-section-header">
-                  <h3 class="sub-section-title">Spostamenti Aeroporto → Hotel</h3>
-                  <button type="button" class="btn btn-secondary btn-sm" (click)="openEditTransfersModal()">
-                    <span class="material-symbols-outlined" style="font-size:16px">edit</span>
-                    Modifica Spostamenti
-                  </button>
-                </div>
-
-                <div class="transfers-card">
-                  <div class="transfer-highlights-grid">
-                    <div class="highlight-item">
-                      <span class="highlight-label">Opzione Consigliata</span>
-                      <strong class="highlight-value">
-                        <span class="material-symbols-outlined" style="vertical-align:middle;font-size:18px;color:var(--wb-primary)">
-                          {{ getTransferIcon(t.transfers?.recommendedOption) }}
-                        </span>
-                        {{ getTransferLabel(t.transfers?.recommendedOption) }}
-                      </strong>
-                    </div>
-
-                    <div class="highlight-item">
-                      <span class="highlight-label">Durata Stimata</span>
-                      <strong class="highlight-value">{{ t.transfers?.estimatedDuration || 'N/A' }}</strong>
-                    </div>
-
-                    <div class="highlight-item">
-                      <span class="highlight-label">Costo Medio</span>
-                      <strong class="highlight-value">{{ t.transfers?.estimatedCost || 'N/A' }}</strong>
-                    </div>
-                  </div>
-
-                  @if (t.transfers?.passDetails) {
-                    <div class="transfer-info-card">
-                      <span class="material-symbols-outlined info-icon">confirmation_number</span>
-                      <div>
-                        <h4 class="info-title">Abbonamenti & Pass</h4>
-                        <p class="info-desc">{{ t.transfers?.passDetails }}</p>
-                      </div>
-                    </div>
-                  }
-
-                  @if (t.transfers?.instructions) {
-                    <div class="transfer-info-card">
-                      <span class="material-symbols-outlined info-icon">route</span>
-                      <div>
-                        <h4 class="info-title">Indicazioni di Percorso</h4>
-                        <p class="info-desc">{{ t.transfers?.instructions }}</p>
-                      </div>
-                    </div>
-                  }
-
-                  @if (t.transfers?.taxiVsUberAdvice) {
-                    <div class="transfer-info-card transfer-info-card--warning">
-                      <span class="material-symbols-outlined info-icon">warning</span>
-                      <div>
-                        <h4 class="info-title">Taxi vs Uber</h4>
-                        <p class="info-desc">{{ t.transfers?.taxiVsUberAdvice }}</p>
-                      </div>
-                    </div>
-                  }
-                </div>
-              </div>
-            }
-          </div>
-
-          <!-- Right Column: Map Preview for Hotel or Travel Tips -->
-          <div class="right-col">
-            @if (t.accommodation?.coordinates) {
-              <div class="section-card card">
-                <div class="section-header">
-                  <span class="material-symbols-outlined section-icon">hotel</span>
-                  <div>
-                    <h2 class="section-title">Posizione Hotel</h2>
-                    <p class="section-desc">{{ t.accommodation?.name }}</p>
-                  </div>
-                </div>
-
-                <div class="map-container-box">
-                  <app-interactive-map
-                    [stops]="getHotelMapStop()"
-                    [defaultCenter]="[t.accommodation!.coordinates!.lat, t.accommodation!.coordinates!.lng]"
-                    [defaultZoom]="15">
-                  </app-interactive-map>
-                </div>
-              </div>
-            } @else {
-              <div class="section-card card">
-                <div class="section-header">
-                  <span class="material-symbols-outlined section-icon">info</span>
-                  <div>
-                    <h2 class="section-title">Consigli di Viaggio</h2>
-                  </div>
-                </div>
-                <p style="font-size:0.875rem;line-height:1.5;color:var(--wb-text-secondary)">
-                  Tieni a portata di mano i codici PNR e verifica in anticipo i documenti necessari per l'imbarco e il check-in.
-                </p>
-              </div>
-            }
-          </div>
-        </div>
-      }
-
-      <!-- TAB 4: ATTIVITÀ -->
-      @if (activeTab() === 'activities') {
-        <div class="main-grid animate-fade-in">
-          <!-- Left Column (3fr): Activities List -->
-          <div class="section-card card">
-            <div class="section-header">
-              <span class="material-symbols-outlined section-icon">explore</span>
-              <div>
-                <h2 class="section-title">Cose da Vedere & Fare</h2>
-                <p class="section-desc">Musei, tour, monumenti ed esperienze salvate per questo viaggio.</p>
-              </div>
-              <span class="trip-counter">{{ filteredActivities().length }}</span>
-            </div>
-
-            <!-- Search input -->
-            <div class="search-input-wrapper">
-              <span class="material-symbols-outlined search-icon">search</span>
-              <input
-                type="text"
-                class="form-input search-input"
-                placeholder="Cerca attrazioni, musei, luoghi..."
-                [ngModel]="activitySearchQuery()"
-                (ngModelChange)="activitySearchQuery.set($event)">
-              @if (activitySearchQuery()) {
-                <button type="button" class="clear-search-btn" (click)="activitySearchQuery.set('')">
-                  <span class="material-symbols-outlined">close</span>
-                </button>
-              }
-            </div>
-
-            @if (filteredActivities().length > 0) {
-              <div class="items-cards-feed">
-                @for (act of filteredActivities(); track act.id) {
-                  <div class="item-feed-card">
-                    <div class="item-feed-header">
-                      <div class="item-feed-title-block">
-                        <h3 class="item-feed-title">{{ act.name }}</h3>
-                        @if (act.address) {
-                          <p class="item-feed-address">
-                            <span class="material-symbols-outlined">location_on</span>
-                            {{ act.address }}
-                          </p>
-                        }
-                      </div>
-                      @if (act.assignedDay) {
-                        <span class="meta-pill meta-pill--day">Giorno {{ act.assignedDay }}</span>
-                      } @else {
-                        <span class="meta-pill meta-pill--backlog">Nel backlog</span>
-                      }
-                    </div>
-
-                    <div class="item-feed-chips">
-                      <span class="meta-pill meta-pill--category">
-                        {{ getActivityCategoryLabel(act.category) }}
-                      </span>
-                      @if (act.ticketsRequired) {
-                        <span class="meta-pill meta-pill--price">
-                          Biglietto {{ act.ticketPrice ? '€' + act.ticketPrice : 'Richiesto' }}
-                        </span>
-                      } @else {
-                        <span class="meta-pill meta-pill--free">Ingresso Gratuito</span>
-                      }
-                      @if (act.bookingRequired) {
-                        <span class="meta-pill meta-pill--booking">Prenotazione Anticipata</span>
-                      }
-                      @if (act.openingHours) {
-                        <span class="meta-pill meta-pill--hours">{{ act.openingHours }}</span>
-                      }
-                    </div>
-
-                    @if (act.notes) {
-                      <p class="item-feed-notes">{{ act.notes }}</p>
-                    }
-
-                    <div class="item-feed-footer">
-                      <a [href]="getNavigationUrl(act.name, act.address)" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
-                        <span class="material-symbols-outlined" style="font-size:16px">directions_car</span>
-                        Naviga
-                      </a>
-                      <div class="item-feed-footer-actions">
-                        <button type="button" class="btn btn-secondary btn-sm" (click)="openAssignDayModal(act, 'activity')">
-                          <span class="material-symbols-outlined" style="font-size:16px">calendar_add_on</span>
-                          {{ act.assignedDay ? 'Giorno ' + act.assignedDay : 'Pianifica' }}
-                        </button>
-                        <button type="button" class="btn-delete-ghost" (click)="deleteActivity(act.id)" title="Elimina attività">
-                          <span class="material-symbols-outlined" style="font-size:18px">delete</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                }
-              </div>
-            } @else {
-              <div class="empty-state-wrapper">
-                <app-empty-state
-                  materialIcon="explore"
-                  title="Nessuna attrazione trovata"
-                  description="Aggiungi monumenti, musei o tour da fare a destinazione."
-                  actionLabel="Aggiungi Attrazione"
-                  actionMaterialIcon="add"
-                  (action)="openAddActivityModal()">
-                </app-empty-state>
-              </div>
-            }
-
-            <button type="button" class="new-trip-btn" (click)="openAddActivityModal()">
-              <span class="material-symbols-outlined">add</span>
-              Aggiungi Attrazione o Esperienza
-            </button>
-          </div>
-
-          <!-- Right Column: Summary & CTA -->
-          <div class="right-col">
-            <div class="section-card card">
-              <div class="section-header">
-                <span class="material-symbols-outlined section-icon">tour</span>
-                <div>
-                  <h2 class="section-title">Riepilogo Attività</h2>
-                </div>
-              </div>
-
-              <div class="day-stats-grid">
-                <div class="stat-card">
-                  <span class="stat-number">{{ t.activities?.length || 0 }}</span>
-                  <span class="stat-label">Totale salvate</span>
-                </div>
-                <div class="stat-card">
-                  <span class="stat-number">{{ countAssignedActivities() }}</span>
-                  <span class="stat-label">In programma</span>
-                </div>
-                <div class="stat-card">
-                  <span class="stat-number">{{ countBookingRequiredActivities() }}</span>
-                  <span class="stat-label">Da prenotare</span>
-                </div>
-              </div>
-
-              <button type="button" class="btn btn-primary w-full mt-3" (click)="openAddActivityModal()">
-                <span class="material-symbols-outlined">add</span>
-                Aggiungi Attrazione
-              </button>
-            </div>
-          </div>
-        </div>
+      @switch (activeTab()) {
+        @case ('itinerary') {
+          <app-trip-itinerary
+            [tripDays]="tripDaysNumbers()"
+            [selectedDay]="selectedDay()"
+            [timelineItems]="selectedDayTimelineItems()"
+            [mapStops]="selectedDayMapStops()"
+            [mapCenter]="mapCenter()"
+            [dayFoodCount]="selectedDayFoodCount()"
+            [dayActivityCount]="selectedDayActivityCount()"
+            [startDate]="t.startDate"
+            (daySelected)="selectedDay.set($event)"
+            (addStep)="openPlanFromBacklogModal()"
+            (unassignItem)="unassignFromDay($event)" />
+        }
+
+        @case ('food') {
+          <app-trip-food-tab
+            [places]="t.placesToEat"
+            [activities]="t.activities"
+            [mapCenter]="mapCenter()"
+            [(searchQuery)]="foodSearchQuery"
+            [(filter)]="selectedFoodFilter"
+            (addPlace)="isPlaceModalOpen.set(true)"
+            (assignPlace)="openAssignDayModal($event, 'food')"
+            (deletePlace)="deletePlaceToEat($event)" />
+        }
+
+        @case ('flights') {
+          <app-trip-logistics-tab
+            [trip]="t"
+            [(subTab)]="activeLogisticsTab"
+            (editFlights)="isFlightsModalOpen.set(true)"
+            (editHotel)="isAccommodationModalOpen.set(true)"
+            (editTransfers)="isTransfersModalOpen.set(true)" />
+        }
+
+        @case ('expenses') {
+          <app-trip-expenses-tab
+            [trip]="t"
+            [members]="expenseMembers()"
+            [currentUserId]="currentUserId()"
+            (addExpense)="openExpenseModal()"
+            (editExpense)="openExpenseModal($event)"
+            (deleteExpense)="deleteExpense($event)"
+            (settle)="settleTransfer($event)" />
+        }
+
+        @case ('activities') {
+          <app-trip-activities-tab
+            [activities]="t.activities"
+            [(searchQuery)]="activitySearchQuery"
+            (addActivity)="isActivityModalOpen.set(true)"
+            (assignActivity)="openAssignDayModal($event, 'activity')"
+            (deleteActivity)="deleteActivity($event)" />
+        }
       }
 
     } @else {
@@ -896,392 +142,50 @@
   </div>
 </div>
 
-<!-- =====================================================================
-     MODALS
-     ===================================================================== -->
-
-<!-- Modal 1: Add/Edit Activity -->
-<app-modal
+<!-- Modals -->
+<app-trip-activity-modal
   [isOpen]="isActivityModalOpen()"
-  title="Aggiungi Attrazione / Cosa da Vedere"
-  icon="account_balance"
-  (close)="isActivityModalOpen.set(false)">
+  (closed)="isActivityModalOpen.set(false)"
+  (saved)="saveActivity($event)" />
 
-  <form [formGroup]="activityForm" (ngSubmit)="saveActivity()">
-    <div class="form-group">
-      <label class="form-label" for="act_name">Nome Attrazione / Luogo *</label>
-      <input type="text" id="act_name" formControlName="name" class="form-input" placeholder="Es. Museo del Prado, Sagrada Família...">
-    </div>
-
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label" for="act_category">Categoria *</label>
-        <select id="act_category" formControlName="category" class="form-select">
-          <option value="monument">Monumento</option>
-          <option value="museum">Museo</option>
-          <option value="nature">Natura / Parco</option>
-          <option value="experience">Esperienza / Tour</option>
-          <option value="shopping">Shopping / Mercato</option>
-          <option value="other">Altro</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="act_address">Indirizzo / Posizione</label>
-        <input type="text" id="act_address" formControlName="address" class="form-input" placeholder="Es. Carrer de Mallorca 401">
-      </div>
-    </div>
-
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Servono Biglietti?</label>
-        <div class="radio-toggle-group">
-          <label class="radio-label">
-            <input type="radio" formControlName="ticketsRequired" [value]="true"> Sì
-          </label>
-          <label class="radio-label">
-            <input type="radio" formControlName="ticketsRequired" [value]="false"> No / Gratuito
-          </label>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="act_price">Prezzo Biglietto (€)</label>
-        <input type="number" id="act_price" formControlName="ticketPrice" class="form-input" placeholder="Es. 26">
-      </div>
-    </div>
-
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Da Prenotare in Anticipo?</label>
-        <div class="radio-toggle-group">
-          <label class="radio-label">
-            <input type="radio" formControlName="bookingRequired" [value]="true"> Sì
-          </label>
-          <label class="radio-label">
-            <input type="radio" formControlName="bookingRequired" [value]="false"> No
-          </label>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="act_bookingUrl">Link Prenotazione</label>
-        <input type="url" id="act_bookingUrl" formControlName="bookingUrl" class="form-input" placeholder="https://...">
-      </div>
-    </div>
-
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label" for="act_hours">Orari di Apertura</label>
-        <input type="text" id="act_hours" formControlName="openingHours" class="form-input" placeholder="Es. 09:00 - 20:00">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="act_closing">Giorni di Chiusura</label>
-        <input type="text" id="act_closing" formControlName="closingDays" class="form-input" placeholder="Es. Chiuso il Lunedì">
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="act_notes">Note & Consigli</label>
-      <textarea id="act_notes" formControlName="notes" class="form-textarea" rows="2" placeholder="Es. Audioguida consigliata..."></textarea>
-    </div>
-  </form>
-
-  <div modal-footer>
-    <button type="button" class="btn btn-secondary" (click)="isActivityModalOpen.set(false)">Annulla</button>
-    <button type="button" class="btn btn-primary" [disabled]="activityForm.invalid" (click)="saveActivity()">Salva Attrazione</button>
-  </div>
-</app-modal>
-
-<!-- Modal 2: Add/Edit Place to Eat -->
-<app-modal
+<app-trip-place-modal
   [isOpen]="isPlaceModalOpen()"
-  title="Aggiungi Posto Dove Mangiare"
-  icon="restaurant"
-  (close)="isPlaceModalOpen.set(false)">
+  (closed)="isPlaceModalOpen.set(false)"
+  (saved)="savePlaceToEat($event)" />
 
-  <form [formGroup]="placeForm" (ngSubmit)="savePlaceToEat()">
-    <div class="form-group">
-      <label class="form-label" for="food_name">Nome del Locale / Ristorante *</label>
-      <input type="text" id="food_name" formControlName="name" class="form-input" placeholder="Es. Cervecería Catalana...">
-    </div>
+<app-trip-expense-modal
+  [isOpen]="isExpenseModalOpen()"
+  [expense]="editingExpense()"
+  [members]="expenseMembers()"
+  [currentUserId]="currentUserId()"
+  [currency]="trip()?.currency || 'EUR'"
+  (closed)="isExpenseModalOpen.set(false)"
+  (saved)="saveExpense($event)" />
 
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label" for="food_category">Tipo Pasto *</label>
-        <select id="food_category" formControlName="category" class="form-select">
-          <option value="lunch">Pranzo</option>
-          <option value="dinner">Cena</option>
-          <option value="snack">Spuntino / Street Food</option>
-          <option value="breakfast">Colazione</option>
-          <option value="aperitivo">Aperitivo / Tapas</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="food_price">Fascia di Prezzo *</label>
-        <select id="food_price" formControlName="priceRange" class="form-select">
-          <option value="€">€ (Economico)</option>
-          <option value="€€">€€ (Medio)</option>
-          <option value="€€€">€€€ (Gourmet)</option>
-          <option value="€€€€">€€€€ (Alta Cucina)</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="food_address">Indirizzo Completo</label>
-      <input type="text" id="food_address" formControlName="address" class="form-input">
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="food_specialties">Specialità & Piatti Consigliati</label>
-      <input type="text" id="food_specialties" formControlName="specialties" class="form-input">
-    </div>
-
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label" for="food_hours">Orari</label>
-        <input type="text" id="food_hours" formControlName="openingHours" class="form-input">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="food_closing">Giorni di Chiusura</label>
-        <input type="text" id="food_closing" formControlName="closingDays" class="form-input">
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="food_notes">Note & Prenotazione</label>
-      <textarea id="food_notes" formControlName="notes" class="form-textarea" rows="2"></textarea>
-    </div>
-  </form>
-
-  <div modal-footer>
-    <button type="button" class="btn btn-secondary" (click)="isPlaceModalOpen.set(false)">Annulla</button>
-    <button type="button" class="btn btn-primary" [disabled]="placeForm.invalid" (click)="savePlaceToEat()">Salva Locale</button>
-  </div>
-</app-modal>
-
-<!-- Modal 3: Assign Item to Day -->
-<app-modal
+<app-trip-assign-modal
   [isOpen]="isAssignModalOpen()"
-  title="Pianifica nel Giorno"
-  icon="event"
-  (close)="isAssignModalOpen.set(false)">
+  [itemName]="assigningItemName()"
+  [days]="tripDaysNumbers()"
+  [startDate]="trip()?.startDate"
+  [initialDay]="assignInitialDay()"
+  [initialTimeSlot]="assignInitialTimeSlot()"
+  (closed)="isAssignModalOpen.set(false)"
+  (confirmed)="confirmAssignDay($event)" />
 
-  <div class="assign-form">
-    <p class="assign-intro">Seleziona a quale giornata assegnare <strong>{{ currentAssigningItem()?.item?.name }}</strong>:</p>
-
-    <div class="form-group mt-2">
-      <label class="form-label">Scegli Giorno *</label>
-      <select [(ngModel)]="assignDayTarget" class="form-select">
-        <option [value]="0">Mantieni nel Backlog</option>
-        @for (d of tripDaysNumbers(); track d) {
-          <option [value]="d">Giorno {{ d }} ({{ getDayDateFormatted(d) }})</option>
-        }
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">Fascia Oraria</label>
-      <input type="text" [(ngModel)]="assignTimeSlot" class="form-input" placeholder="Es. 10:00 - 12:30">
-    </div>
-  </div>
-
-  <div modal-footer>
-    <button type="button" class="btn btn-secondary" (click)="isAssignModalOpen.set(false)">Annulla</button>
-    <button type="button" class="btn btn-primary" (click)="confirmAssignDay()">Conferma</button>
-  </div>
-</app-modal>
-
-<!-- Modal 4: Edit Flights -->
-<app-modal
+<app-trip-flights-modal
   [isOpen]="isFlightsModalOpen()"
-  title="Dettagli Voli A/R"
-  icon="flight"
-  maxWidth="680px"
-  (close)="isFlightsModalOpen.set(false)">
+  [flights]="trip()?.flights"
+  (closed)="isFlightsModalOpen.set(false)"
+  (saved)="saveFlights($event)" />
 
-  <form [formGroup]="flightsForm" (ngSubmit)="saveFlights()">
-    <h4 class="form-sub-header"><span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle">flight_takeoff</span> Volo di Andata</h4>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Compagnia</label>
-        <input type="text" formControlName="outAirline" class="form-input" placeholder="Es. Vueling">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Codice Volo</label>
-        <input type="text" formControlName="outFlightNum" class="form-input" placeholder="Es. VY6101">
-      </div>
-    </div>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Aeroporto Partenza</label>
-        <input type="text" formControlName="outDepAirport" class="form-input">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Data & Ora Decollo</label>
-        <input type="datetime-local" formControlName="outDepTime" class="form-input">
-      </div>
-    </div>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Aeroporto Arrivo</label>
-        <input type="text" formControlName="outArrAirport" class="form-input">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Data & Ora Atterraggio</label>
-        <input type="datetime-local" formControlName="outArrTime" class="form-input">
-      </div>
-    </div>
-
-    <h4 class="form-sub-header mt-3"><span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle">flight_land</span> Volo di Ritorno</h4>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Compagnia</label>
-        <input type="text" formControlName="retAirline" class="form-input">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Codice Volo</label>
-        <input type="text" formControlName="retFlightNum" class="form-input">
-      </div>
-    </div>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Aeroporto Partenza</label>
-        <input type="text" formControlName="retDepAirport" class="form-input">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Data & Ora Decollo</label>
-        <input type="datetime-local" formControlName="retDepTime" class="form-input">
-      </div>
-    </div>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Aeroporto Arrivo</label>
-        <input type="text" formControlName="retArrAirport" class="form-input">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Data & Ora Atterraggio</label>
-        <input type="datetime-local" formControlName="retArrTime" class="form-input">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Codice PNR</label>
-      <input type="text" formControlName="pnr" class="form-input font-mono">
-    </div>
-  </form>
-
-  <div modal-footer>
-    <button type="button" class="btn btn-secondary" (click)="isFlightsModalOpen.set(false)">Annulla</button>
-    <button type="button" class="btn btn-primary" (click)="saveFlights()">Salva Voli</button>
-  </div>
-</app-modal>
-
-<!-- Modal 5: Edit Transfers -->
-<app-modal
+<app-trip-transfers-modal
   [isOpen]="isTransfersModalOpen()"
-  title="Spostamenti Aeroporto → Hotel"
-  icon="subway"
-  (close)="isTransfersModalOpen.set(false)">
+  [transfers]="trip()?.transfers"
+  (closed)="isTransfersModalOpen.set(false)"
+  (saved)="saveTransfers($event)" />
 
-  <form [formGroup]="transfersForm" (ngSubmit)="saveTransfers()">
-    <div class="form-group">
-      <label class="form-label">Opzione Consigliata</label>
-      <select formControlName="recommendedOption" class="form-select">
-        <option value="bus">Bus / Navetta</option>
-        <option value="metro">Metro</option>
-        <option value="train">Treno</option>
-        <option value="taxi">Taxi</option>
-        <option value="uber">Uber / Bolt</option>
-      </select>
-    </div>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Durata Stimata</label>
-        <input type="text" formControlName="estimatedDuration" class="form-input" placeholder="Es. 35 minuti">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Costo Stimato</label>
-        <input type="text" formControlName="estimatedCost" class="form-input">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Abbonamenti & Pass</label>
-      <input type="text" formControlName="passDetails" class="form-input">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Biglietti Speciali</label>
-      <input type="text" formControlName="specialTickets" class="form-input">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Taxi vs Uber</label>
-      <textarea formControlName="taxiVsUberAdvice" class="form-textarea" rows="2"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Indicazioni Passo-Passo</label>
-      <textarea formControlName="instructions" class="form-textarea" rows="3"></textarea>
-    </div>
-  </form>
-
-  <div modal-footer>
-    <button type="button" class="btn btn-secondary" (click)="isTransfersModalOpen.set(false)">Annulla</button>
-    <button type="button" class="btn btn-primary" (click)="saveTransfers()">Salva</button>
-  </div>
-</app-modal>
-
-<!-- Modal 6: Edit Accommodation -->
-<app-modal
+<app-trip-accommodation-modal
   [isOpen]="isAccommodationModalOpen()"
-  title="Dettagli Alloggio & Hotel"
-  icon="hotel"
-  (close)="isAccommodationModalOpen.set(false)">
-
-  <form [formGroup]="accommodationForm" (ngSubmit)="saveAccommodation()">
-    <div class="form-group">
-      <label class="form-label">Nome Hotel / Struttura *</label>
-      <input type="text" formControlName="name" class="form-input">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Indirizzo Completo *</label>
-      <input type="text" formControlName="address" class="form-input">
-    </div>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Data Check-in</label>
-        <div class="d-flex gap-1">
-          <input type="date" formControlName="checkInDate" class="form-input">
-          <input type="time" formControlName="checkInTime" class="form-input" style="max-width: 110px;">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Data Check-out</label>
-        <div class="d-flex gap-1">
-          <input type="date" formControlName="checkOutDate" class="form-input">
-          <input type="time" formControlName="checkOutTime" class="form-input" style="max-width: 110px;">
-        </div>
-      </div>
-    </div>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Codice Prenotazione</label>
-        <input type="text" formControlName="bookingCode" class="form-input font-mono">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Telefono / Email</label>
-        <input type="text" formControlName="phoneOrContact" class="form-input">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Note</label>
-      <textarea formControlName="notes" class="form-textarea" rows="2"></textarea>
-    </div>
-  </form>
-
-  <div modal-footer>
-    <button type="button" class="btn btn-secondary" (click)="isAccommodationModalOpen.set(false)">Annulla</button>
-    <button type="button" class="btn btn-primary" (click)="saveAccommodation()">Salva Alloggio</button>
-  </div>
-</app-modal>
+  [trip]="trip()"
+  (closed)="isAccommodationModalOpen.set(false)"
+  (saved)="saveAccommodation($event)" />

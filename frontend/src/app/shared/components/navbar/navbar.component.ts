@@ -1,7 +1,5 @@
-import { Component, HostListener, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { GroupService } from '../../../core/services/group.service';
 import { I18nService } from '../../../core/services/i18n.service';
@@ -11,7 +9,8 @@ import { GroupCreateModalComponent } from '../../../features/groups/group-create
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslatePipe, GroupCreateModalComponent],
+  imports: [RouterModule, GroupCreateModalComponent],
+  host: { '(document:click)': 'clickOutside()' },
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
@@ -27,7 +26,6 @@ export class NavbarComponent {
   public isNotifPanelOpen = signal(false);
   public isCreateGroupModalOpen = signal(false);
 
-  @HostListener('document:click')
   clickOutside(): void {
     this.isGroupMenuOpen.set(false);
     this.isUserMenuOpen.set(false);

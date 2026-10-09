@@ -8,210 +8,26 @@
 
     @if (group(); as g) {
 
-      <!-- Hero -->
-      <div class="group-hero card">
-        <div class="group-hero-top">
-          <div #heroIcon class="group-hero-icon"
-               [class.group-hero-icon--image]="isImageIcon(g.icon)">
-            @if (isImageIcon(g.icon)) {
-              <img [src]="g.icon" class="group-hero-img" alt="">
-            } @else {
-              {{ g.icon }}
-            }
-          </div>
-          <div class="group-hero-info">
-            <h1 class="group-hero-name">{{ g.name }}</h1>
-            @if (g.description) {
-              <p class="group-hero-desc">{{ g.description }}</p>
-            }
-            <dl class="group-hero-meta">
-              @if (groupCreator(); as creator) {
-                <div class="hero-meta-row">
-                  <span class="material-symbols-outlined hero-meta-icon">person</span>
-                  <dt class="hero-meta-label">{{ 'groups.meta_created_by' | translate }}</dt>
-                  <dd class="hero-meta-value">{{ creator.name }}</dd>
-                </div>
-              }
-              <div class="hero-meta-row">
-                <span class="material-symbols-outlined hero-meta-icon">calendar_today</span>
-                <dt class="hero-meta-label">{{ 'groups.meta_created_on' | translate }}</dt>
-                <dd class="hero-meta-value">{{ g.createdAt | date:'d MMM y' }}</dd>
-              </div>
-            </dl>
-          </div>
-          <div class="hero-actions">
-            @if (isCurrentUserAdmin()) {
-              <button type="button" class="btn btn-secondary" (click)="isEditModalOpen.set(true)">
-                <span class="material-symbols-outlined" style="font-size:18px">edit</span>
-                {{ 'groups.edit_btn' | translate }}
-              </button>
-            }
-            <button type="button" class="btn btn-primary hero-share-btn" (click)="openShareModal()">
-              <span class="material-symbols-outlined" style="font-size:18px">person_add</span>
-              {{ 'groups.invite_btn' | translate }}
-            </button>
-            <a [routerLink]="['/groups', g.id, 'settings']" class="btn btn-secondary btn-icon-only"
-               [title]="'groups.settings_title' | translate" [attr.aria-label]="'groups.settings_title' | translate">
-              <span class="material-symbols-outlined" style="font-size:18px">settings</span>
-            </a>
-          </div>
-        </div>
-      </div>
+      <app-group-hero
+        [group]="g"
+        [creator]="groupCreator()"
+        [isAdmin]="isCurrentUserAdmin()"
+        (edit)="isEditModalOpen.set(true)"
+        (invite)="shareModalVisible.set(true)" />
 
       <!-- Viaggi + Membri (two-column grid) -->
       <div class="main-grid">
 
         <!-- Viaggi (sinistra) -->
         <div class="section-card card">
-          <div class="section-header">
-            <span class="material-symbols-outlined section-icon">luggage</span>
-            <div>
-              <h2 class="section-title">{{ 'groups.trips_title' | translate }}</h2>
-            </div>
-            <span class="trip-counter">{{ groupTrips().length }}</span>
-          </div>
-
-          @if (groupTrips().length > 0) {
-            <div #tripsScroller class="trips-scroll" [class.trips-scroll--expanded]="tripsExpanded()"
-                 (scroll)="onTripsScroll($event)">
-            <div class="trips-grid">
-              @for (trip of visibleTrips(); track trip.id) {
-                <div class="trip-card"
-                   [ngClass]="'trip-card--' + tripStatus(trip)">
-                  <div class="trip-cover" [style.background-image]="'url(' + trip.coverUrl + ')'">
-                    <span class="trip-status" [ngClass]="'trip-status--' + tripStatus(trip)">
-                      <span class="material-symbols-outlined">{{ tripStatusIcon(tripStatus(trip)) }}</span>
-                      {{ 'groups.trip_status_' + tripStatus(trip) | translate }}
-                    </span>
-                  </div>
-                  <div class="trip-body">
-                    <h3 class="trip-title">{{ trip.title }}</h3>
-                    <p class="trip-place">
-                      <span class="material-symbols-outlined">location_on</span>
-                      {{ trip.destination }}{{ trip.country ? ', ' + trip.country : '' }}
-                    </p>
-                    <p class="trip-meta">
-                      <span class="material-symbols-outlined">calendar_today</span>
-                      {{ trip.startDate | date:'d MMM' }} — {{ trip.endDate | date:'d MMM y' }}
-                      <span class="trip-meta-sep">·</span>
-                      {{ 'groups.trip_days' | translate: { count: tripDays(trip) } }}
-                    </p>
-                    @if (tripStatusNote(trip); as note) {
-                      <div class="trip-note" [ngClass]="'trip-note--' + tripStatus(trip)">
-                        {{ note.key | translate: note.params }}
-                        @if (note.progress !== undefined) {
-                          <div class="trip-progress"><div class="trip-progress-fill" [style.width.%]="note.progress"></div></div>
-                        }
-                      </div>
-                    }
-                    <div class="trip-stats">
-                      <span class="trip-stat" [title]="'groups.trip_activities' | translate">
-                        <span class="material-symbols-outlined">local_activity</span>{{ trip.activities?.length ?? 0 }}
-                      </span>
-                      <span class="trip-stat" [title]="'groups.trip_places' | translate">
-                        <span class="material-symbols-outlined">restaurant</span>{{ trip.placesToEat?.length ?? 0 }}
-                      </span>
-                      @if (trip.budgetEstimate) {
-                        <span class="trip-stat trip-stat--budget">
-                          {{ trip.budgetEstimate | currency:trip.currency:'symbol':'1.0-0' }}
-                        </span>
-                      }
-                    </div>
-                    <a [routerLink]="['/trips', trip.id]" class="btn btn-secondary trip-open-btn">
-                      {{ 'groups.trip_view' | translate }}
-                      <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span>
-                    </a>
-                  </div>
-                </div>
-              }
-            </div>
-            @if (hasMoreTrips()) {
-              <div class="trips-loading"><span class="material-symbols-outlined">progress_activity</span></div>
-            }
-            </div>
-            @if (canExpandTrips()) {
-              @if (tripsExpanded()) {
-                <button type="button" class="link-btn link-btn--right" (click)="collapseTrips(tripsScroller)">
-                  {{ 'groups.trips_show_less' | translate }}
-                  <span class="material-symbols-outlined">expand_less</span>
-                </button>
-              } @else {
-                <button type="button" class="link-btn link-btn--right" (click)="expandTrips()">
-                  {{ 'groups.trips_see_all' | translate }} ({{ groupTrips().length }})
-                  <span class="material-symbols-outlined">expand_more</span>
-                </button>
-              }
-            }
-          } @else {
-            <div class="trips-empty">
-              <span class="material-symbols-outlined trips-empty-icon">flight_takeoff</span>
-              <p>{{ 'groups.trips_empty' | translate }}</p>
-            </div>
-          }
-
-          @if (groupProposals().length > 0) {
-            <div class="proposals-header">
-              <h3 class="proposals-title">{{ 'groups.proposals_title' | translate }}</h3>
-              <span class="trip-counter">{{ groupProposals().length }}</span>
-            </div>
-            <div class="trips-grid">
-              @for (trip of groupProposals(); track trip.id) {
-                <div class="trip-card">
-                  <div class="trip-cover" [style.background-image]="'url(' + trip.coverUrl + ')'">
-                    <span class="trip-status trip-status--proposal">
-                      <span class="material-symbols-outlined">how_to_vote</span>
-                      {{ 'groups.trip_status_proposal' | translate }}
-                    </span>
-                  </div>
-                  <div class="trip-body">
-                    <h3 class="trip-title">{{ trip.title }}</h3>
-                    <p class="trip-place">
-                      <span class="material-symbols-outlined">location_on</span>
-                      {{ trip.destination }}{{ trip.country ? ', ' + trip.country : '' }}
-                    </p>
-                    <p class="trip-meta">
-                      <span class="material-symbols-outlined">calendar_today</span>
-                      {{ trip.startDate | date:'d MMM' }} — {{ trip.endDate | date:'d MMM y' }}
-                      <span class="trip-meta-sep">·</span>
-                      {{ 'groups.trip_days' | translate: { count: tripDays(trip) } }}
-                    </p>
-                    @if (proposerName(trip)) {
-                      <p class="trip-meta">
-                        <span class="material-symbols-outlined">person</span>
-                        {{ 'groups.proposal_by' | translate: { name: proposerName(trip) } }}
-                      </p>
-                    }
-                    <div class="vote-box">
-                      <div class="vote-bar">
-                        <div class="vote-bar-fill" [style.width.%]="(votes(trip) / votesNeeded(trip)) * 100"></div>
-                      </div>
-                      <span class="vote-count">
-                        {{ 'groups.proposal_votes' | translate: { votes: votes(trip), needed: votesNeeded(trip) } }}
-                      </span>
-                    </div>
-                    <div class="proposal-actions">
-                      <button type="button" class="btn" [class.btn-primary]="!hasVoted(trip)" [class.btn-secondary]="hasVoted(trip)"
-                              (click)="toggleVote(trip)">
-                        <span class="material-symbols-outlined" style="font-size:18px">{{ hasVoted(trip) ? 'undo' : 'thumb_up' }}</span>
-                        {{ (hasVoted(trip) ? 'groups.proposal_unvote' : 'groups.proposal_vote') | translate }}
-                      </button>
-                      <a [routerLink]="['/trips', trip.id]" class="btn btn-secondary">
-                        {{ 'groups.trip_view' | translate }}
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              }
-            </div>
-          }
-
-          <button type="button" class="new-trip-btn" (click)="createTrip()">
-            <span class="material-symbols-outlined">add</span>
-            {{ 'groups.new_trip' | translate }}
-          </button>
+          <app-group-trips
+            [groupId]="g.id"
+            [members]="g.members"
+            [trips]="groupTrips()"
+            [proposals]="groupProposals()" />
         </div>
 
-        <!-- Colonna destra: Membri + Zona pericolosa -->
+        <!-- Colonna destra: Membri -->
         <div class="right-col">
 
           <div class="section-card card">
@@ -223,55 +39,13 @@
               <span class="trip-counter">{{ g.members.length }}</span>
             </div>
 
-            <ul class="members-list">
-              @for (member of g.members.slice(0, 6); track member.id) {
-                <li class="member-row">
-                  <div class="avatar member-avatar" [style.background-color]="member.color">
-                    {{ member.avatar }}
-                  </div>
-                  <div class="member-info">
-                    <span class="member-name">{{ member.name }}</span>
-                    @if (authService.currentUser()?.id === member.id) {
-                      <span class="you-label">{{ 'groups.members_you_label' | translate }}</span>
-                    }
-                  </div>
-                  <div class="member-menu-wrap">
-                    @if (member.role === 'admin') {
-                      <span class="role-badge" title="Admin"><span class="material-symbols-outlined">star</span></span>
-                    }
-                    <button type="button" class="icon-btn-ghost" (click)="toggleMemberMenu(member.id, $event)">
-                      <span class="material-symbols-outlined">more_vert</span>
-                    </button>
-                    @if (activeMemberMenu() === member.id) {
-                      <div class="member-menu" [class.member-menu--up]="menuDirection() === 'up'">
-                        @if (authService.currentUser()?.id === member.id) {
-                          <button type="button" class="member-menu-item member-menu-item--danger" (click)="openLeaveConfirm()">
-                            <span class="material-symbols-outlined">logout</span>
-                            {{ 'groups.member_leave' | translate }}
-                          </button>
-                        } @else if (isCurrentUserAdmin()) {
-                          @if (member.role === 'admin') {
-                            <button type="button" class="member-menu-item" (click)="removeAdmin(member.id); toggleMemberMenu(member.id)">
-                              <span class="material-symbols-outlined">remove_moderator</span>
-                              {{ 'groups.member_remove_admin' | translate }}
-                            </button>
-                          } @else {
-                            <button type="button" class="member-menu-item" (click)="makeAdmin(member.id); toggleMemberMenu(member.id)">
-                              <span class="material-symbols-outlined">star</span>
-                              {{ 'groups.member_add_admin' | translate }}
-                            </button>
-                          }
-                          <button type="button" class="member-menu-item member-menu-item--danger" (click)="removeMemberFromGroup(member.id)">
-                            <span class="material-symbols-outlined">person_remove</span>
-                            {{ 'groups.member_remove' | translate }}
-                          </button>
-                        }
-                      </div>
-                    }
-                  </div>
-                </li>
-              }
-            </ul>
+            <app-group-members-list
+              [groupId]="g.id"
+              [members]="g.members"
+              [limit]="6"
+              [currentUserId]="currentUserId()"
+              [isAdmin]="isCurrentUserAdmin()"
+              (leave)="openLeaveConfirm()" />
 
             <button type="button" class="link-btn link-btn--right" (click)="membersModalVisible.set(true)">
               {{ 'groups.members_manage' | translate }}
@@ -294,206 +68,17 @@
   </div>
 </div>
 
-<!-- Members Modal -->
-<app-modal
+<app-group-members-modal
   [isOpen]="membersModalVisible()"
-  [title]="'groups.modal_members_title' | translate"
-  icon="group"
-  [hasFooter]="false"
-  (close)="membersModalVisible.set(false)">
+  [group]="group()"
+  [isAdmin]="isCurrentUserAdmin()"
+  (closeModal)="membersModalVisible.set(false)"
+  (leave)="openLeaveConfirm()" />
 
-  @if (group(); as g) {
-    <ul class="modal-members-list">
-      @for (member of g.members; track member.id) {
-        <li class="modal-member-row">
-          <div class="avatar member-avatar" [style.background-color]="member.color">
-            {{ member.avatar }}
-          </div>
-          <div class="member-info">
-            <span class="member-name">{{ member.name }}</span>
-            @if (authService.currentUser()?.id === member.id) {
-              <span class="you-badge">{{ 'groups.members_you_badge' | translate }}</span>
-            }
-          </div>
-          <div class="member-menu-wrap">
-            @if (member.role === 'admin') {
-              <span class="role-badge" title="Admin"><span class="material-symbols-outlined">star</span></span>
-            }
-            <button type="button" class="icon-btn-ghost" (click)="toggleMemberMenu('m-' + member.id, $event)">
-              <span class="material-symbols-outlined">more_vert</span>
-            </button>
-            @if (activeMemberMenu() === 'm-' + member.id) {
-              <div class="member-menu" [class.member-menu--up]="menuDirection() === 'up'">
-                @if (authService.currentUser()?.id === member.id) {
-                  <button type="button" class="member-menu-item member-menu-item--danger" (click)="openLeaveConfirm()">
-                    <span class="material-symbols-outlined">logout</span>
-                    {{ 'groups.member_leave' | translate }}
-                  </button>
-                } @else if (isCurrentUserAdmin()) {
-                  @if (member.role === 'admin') {
-                    <button type="button" class="member-menu-item" (click)="removeAdmin(member.id); toggleMemberMenu('m-' + member.id)">
-                      <span class="material-symbols-outlined">remove_moderator</span>
-                      {{ 'groups.member_remove_admin' | translate }}
-                    </button>
-                  } @else {
-                    <button type="button" class="member-menu-item" (click)="makeAdmin(member.id); toggleMemberMenu('m-' + member.id)">
-                      <span class="material-symbols-outlined">star</span>
-                      {{ 'groups.member_add_admin' | translate }}
-                    </button>
-                  }
-                  <button type="button" class="member-menu-item member-menu-item--danger" (click)="removeMemberFromGroup(member.id)">
-                    <span class="material-symbols-outlined">person_remove</span>
-                    {{ 'groups.member_remove' | translate }}
-                  </button>
-                }
-              </div>
-            }
-          </div>
-        </li>
-      }
-    </ul>
-
-    @if (pendingGroupInvites().length > 0) {
-      <div class="modal-pending-section">
-        <p class="modal-pending-label">{{ 'groups.modal_pending_label' | translate }}</p>
-        <ul class="modal-members-list">
-          @for (invite of pendingGroupInvites(); track invite.notifId) {
-            <li class="modal-member-row member-row--pending">
-              <div class="avatar member-avatar member-avatar--pending" [style.background-color]="invite.color">
-                {{ invite.avatar }}
-              </div>
-              <div class="member-info">
-                <span class="member-name">{{ invite.name }}</span>
-              </div>
-              @if (isCurrentUserAdmin()) {
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  style="font-size:0.82rem; padding:0.3rem 0.65rem"
-                  (click)="revokeInvite(invite.notifId)">
-                  {{ 'groups.modal_revoke' | translate }}
-                </button>
-              } @else {
-                <span class="pending-badge">
-                  <span class="material-symbols-outlined">schedule</span>
-                  {{ 'groups.modal_pending_status' | translate }}
-                </span>
-              }
-            </li>
-          }
-        </ul>
-      </div>
-    }
-  }
-
-</app-modal>
-
-<!-- Share Modal -->
-<app-modal
+<app-group-share-modal
   [isOpen]="shareModalVisible()"
-  [title]="'groups.share_title' | translate"
-  icon="person_add"
-  [allowOverflow]="true"
-  (close)="onShareModalClose()">
-
-  @if (group(); as g) {
-    <div class="share-body">
-
-      <div class="share-section">
-        <p class="share-label">{{ 'groups.share_invite_label' | translate }}</p>
-        <div class="invite-search-wrap">
-          <span class="material-symbols-outlined invite-search-icon">person_search</span>
-          <input
-            type="text"
-            class="invite-search-input"
-            [placeholder]="'groups.share_search_placeholder' | translate"
-            [value]="inviteSearch()"
-            (input)="inviteSearch.set($any($event.target).value)">
-          @if (inviteSearch().trim()) {
-            <div class="invite-dropdown">
-              @if (searchResults().length > 0) {
-                <p class="invite-dropdown-header">{{ 'groups.share_users_header' | translate }}</p>
-                <ul class="invite-user-list">
-                  @for (user of searchResults(); track user.id) {
-                    <li class="invite-user-row">
-                      <div class="invite-avatar" [style.background-color]="user.color">
-                        {{ user.avatar }}
-                      </div>
-                      <div class="invite-user-info">
-                        <span class="invite-user-name">{{ user.name }}</span>
-                        <span class="invite-user-email">{{ user.email }}</span>
-                      </div>
-                      @if (invitedThisSession().includes(user.id) || pendingRecipientIds().has(user.id)) {
-                        <span class="invite-sent-badge">
-                          <span class="material-symbols-outlined">check</span>
-                          {{ 'groups.share_already_invited' | translate }}
-                        </span>
-                      } @else {
-                        <button type="button" class="btn btn-outline btn-sm" (click)="inviteUser(user)">{{ 'groups.share_invite_btn' | translate }}</button>
-                      }
-                    </li>
-                  }
-                </ul>
-              } @else {
-                <p class="invite-empty">{{ 'groups.share_no_users' | translate }}</p>
-              }
-            </div>
-          }
-        </div>
-        @if (invitedThisSessionUsers().length > 0) {
-          <div class="invite-sent-section">
-            <p class="invite-sent-label">{{ 'groups.share_invited_label' | translate }}</p>
-            <div class="invite-sent-list">
-              @for (user of invitedThisSessionUsers(); track user.id) {
-                <div class="invite-sent-pill">
-                  <div class="invite-avatar" [style.background-color]="user.color">
-                    {{ user.avatar }}
-                  </div>
-                  <div class="invite-user-info">
-                    <span class="invite-user-name">{{ user.name }}</span>
-                    <span class="invite-user-email">{{ user.email }}</span>
-                  </div>
-                  <span class="material-symbols-outlined invite-check-icon">check_circle</span>
-                </div>
-              }
-            </div>
-          </div>
-        }
-      </div>
-
-      <div class="share-section">
-        <p class="share-label">{{ 'groups.share_code_label' | translate }}</p>
-        <div class="invite-row">
-          <code class="invite-code">{{ codeVisible() ? g.inviteCode : '••••••••' }}</code>
-          <button
-            type="button"
-            class="btn-ghost"
-            (click)="codeVisible.set(!codeVisible())"
-            [title]="(codeVisible() ? 'groups.share_hide' : 'groups.share_show') | translate">
-            <span class="material-symbols-outlined">{{ codeVisible() ? 'visibility_off' : 'visibility' }}</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="share-section">
-        <p class="share-label">{{ 'groups.share_message_label' | translate }}</p>
-        <p class="share-hint">{{ 'groups.share_message_hint' | translate }}</p>
-        <div class="share-message-wrap">
-          <textarea
-            class="share-textarea"
-            rows="4"
-            [value]="customMessage()"
-            (input)="customMessage.set($any($event.target).value)">
-          </textarea>
-          <button type="button" class="share-copy-btn btn-ghost" (click)="copyMessage()" [title]="'groups.share_copy_message' | translate">
-            <span class="material-symbols-outlined">content_copy</span>
-          </button>
-        </div>
-      </div>
-
-    </div>
-  }
-</app-modal>
+  [group]="group()"
+  (closeModal)="shareModalVisible.set(false)" />
 
 <!-- Edit Group Modal -->
 <app-group-create-modal
