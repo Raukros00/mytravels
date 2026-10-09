@@ -1,0 +1,188 @@
+<div class="animate-fade-in">
+
+  <!-- Summary -->
+  <section class="section-card card" aria-label="Riepilogo spese">
+    <div class="section-header">
+      <span class="material-symbols-outlined section-icon">payments</span>
+      <div>
+        <h2 class="section-title">Spese del viaggio</h2>
+        <p class="section-desc">Registra chi ha pagato cosa e tieni i conti del gruppo in pari.</p>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm add-expense-btn" (click)="addExpense.emit()">
+        <span class="material-symbols-outlined" style="font-size:18px">add</span>
+        Aggiungi spesa
+      </button>
+    </div>
+
+    <div class="exp-stats">
+      <div class="exp-stat">
+        <span class="exp-stat-label">Speso in totale</span>
+        <span class="exp-stat-value" [class.exp-negative]="overBudget()">{{ spent() | currency:currency():'symbol':'1.2-2' }}</span>
+        @if (budget() > 0) {
+          <span class="exp-stat-sub">su {{ budget() | currency:currency():'symbol':'1.0-0' }} di budget</span>
+        }
+      </div>
+      <div class="exp-stat">
+        <span class="exp-stat-label">La tua spesa</span>
+        <span class="exp-stat-value">{{ myShare() | currency:currency():'symbol':'1.2-2' }}</span>
+        <span class="exp-stat-sub">la tua quota</span>
+      </div>
+      <div class="exp-stat">
+        <span class="exp-stat-label">Hai pagato</span>
+        <span class="exp-stat-value">{{ myPaid() | currency:currency():'symbol':'1.2-2' }}</span>
+        <span class="exp-stat-sub">anticipati per il gruppo</span>
+      </div>
+    </div>
+
+    @if (budget() > 0) {
+      <div class="exp-progress" role="progressbar" aria-label="Budget utilizzato"
+           [attr.aria-valuenow]="budgetPercent() | number:'1.0-0'" aria-valuemin="0" aria-valuemax="100">
+        <div class="exp-progress-bar" [class.exp-progress-bar--over]="overBudget()" [style.width.%]="budgetPercent()"></div>
+      </div>
+      <p class="exp-progress-text" [class.exp-negative]="overBudget()">
+        @if (overBudget()) {
+          Hai superato il budget di {{ spent() - budget() | currency:currency():'symbol':'1.2-2' }}
+        } @else {
+          {{ budgetPercent() | number:'1.0-0' }}% del budget utilizzato · restano {{ budget() - spent() | currency:currency():'symbol':'1.2-2' }}
+        }
+      </p>
+    }
+  </section>
+
+  <app-trip-budget [expenses]="expenses()" [budget]="budget()" [currency]="currency()" />
+
+  @if (showSplitSections()) {
+    <div class="exp-two-col">
+      <!-- Balances -->
+      <section class="section-card card" aria-label="Saldi">
+        <div class="section-header">
+          <span class="material-symbols-outlined section-icon">balance</span>
+          <h2 class="section-title">Saldi</h2>
+        </div>
+        <ul class="exp-list">
+          @for (row of balanceRows(); track row.member.id) {
+            <li class="exp-row">
+              <div class="avatar avatar-sm" [style.background-color]="row.member.color">{{ row.member.avatar }}</div>
+              <span class="exp-row-name">{{ memberLabel(row.member.id) }}</span>
+              @if (row.balance > 0.005) {
+                <span class="exp-balance exp-positive">deve ricevere {{ row.balance | currency:currency():'symbol':'1.2-2' }}</span>
+              } @else if (row.balance < -0.005) {
+                <span class="exp-balance exp-negative">deve dare {{ -row.balance | currency:currency():'symbol':'1.2-2' }}</span>
+              } @else {
+                <span class="exp-balance exp-neutral">in pari</span>
+              }
+            </li>
+          }
+        </ul>
+      </section>
+
+      <!-- Suggested payments -->
+      <section class="section-card card" aria-label="Salda i conti">
+        <div class="section-header">
+          <span class="material-symbols-outlined section-icon">handshake</span>
+          <h2 class="section-title">Salda i conti</h2>
+        </div>
+        @if (transfers().length) {
+          <ul class="exp-list">
+            @for (t of transfers(); track t.from + t.to) {
+              <li class="exp-row exp-row--transfer">
+                <div class="avatar avatar-sm" [style.background-color]="member(t.from).color">{{ member(t.from).avatar }}</div>
+                <div class="exp-transfer-text">
+                  <span><strong>{{ memberLabel(t.from) }}</strong> deve dare</span>
+                  <span class="exp-transfer-amount">{{ t.amount | currency:currency():'symbol':'1.2-2' }}</span>
+                  <span>a <strong>{{ memberLabel(t.to) }}</strong></span>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" (click)="settle.emit(t)">
+                  <span class="material-symbols-outlined" style="font-size:16px">check</span>
+                  Segna come saldato
+                </button>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="exp-muted">
+            <span class="material-symbols-outlined">check_circle</span>
+            Tutti i conti sono in pari.
+          </p>
+        }
+      </section>
+    </div>
+  }
+
+  <!-- Expense list -->
+  <section class="section-card card" aria-label="Elenco spese">
+    <div class="section-header">
+      <span class="material-symbols-outlined section-icon">receipt_long</span>
+      <h2 class="section-title">Tutte le spese</h2>
+      <span class="trip-counter">{{ expenses().length }}</span>
+    </div>
+
+    @if (expenses().length) {
+      @for (group of dayGroups(); track group.date) {
+        <h3 class="exp-day-title">{{ dayLabel(group.date) }}</h3>
+        <ul class="exp-list">
+          @for (e of group.expenses; track e.id) {
+            <li class="exp-item" [class.exp-item--settlement]="isSettlement(e)">
+              <span class="exp-cat-icon" [style.background]="category(e).color">
+                <span class="material-symbols-outlined">{{ isSettlement(e) ? 'handshake' : category(e).icon }}</span>
+              </span>
+              <div class="exp-item-main">
+                <span class="exp-item-title">{{ isSettlement(e) ? 'Pagamento' : e.title }}</span>
+                <span class="exp-item-sub">
+                  {{ isSettlement(e) ? settlementText(e) : payerText(e) }}
+                  @if (!isSettlement(e)) { · {{ e.amount | currency:currency():'symbol':'1.2-2' }} }
+                </span>
+              </div>
+              <div class="exp-item-side">
+                @if (isSettlement(e)) {
+                  <span class="exp-item-amount">{{ e.amount | currency:currency():'symbol':'1.2-2' }}</span>
+                } @else {
+                  @switch (impact(e).kind) {
+                    @case ('owe') {
+                      <span class="exp-item-impact exp-negative">tu devi {{ impact(e).amount | currency:currency():'symbol':'1.2-2' }}</span>
+                    }
+                    @case ('receive') {
+                      <span class="exp-item-impact exp-positive">ti spettano {{ impact(e).amount | currency:currency():'symbol':'1.2-2' }}</span>
+                    }
+                    @case ('self') {
+                      <span class="exp-item-impact exp-neutral">solo per te</span>
+                    }
+                    @default {
+                      <span class="exp-item-impact exp-neutral">non coinvolto</span>
+                    }
+                  }
+                }
+              </div>
+              <div class="exp-item-actions">
+                @if (!isSettlement(e)) {
+                  <button type="button" class="btn-delete-ghost" (click)="editExpense.emit(e)" title="Modifica spesa" aria-label="Modifica spesa">
+                    <span class="material-symbols-outlined" style="font-size:18px">edit</span>
+                  </button>
+                }
+                <button type="button" class="btn-delete-ghost btn-delete-ghost--danger" (click)="confirmDelete(e)" title="Elimina" aria-label="Elimina">
+                  <span class="material-symbols-outlined" style="font-size:18px">delete</span>
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    } @else {
+      <div class="empty-state-wrapper">
+        <app-empty-state
+          materialIcon="receipt_long"
+          title="Nessuna spesa registrata"
+          description="Aggiungi la prima spesa per dividere i costi con il gruppo."
+          actionLabel="Aggiungi spesa"
+          actionMaterialIcon="add"
+          (action)="addExpense.emit()">
+        </app-empty-state>
+      </div>
+    }
+
+    <button type="button" class="new-trip-btn" (click)="addExpense.emit()">
+      <span class="material-symbols-outlined">add</span>
+      Aggiungi spesa
+    </button>
+  </section>
+</div>

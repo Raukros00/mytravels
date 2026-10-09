@@ -1,0 +1,105 @@
+<app-modal
+  [isOpen]="isOpen()"
+  [title]="'groups.share_title' | translate"
+  icon="person_add"
+  [allowOverflow]="true"
+  (close)="onClose()">
+
+  @if (group(); as g) {
+    <div class="share-body">
+
+      <div class="share-section">
+        <p class="share-label">{{ 'groups.share_invite_label' | translate }}</p>
+        <div class="invite-search-wrap">
+          <span class="material-symbols-outlined invite-search-icon">person_search</span>
+          <input
+            type="text"
+            class="invite-search-input"
+            [placeholder]="'groups.share_search_placeholder' | translate"
+            [value]="inviteSearch()"
+            (input)="inviteSearch.set($any($event.target).value)">
+          @if (inviteSearch().trim()) {
+            <div class="invite-dropdown">
+              @if (searchResults().length > 0) {
+                <p class="invite-dropdown-header">{{ 'groups.share_users_header' | translate }}</p>
+                <ul class="invite-user-list">
+                  @for (user of searchResults(); track user.id) {
+                    <li class="invite-user-row">
+                      <div class="invite-avatar" [style.background-color]="user.color">
+                        {{ user.avatar }}
+                      </div>
+                      <div class="invite-user-info">
+                        <span class="invite-user-name">{{ user.name }}</span>
+                        <span class="invite-user-email">{{ user.email }}</span>
+                      </div>
+                      @if (invitedThisSession().includes(user.id) || pendingRecipientIds().has(user.id)) {
+                        <span class="invite-sent-badge">
+                          <span class="material-symbols-outlined">check</span>
+                          {{ 'groups.share_already_invited' | translate }}
+                        </span>
+                      } @else {
+                        <button type="button" class="btn btn-outline btn-sm" (click)="inviteUser(user)">{{ 'groups.share_invite_btn' | translate }}</button>
+                      }
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="invite-empty">{{ 'groups.share_no_users' | translate }}</p>
+              }
+            </div>
+          }
+        </div>
+        @if (invitedThisSessionUsers().length > 0) {
+          <div class="invite-sent-section">
+            <p class="invite-sent-label">{{ 'groups.share_invited_label' | translate }}</p>
+            <div class="invite-sent-list">
+              @for (user of invitedThisSessionUsers(); track user.id) {
+                <div class="invite-sent-pill">
+                  <div class="invite-avatar" [style.background-color]="user.color">
+                    {{ user.avatar }}
+                  </div>
+                  <div class="invite-user-info">
+                    <span class="invite-user-name">{{ user.name }}</span>
+                    <span class="invite-user-email">{{ user.email }}</span>
+                  </div>
+                  <span class="material-symbols-outlined invite-check-icon">check_circle</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="share-section">
+        <p class="share-label">{{ 'groups.share_code_label' | translate }}</p>
+        <div class="invite-row">
+          <code class="invite-code">{{ codeVisible() ? g.inviteCode : '••••••••' }}</code>
+          <button
+            type="button"
+            class="btn-ghost"
+            (click)="codeVisible.set(!codeVisible())"
+            [title]="(codeVisible() ? 'groups.share_hide' : 'groups.share_show') | translate">
+            <span class="material-symbols-outlined">{{ codeVisible() ? 'visibility_off' : 'visibility' }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="share-section">
+        <p class="share-label">{{ 'groups.share_message_label' | translate }}</p>
+        <p class="share-hint">{{ 'groups.share_message_hint' | translate }}</p>
+        <div class="share-message-wrap">
+          <textarea
+            class="share-textarea"
+            rows="4"
+            [value]="customMessage()"
+            (input)="customMessage.set($any($event.target).value)">
+          </textarea>
+          <button type="button" class="share-copy-btn btn-ghost" (click)="copyMessage()" [title]="'groups.share_copy_message' | translate">
+            <span class="material-symbols-outlined">content_copy</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  }
+</app-modal>

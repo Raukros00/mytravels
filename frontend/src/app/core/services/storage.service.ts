@@ -108,7 +108,7 @@ export class StorageService {
   }
 
   private initializeSeedData(): void {
-    const SEED_VERSION = '9';
+    const SEED_VERSION = '10';
     if (this.getItem<string>('wb_seed_version') === SEED_VERSION) return;
     // Clear stale data before re-seeding
     Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));

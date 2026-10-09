@@ -3,14 +3,14 @@
   <!-- 1. Day Selector Bar (Top on both mobile & desktop) -->
   <div class="itinerary-days-bar">
     <div class="day-chips-scroll no-scrollbar">
-      @for (dayNum of tripDays; track dayNum) {
+      @for (dayNum of tripDays(); track dayNum) {
         <button
           type="button"
           class="day-chip-btn"
-          [class.day-chip-btn--active]="selectedDay === dayNum"
+          [class.day-chip-btn--active]="selectedDay() === dayNum"
           (click)="daySelected.emit(dayNum)">
           <span class="day-chip-num">Giorno {{ dayNum }}</span>
-          <span class="day-chip-date">{{ getDayDateFormatted(dayNum) }}</span>
+          <span class="day-chip-date">{{ dayDate(dayNum) }}</span>
         </button>
       }
     </div>
@@ -22,31 +22,31 @@
       <div class="section-header map-header">
         <span class="material-symbols-outlined section-icon">map</span>
         <div>
-          <h2 class="section-title">Mappa del Giorno {{ selectedDay }}</h2>
+          <h2 class="section-title">Mappa del Giorno {{ selectedDay() }}</h2>
           <p class="section-desc">Itinerario e posizioni su mappa interattiva.</p>
         </div>
-        <span class="trip-counter">{{ mapStops.length }} tappe</span>
+        <span class="trip-counter">{{ mapStops().length }} tappe</span>
       </div>
 
       <div class="map-container-box">
         <app-interactive-map
-          [stops]="mapStops"
-          [defaultCenter]="mapCenter">
+          [stops]="mapStops()"
+          [defaultCenter]="mapCenter()">
         </app-interactive-map>
       </div>
 
       <!-- Quick Day Stats Summary -->
       <div class="day-stats-grid">
         <div class="stat-card">
-          <span class="stat-number">{{ timelineItems.length }}</span>
+          <span class="stat-number">{{ timelineItems().length }}</span>
           <span class="stat-label">Tappe totali</span>
         </div>
         <div class="stat-card">
-          <span class="stat-number">{{ dayFoodCount }}</span>
+          <span class="stat-number">{{ dayFoodCount() }}</span>
           <span class="stat-label">Ristoranti / Food</span>
         </div>
         <div class="stat-card">
-          <span class="stat-number">{{ dayActivityCount }}</span>
+          <span class="stat-number">{{ dayActivityCount() }}</span>
           <span class="stat-label">Attività / Visite</span>
         </div>
       </div>
@@ -60,16 +60,16 @@
         <span class="material-symbols-outlined section-icon">calendar_month</span>
         <div>
           <h2 class="section-title">Step della Giornata</h2>
-          <p class="section-desc">Tappe cronologiche e orari del Giorno {{ selectedDay }}.</p>
+          <p class="section-desc">Tappe cronologiche e orari del Giorno {{ selectedDay() }}.</p>
         </div>
       </div>
 
       <!-- Day Banner Focus -->
       <div class="day-banner-focus">
         <div class="day-banner-info">
-          <span class="day-badge-pill">Giorno {{ selectedDay }}</span>
-          <h3 class="day-banner-title">{{ getDayDateFormatted(selectedDay) }}</h3>
-          <span class="day-banner-sub">{{ timelineItems.length }} tappe pianificate</span>
+          <span class="day-badge-pill">Giorno {{ selectedDay() }}</span>
+          <h3 class="day-banner-title">{{ dayDate(selectedDay()) }}</h3>
+          <span class="day-banner-sub">{{ timelineItems().length }} tappe pianificate</span>
         </div>
         <button type="button" class="btn btn-secondary btn-sm" (click)="addStep.emit()">
           <span class="material-symbols-outlined">add</span>
@@ -78,9 +78,9 @@
       </div>
 
       <!-- Timeline Stream -->
-      @if (timelineItems.length > 0) {
+      @if (timelineItems().length > 0) {
         <div class="timeline-stream">
-          @for (item of timelineItems; track item.id) {
+          @for (item of timelineItems(); track item.id) {
             <div class="timeline-entry" [class.timeline-entry--completed]="item.isCompleted">
               <!-- Timeline Node Icon -->
               <div class="timeline-node" [class.timeline-node--food]="item.type === 'food'" [class.timeline-node--activity]="item.type === 'activity'">
@@ -132,7 +132,7 @@
                 }
 
                 <div class="timeline-footer-row">
-                  <a [href]="getNavigationUrl(item.name, item.address)" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
+                  <a [href]="navUrl(item.name, item.address)" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
                     <span class="material-symbols-outlined">directions_car</span>
                     Naviga
                   </a>
@@ -149,7 +149,7 @@
         <div class="empty-state-wrapper">
           <app-empty-state
             materialIcon="event_note"
-            title="Giorno {{ selectedDay }} libero"
+            title="Giorno {{ selectedDay() }} libero"
             description="Nessuna tappa pianificata per questo giorno. Aggiungi attività o posti dove mangiare."
             actionLabel="Pianifica dalle attività"
             actionMaterialIcon="add"
@@ -160,7 +160,7 @@
 
       <button type="button" class="new-trip-btn" (click)="addStep.emit()">
         <span class="material-symbols-outlined">add</span>
-        Aggiungi tappa al Giorno {{ selectedDay }}
+        Aggiungi tappa al Giorno {{ selectedDay() }}
       </button>
     </div>
   </div>

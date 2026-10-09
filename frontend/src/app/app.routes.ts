@@ -60,6 +60,20 @@ export const routes: Routes = [
     ]
   },
   {
+    path: 'explore',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./features/explore/explore.component').then(m => m.ExploreComponent)
+      },
+      {
+        path: ':id',
+        loadComponent: () => import('./features/explore/explore-detail/explore-detail.component').then(m => m.ExploreDetailComponent)
+      }
+    ]
+  },
+  {
     path: 'profile',
     canActivate: [authGuard],
     loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent)

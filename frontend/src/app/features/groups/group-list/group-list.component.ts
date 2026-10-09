@@ -1,5 +1,4 @@
-import { Component, HostListener, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -12,10 +11,10 @@ import { ModalComponent } from '../../../shared/components/modal/modal.component
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '(document:click)': 'closeMenu()' },
   selector: 'app-group-list',
-  standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     FormsModule,
     TranslatePipe,
@@ -85,9 +84,8 @@ export class GroupListComponent {
       return next;
     });
   }
-  public inviteCodeInput = '';
+  public inviteCodeInput = signal('');
 
-  @HostListener('document:click')
   closeMenu(): void {
     this.openMenuId.set(null);
   }
@@ -119,11 +117,11 @@ export class GroupListComponent {
   }
 
   onJoinGroup(): void {
-    if (!this.inviteCodeInput.trim()) return;
+    if (!this.inviteCodeInput().trim()) return;
 
-    const success = this.groupService.joinGroupByCode(this.inviteCodeInput);
+    const success = this.groupService.joinGroupByCode(this.inviteCodeInput());
     if (success) {
-      this.inviteCodeInput = '';
+      this.inviteCodeInput.set('');
       this.isJoinModalOpen.set(false);
     }
   }

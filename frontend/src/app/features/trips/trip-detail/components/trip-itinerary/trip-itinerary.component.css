@@ -1,3 +1,4 @@
+:host{display:block}
 /* ==========================================================================
    Trip Itinerary Component Styles
    Mobile-first: Day chips -> Map -> Daily Steps
@@ -101,13 +102,6 @@
   font-weight: 700;
   margin: 0 0 0.15rem;
   color: var(--wb-text-primary);
-}
-
-.section-desc {
-  font-size: 0.825rem;
-  color: var(--wb-text-secondary);
-  margin: 0;
-  line-height: 1.4;
 }
 
 .trip-counter {
@@ -388,30 +382,11 @@
   margin-bottom: 0.55rem;
 }
 
-.meta-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.12rem 0.45rem;
-  border-radius: var(--wb-radius-sm);
-  font-size: 0.7rem;
-  font-weight: 600;
-  background: var(--wb-surface-1);
-  color: var(--wb-text-secondary);
-  border: 1px solid var(--wb-border);
-}
-
 .meta-pill--price,
 .meta-pill--free {
   background: var(--wb-success-surface);
   color: var(--wb-success);
   border-color: var(--wb-success-border);
-}
-
-.meta-pill--booking {
-  background: var(--wb-accent-surface);
-  color: var(--wb-accent-dark);
-  border-color: var(--wb-accent-border);
 }
 
 .timeline-notes-box {
@@ -466,50 +441,7 @@
   font-size: 15px;
 }
 
-.empty-state-wrapper {
-  padding: 0.75rem 0;
-}
-
 /* ── Map Container & Stats ──────────────────────────────────────────────── */
-.map-container-box {
-  border-radius: var(--wb-radius-md);
-  overflow: hidden;
-  border: 1px solid var(--wb-border);
-}
-
-.day-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.55rem;
-}
-
-.stat-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 0.45rem;
-  background: var(--wb-surface-1);
-  border-radius: var(--wb-radius-md);
-  border: 1px solid var(--wb-border);
-  text-align: center;
-}
-
-.stat-number {
-  font-family: var(--wb-font-display);
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--wb-primary);
-  line-height: 1;
-  margin-bottom: 0.2rem;
-}
-
-.stat-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--wb-text-secondary);
-}
-
 /* ── Mobile Fine-Tuning ─────────────────────────────────────────────────── */
 @media (max-width: 860px) {
   .section-card {

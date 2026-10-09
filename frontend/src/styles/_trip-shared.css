@@ -1,0 +1,90 @@
+/* Layout e componenti condivisi dei trip / gruppi */
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1rem;
+}
+
+.right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pnr-strip{display:flex;align-items:center;justify-content:space-between;margin-top:.85rem;padding:.45rem .7rem;background:var(--wb-surface-1);border-radius:var(--wb-radius-sm);border:1px solid var(--wb-border)}
+
+.pnr-label{font-size:.72rem;color:var(--wb-text-secondary);font-weight:600}
+
+.pnr-code{font-family:var(--wb-font-mono);font-size:.825rem;color:var(--wb-text-primary)}
+
+.meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: var(--wb-radius-sm);
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: var(--wb-surface-1);
+  color: var(--wb-text-secondary);
+  border: 1px solid var(--wb-border);
+}
+
+.meta-pill--booking {
+  background: var(--wb-accent-surface);
+  color: var(--wb-accent-dark);
+  border-color: var(--wb-accent-border);
+}
+
+.section-desc {
+  font-size: 0.825rem;
+  color: var(--wb-text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.empty-state-wrapper {
+  padding: 0.75rem 0;
+}
+
+.map-container-box {
+  border-radius: var(--wb-radius-md);
+  overflow: hidden;
+  border: 1px solid var(--wb-border);
+}
+
+.day-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.55rem;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 0.45rem;
+  background: var(--wb-surface-1);
+  border-radius: var(--wb-radius-md);
+  border: 1px solid var(--wb-border);
+  text-align: center;
+}
+
+.stat-number {
+  font-family: var(--wb-font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--wb-primary);
+  line-height: 1;
+  margin-bottom: 0.2rem;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--wb-text-secondary);
+}

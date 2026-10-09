@@ -1,0 +1,92 @@
+<app-modal
+  [isOpen]="isOpen()"
+  title="Aggiungi Attrazione / Cosa da Vedere"
+  icon="account_balance"
+  (close)="closed.emit()">
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="form-group">
+      <label class="form-label" for="act_name">Nome Attrazione / Luogo *</label>
+      <input type="text" id="act_name" formControlName="name" class="form-input" placeholder="Es. Museo del Prado, Sagrada Família...">
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="act_category">Categoria *</label>
+        <select id="act_category" formControlName="category" class="form-select">
+          <option value="monument">Monumento</option>
+          <option value="museum">Museo</option>
+          <option value="nature">Natura / Parco</option>
+          <option value="experience">Esperienza / Tour</option>
+          <option value="shopping">Shopping / Mercato</option>
+          <option value="other">Altro</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="act_address">Indirizzo / Posizione</label>
+        <input type="text" id="act_address" formControlName="address" class="form-input" placeholder="Es. Carrer de Mallorca 401">
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Servono Biglietti?</label>
+        <div class="radio-toggle-group">
+          <label class="radio-label">
+            <input type="radio" formControlName="ticketsRequired" [value]="true"> Sì
+          </label>
+          <label class="radio-label">
+            <input type="radio" formControlName="ticketsRequired" [value]="false"> No / Gratuito
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="act_price">Prezzo Biglietto (€)</label>
+        <input type="number" id="act_price" formControlName="ticketPrice" class="form-input" placeholder="Es. 26">
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Da Prenotare in Anticipo?</label>
+        <div class="radio-toggle-group">
+          <label class="radio-label">
+            <input type="radio" formControlName="bookingRequired" [value]="true"> Sì
+          </label>
+          <label class="radio-label">
+            <input type="radio" formControlName="bookingRequired" [value]="false"> No
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="act_bookingUrl">Link Prenotazione</label>
+        <input type="url" id="act_bookingUrl" formControlName="bookingUrl" class="form-input" placeholder="https://...">
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="act_hours">Orari di Apertura</label>
+        <input type="text" id="act_hours" formControlName="openingHours" class="form-input" placeholder="Es. 09:00 - 20:00">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="act_closing">Giorni di Chiusura</label>
+        <input type="text" id="act_closing" formControlName="closingDays" class="form-input" placeholder="Es. Chiuso il Lunedì">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="act_notes">Note & Consigli</label>
+      <textarea id="act_notes" formControlName="notes" class="form-textarea" rows="2" placeholder="Es. Audioguida consigliata..."></textarea>
+    </div>
+  </form>
+
+  <div modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="closed.emit()">Annulla</button>
+    <button type="button" class="btn btn-primary" [disabled]="form.invalid" (click)="save()">Salva Attrazione</button>
+  </div>
+</app-modal>

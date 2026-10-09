@@ -1,4 +1,11 @@
 @import "leaflet/dist/leaflet.css";
+@import "./styles/_auth.css";
+@import "./styles/_invite.css";
+@import "./styles/_icon-picker.css";
+@import "./styles/_members.css";
+@import "./styles/_trip-shared.css";
+@import "./styles/_explore.css";
+@import "./styles/_hero.css";
 
 @tailwind base;
 @tailwind components;

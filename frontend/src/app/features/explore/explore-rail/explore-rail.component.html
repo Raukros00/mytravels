@@ -1,0 +1,26 @@
+<section class="rail">
+  <header class="rail-header">
+    <h2 class="rail-title">
+      @if (icon()) {
+        <span class="material-symbols-outlined">{{ icon() }}</span>
+      }
+      {{ title() }}
+    </h2>
+    <div class="rail-nav">
+      <button type="button" class="rail-btn" [attr.aria-label]="'Scorri indietro: ' + title()" (click)="scroll(-1)">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+      <button type="button" class="rail-btn" [attr.aria-label]="'Scorri avanti: ' + title()" (click)="scroll(1)">
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+    </div>
+  </header>
+
+  <div #track class="rail-track no-scrollbar">
+    @for (tpl of templates(); track tpl.id) {
+      <div class="rail-item">
+        <app-explore-card [template]="tpl" [isTop]="topIds().has(tpl.id)" />
+      </div>
+    }
+  </div>
+</section>

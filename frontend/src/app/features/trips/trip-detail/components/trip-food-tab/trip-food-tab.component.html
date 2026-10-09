@@ -1,0 +1,183 @@
+<div class="main-grid animate-fade-in">
+  <!-- Left Column (3fr): Food Places -->
+  <div class="section-card card">
+    <div class="section-header">
+      <span class="material-symbols-outlined section-icon">restaurant</span>
+      <div>
+        <h2 class="section-title">Posti Dove Mangiare</h2>
+        <p class="section-desc">Ristoranti, caffè, street food e tapas salvati per questo viaggio.</p>
+      </div>
+      <span class="trip-counter">{{ filteredPlaces().length }}</span>
+    </div>
+
+    <!-- Search bar -->
+    <div class="search-input-wrapper">
+      <span class="material-symbols-outlined search-icon">search</span>
+      <input
+        type="text"
+        class="form-input search-input"
+        placeholder="Cerca locali, piatti o specialità..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)">
+      @if (searchQuery()) {
+        <button type="button" class="clear-search-btn" (click)="searchQuery.set('')">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      }
+    </div>
+
+    <!-- Categories filter pills -->
+    <div class="filter-pills-row no-scrollbar">
+      <button
+        type="button"
+        class="filter-pill-btn"
+        [class.filter-pill-btn--active]="filter() === 'all'"
+        (click)="filter.set('all')">
+        Tutti ({{ totalCount() }})
+      </button>
+      @for (f of filters; track f.value) {
+        <button
+          type="button"
+          class="filter-pill-btn"
+          [class.filter-pill-btn--active]="filter() === f.value"
+          (click)="filter.set(f.value)">
+          {{ f.label }}
+        </button>
+      }
+    </div>
+
+    <!-- Food Feed -->
+    @if (filteredPlaces().length > 0) {
+      <div class="items-cards-feed">
+        @for (place of filteredPlaces(); track place.id) {
+          <div
+            class="item-feed-card item-feed-card--selectable"
+            [class.item-feed-card--selected]="selectedPlace()?.id === place.id"
+            (click)="selectPlace(place.id)">
+            <div class="item-feed-header">
+              <div class="item-feed-title-block">
+                <h3 class="item-feed-title">{{ place.name }}</h3>
+                @if (place.address) {
+                  <p class="item-feed-address">
+                    <span class="material-symbols-outlined">location_on</span>
+                    {{ place.address }}
+                  </p>
+                }
+              </div>
+              <span class="price-range-badge">{{ place.priceRange }}</span>
+            </div>
+
+            <div class="item-feed-chips">
+              <span class="meta-pill meta-pill--category">
+                <span class="material-symbols-outlined" style="font-size:14px">restaurant</span>
+                {{ categoryLabel(place.category) }}
+              </span>
+              @if (place.assignedDay) {
+                <span class="meta-pill meta-pill--day">
+                  <span class="material-symbols-outlined" style="font-size:14px">calendar_today</span>
+                  Giorno {{ place.assignedDay }}
+                </span>
+              } @else {
+                <span class="meta-pill meta-pill--backlog">Nel backlog</span>
+              }
+            </div>
+
+            @if (place.specialties) {
+              <div class="specialties-highlight-box">
+                <span class="specialties-title">Specialità della casa</span>
+                <p class="specialties-desc">{{ place.specialties }}</p>
+              </div>
+            }
+
+            @if (place.notes) {
+              <p class="item-feed-notes">{{ place.notes }}</p>
+            }
+
+            <div class="item-feed-footer">
+              <a [href]="navUrl(place.name, place.address)" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
+                <span class="material-symbols-outlined" style="font-size:16px">directions_car</span>
+                Naviga
+              </a>
+              <div class="item-feed-footer-actions">
+                <button type="button" class="btn btn-secondary btn-sm" (click)="assignPlace.emit(place)">
+                  <span class="material-symbols-outlined" style="font-size:16px">calendar_add_on</span>
+                  {{ place.assignedDay ? 'Giorno ' + place.assignedDay : 'Pianifica' }}
+                </button>
+                <button type="button" class="btn-delete-ghost" (click)="deletePlace.emit(place.id)" title="Elimina locale">
+                  <span class="material-symbols-outlined" style="font-size:18px">delete</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-state-wrapper">
+        <app-empty-state
+          materialIcon="restaurant"
+          title="Nessun locale trovato"
+          description="Aggiungi nuovi ristoranti o modifica i filtri di ricerca."
+          actionLabel="Aggiungi Locale"
+          actionMaterialIcon="add"
+          (action)="addPlace.emit()">
+        </app-empty-state>
+      </div>
+    }
+
+    <button type="button" class="new-trip-btn" (click)="addPlace.emit()">
+      <span class="material-symbols-outlined">add</span>
+      Aggiungi Locale o Ristorante
+    </button>
+  </div>
+
+  <!-- Right Column: map of the selected place + nearby activities -->
+  <div class="right-col food-side">
+    <div class="section-card card">
+      <div class="section-header">
+        <span class="material-symbols-outlined section-icon">map</span>
+        <div>
+          <h2 class="section-title">{{ selectedPlace()?.name ?? 'Mappa' }}</h2>
+          <p class="section-desc">Il locale selezionato e le attività nei dintorni.</p>
+        </div>
+      </div>
+
+      <div class="map-container-box">
+        <app-interactive-map
+          [stops]="mapStops()"
+          [defaultCenter]="mapCenter()"
+          [showRoute]="false"
+          emptyMessage="Questo locale non ha una posizione sulla mappa." />
+      </div>
+    </div>
+
+    <div class="section-card card">
+      <div class="section-header">
+        <span class="material-symbols-outlined section-icon">explore</span>
+        <div>
+          <h2 class="section-title">Attività vicine</h2>
+          <p class="section-desc">Entro {{ nearbyRadiusLabel }} dal locale.</p>
+        </div>
+        <span class="trip-counter">{{ nearbyActivities().length }}</span>
+      </div>
+
+      @if (nearbyActivities().length > 0) {
+        <ul class="nearby-list">
+          @for (n of nearbyActivities(); track n.activity.id) {
+            <li class="nearby-item">
+              <span class="material-symbols-outlined nearby-icon">place</span>
+              <div class="nearby-info">
+                <span class="nearby-name">{{ n.activity.name }}</span>
+                @if (n.activity.address) {
+                  <span class="nearby-address">{{ n.activity.address }}</span>
+                }
+              </div>
+              <span class="nearby-distance">{{ formatDistance(n.meters) }}</span>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="nearby-empty">Nessuna attività salvata nelle vicinanze.</p>
+      }
+    </div>
+  </div>
+</div>

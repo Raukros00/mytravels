@@ -1,0 +1,100 @@
+/* ── Members ─────────────────────────────────────── */
+.members-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.member-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--wb-border);
+}
+.member-row:last-child { border-bottom: none; }
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--wb-primary) 12%, transparent);
+  color: var(--wb-primary);
+  flex-shrink: 0;
+}
+.role-badge .material-symbols-outlined {
+  font-size: 0.85rem;
+}
+.you-label {
+  font-size: 0.82rem;
+  color: var(--wb-text-tertiary);
+  font-weight: 400;
+}
+/* Modal members list */
+/* ── Member kebab menu ───────────────────────────── */
+.member-menu-wrap {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.icon-btn-ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--wb-radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--wb-text-tertiary);
+  cursor: pointer;
+  transition: background 150ms var(--wb-ease), color 150ms var(--wb-ease);
+}
+.icon-btn-ghost:hover {
+  background: var(--wb-surface-2);
+  color: var(--wb-text-primary);
+}
+.icon-btn-ghost .material-symbols-outlined { font-size: 1.2rem; }
+.member-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  min-width: 160px;
+  background: var(--wb-surface-0, #fff);
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius-md);
+  box-shadow: var(--wb-shadow-md);
+  z-index: 999;
+  overflow: hidden;
+}
+.member-menu--up {
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+.member-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6rem 0.875rem;
+  background: transparent;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--wb-text-primary);
+  font-family: var(--wb-font-body);
+  cursor: pointer;
+  text-align: left;
+  transition: background 150ms var(--wb-ease);
+}
+.member-menu-item:hover { background: var(--wb-surface-1); }
+.member-menu-item .material-symbols-outlined { font-size: 1rem; color: var(--wb-text-secondary); }
+.member-menu-item--danger { color: #dc2626; }
+.member-menu-item--danger .material-symbols-outlined { color: #dc2626; }
+.member-menu-item--danger:hover { background: #fee2e2; }
+.member-row:first-child { padding-top: 0; }

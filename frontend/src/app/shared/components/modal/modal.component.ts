@@ -1,33 +1,29 @@
-import { Component, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, effect, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-modal',
   standalone: true,
-  imports: [CommonModule],
+  host: { '(document:keydown.escape)': 'handleEscape()' },
   templateUrl: './modal.component.html',
   styleUrl: './modal.component.css'
 })
-export class ModalComponent implements OnChanges {
-  @Input() isOpen = false;
-  @Input() title = '';
-  @Input() icon = '';
-  @Input() maxWidth = '560px';
-  @Input() hasFooter = true;
-  @Input() allowOverflow = false;
-  @Output() close = new EventEmitter<void>();
+export class ModalComponent {
+  readonly isOpen = input(false);
+  readonly title = input('');
+  readonly icon = input('');
+  readonly maxWidth = input('560px');
+  readonly hasFooter = input(true);
+  readonly allowOverflow = input(false);
+  readonly close = output<void>();
 
-  @HostListener('document:keydown.escape')
   handleEscape(): void {
-    if (this.isOpen) {
+    if (this.isOpen()) {
       this.onClose();
     }
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['isOpen']) {
-      this.toggleBodyScroll(this.isOpen);
-    }
+  constructor() {
+    effect(() => this.toggleBodyScroll(this.isOpen()));
   }
 
   onBackdropClick(event: MouseEvent): void {

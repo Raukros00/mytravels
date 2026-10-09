@@ -1,0 +1,62 @@
+@if (count() > 0) {
+  <section class="hc animate-fade-in" aria-roledescription="carousel" aria-label="Itinerari più valutati">
+    <div class="hc-slides" aria-live="polite">
+      @for (tpl of templates(); track tpl.id; let i = $index) {
+        <article
+          class="hc-slide"
+          [class.hc-slide--active]="i === current()"
+          [attr.aria-hidden]="i !== current()"
+          aria-roledescription="slide"
+          [attr.aria-label]="(i + 1) + ' di ' + count()">
+          <img class="hc-img" [src]="tpl.coverUrl" [alt]="tpl.title" [attr.loading]="i === 0 ? 'eager' : 'lazy'">
+          <div class="hc-veil"></div>
+
+          <div class="hc-content">
+            <span class="hc-kicker">
+              <span class="material-symbols-outlined">workspace_premium</span>
+              Top {{ i + 1 }} · più valutati
+            </span>
+            <h2 class="hc-title">{{ tpl.title }}</h2>
+            <p class="hc-place">
+              <span class="material-symbols-outlined">location_on</span>{{ tpl.destination }}, {{ tpl.country }}
+            </p>
+            <div class="hc-meta">
+              <span class="hc-rating">
+                <span class="material-symbols-outlined">star</span>{{ formatRating(tpl.rating) }}
+                <small>({{ tpl.reviewsCount }} recensioni)</small>
+              </span>
+              <span>{{ daysLabel(tpl.durationDays) }}</span>
+              <span>da {{ formatBudget(tpl.budgetEstimate, tpl.currency) }} a persona</span>
+            </div>
+            <a class="hc-cta" [routerLink]="['/explore', tpl.id]" [attr.tabindex]="i === current() ? 0 : -1">
+              Scopri l'itinerario
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </a>
+          </div>
+        </article>
+      }
+    </div>
+
+    @if (count() > 1) {
+      <button type="button" class="hc-arrow hc-arrow--prev" aria-label="Itinerario precedente" (click)="prev()">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+      <button type="button" class="hc-arrow hc-arrow--next" aria-label="Itinerario successivo" (click)="next()">
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+
+      <div class="hc-dots" role="tablist">
+        @for (tpl of templates(); track tpl.id; let i = $index) {
+          <button
+            type="button"
+            class="hc-dot"
+            role="tab"
+            [class.hc-dot--active]="i === current()"
+            [attr.aria-selected]="i === current()"
+            [attr.aria-label]="'Vai a ' + tpl.title"
+            (click)="goTo(i)"></button>
+        }
+      </div>
+    }
+  </section>
+}

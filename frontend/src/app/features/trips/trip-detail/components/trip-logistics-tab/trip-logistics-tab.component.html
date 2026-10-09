@@ -1,0 +1,227 @@
+@let t = trip();
+<div class="main-grid animate-fade-in">
+  <!-- Left Column (3fr): Logistics Details -->
+  <div class="section-card card">
+    <div class="section-header">
+      <span class="material-symbols-outlined section-icon">luggage</span>
+      <div>
+        <h2 class="section-title">Logistica & Spostamenti</h2>
+        <p class="section-desc">Dettagli di volo, alloggio e trasporti locali per il viaggio.</p>
+      </div>
+    </div>
+
+    <!-- Logistics sub-tabs -->
+    <div class="filter-pills-row no-scrollbar">
+      <button
+        type="button"
+        class="filter-pill-btn"
+        [class.filter-pill-btn--active]="subTab() === 'flights'"
+        (click)="subTab.set('flights')">
+        <span class="material-symbols-outlined" style="font-size:16px">flight_takeoff</span>
+        Voli A/R
+      </button>
+      <button
+        type="button"
+        class="filter-pill-btn"
+        [class.filter-pill-btn--active]="subTab() === 'hotel'"
+        (click)="subTab.set('hotel')">
+        <span class="material-symbols-outlined" style="font-size:16px">hotel</span>
+        Alloggio
+      </button>
+      <button
+        type="button"
+        class="filter-pill-btn"
+        [class.filter-pill-btn--active]="subTab() === 'transfers'"
+        (click)="subTab.set('transfers')">
+        <span class="material-symbols-outlined" style="font-size:16px">train</span>
+        Trasporti
+      </button>
+    </div>
+
+    @switch (subTab()) {
+      @case ('flights') {
+        <div class="logistics-content-block">
+          <div class="sub-section-header">
+            <h3 class="sub-section-title">Biglietti e Voli</h3>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="editFlights.emit()">
+              <span class="material-symbols-outlined" style="font-size:16px">edit</span>
+              Modifica Voli
+            </button>
+          </div>
+
+          <app-trip-flight-card direction="outbound" [flight]="t.flights?.outboundFlight" />
+          <app-trip-flight-card class="flight-return" direction="return" [flight]="t.flights?.returnFlight" />
+        </div>
+      }
+
+      @case ('hotel') {
+        <div class="logistics-content-block">
+          <div class="sub-section-header">
+            <h3 class="sub-section-title">Struttura & Prenotazione</h3>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="editHotel.emit()">
+              <span class="material-symbols-outlined" style="font-size:16px">edit</span>
+              Modifica Alloggio
+            </button>
+          </div>
+
+          <div class="hotel-details-card">
+            <div class="hotel-details-header">
+              <div class="hotel-icon-badge">
+                <span class="material-symbols-outlined">apartment</span>
+              </div>
+              <div>
+                <h3 class="hotel-title">{{ t.accommodation?.name || 'Struttura non specificata' }}</h3>
+                @if (t.accommodation?.address) {
+                  <p class="hotel-address">
+                    <span class="material-symbols-outlined">location_on</span>
+                    {{ t.accommodation?.address }}
+                  </p>
+                }
+              </div>
+            </div>
+
+            <div class="hotel-check-grid">
+              <div class="check-box check-box--in">
+                <div class="check-box-header">
+                  <span class="material-symbols-outlined">key</span>
+                  <span>Check-in</span>
+                </div>
+                <strong class="check-box-date">{{ t.accommodation?.checkInDate || t.startDate }}</strong>
+                <span class="check-box-hour">dalle ore {{ t.accommodation?.checkInTime || '14:00' }}</span>
+              </div>
+
+              <div class="check-box check-box--out">
+                <div class="check-box-header">
+                  <span class="material-symbols-outlined">door_open</span>
+                  <span>Check-out</span>
+                </div>
+                <strong class="check-box-date">{{ t.accommodation?.checkOutDate || t.endDate }}</strong>
+                <span class="check-box-hour">entro le {{ t.accommodation?.checkOutTime || '11:00' }}</span>
+              </div>
+            </div>
+
+            @if (t.accommodation?.bookingCode) {
+              <div class="pnr-strip">
+                <span class="pnr-label">Codice Prenotazione</span>
+                <strong class="pnr-code">{{ t.accommodation?.bookingCode }}</strong>
+              </div>
+            }
+
+            @if (t.accommodation?.notes) {
+              <div class="notes-banner">
+                <span class="material-symbols-outlined">info</span>
+                <p>{{ t.accommodation?.notes }}</p>
+              </div>
+            }
+
+            <a [href]="hotelNavUrl()" target="_blank" rel="noopener" class="btn btn-primary w-full">
+              <span class="material-symbols-outlined">directions_car</span>
+              Naviga all'Hotel
+            </a>
+          </div>
+        </div>
+      }
+
+      @case ('transfers') {
+        <div class="logistics-content-block">
+          <div class="sub-section-header">
+            <h3 class="sub-section-title">Spostamenti Aeroporto → Hotel</h3>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="editTransfers.emit()">
+              <span class="material-symbols-outlined" style="font-size:16px">edit</span>
+              Modifica Spostamenti
+            </button>
+          </div>
+
+          <div class="transfers-card">
+            <div class="transfer-highlights-grid">
+              <div class="highlight-item">
+                <span class="highlight-label">Opzione Consigliata</span>
+                <strong class="highlight-value">
+                  <span class="material-symbols-outlined" style="vertical-align:middle;font-size:18px;color:var(--wb-primary)">
+                    {{ transferIcon(t.transfers?.recommendedOption) }}
+                  </span>
+                  {{ transferLabel(t.transfers?.recommendedOption) }}
+                </strong>
+              </div>
+
+              <div class="highlight-item">
+                <span class="highlight-label">Durata Stimata</span>
+                <strong class="highlight-value">{{ t.transfers?.estimatedDuration || 'N/A' }}</strong>
+              </div>
+
+              <div class="highlight-item">
+                <span class="highlight-label">Costo Medio</span>
+                <strong class="highlight-value">{{ t.transfers?.estimatedCost || 'N/A' }}</strong>
+              </div>
+            </div>
+
+            @if (t.transfers?.passDetails) {
+              <div class="transfer-info-card">
+                <span class="material-symbols-outlined info-icon">confirmation_number</span>
+                <div>
+                  <h4 class="info-title">Abbonamenti & Pass</h4>
+                  <p class="info-desc">{{ t.transfers?.passDetails }}</p>
+                </div>
+              </div>
+            }
+
+            @if (t.transfers?.instructions) {
+              <div class="transfer-info-card">
+                <span class="material-symbols-outlined info-icon">route</span>
+                <div>
+                  <h4 class="info-title">Indicazioni di Percorso</h4>
+                  <p class="info-desc">{{ t.transfers?.instructions }}</p>
+                </div>
+              </div>
+            }
+
+            @if (t.transfers?.taxiVsUberAdvice) {
+              <div class="transfer-info-card transfer-info-card--warning">
+                <span class="material-symbols-outlined info-icon">warning</span>
+                <div>
+                  <h4 class="info-title">Taxi vs Uber</h4>
+                  <p class="info-desc">{{ t.transfers?.taxiVsUberAdvice }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Right Column: Map Preview for Hotel or Travel Tips -->
+  <div class="right-col">
+    @if (hotelCoords()) {
+      <div class="section-card card">
+        <div class="section-header">
+          <span class="material-symbols-outlined section-icon">hotel</span>
+          <div>
+            <h2 class="section-title">Posizione Hotel</h2>
+            <p class="section-desc">{{ t.accommodation?.name }}</p>
+          </div>
+        </div>
+
+        <div class="map-container-box">
+          <app-interactive-map
+            [stops]="hotelMapStops()"
+            [defaultCenter]="hotelCenter()"
+            [defaultZoom]="15">
+          </app-interactive-map>
+        </div>
+      </div>
+    } @else {
+      <div class="section-card card">
+        <div class="section-header">
+          <span class="material-symbols-outlined section-icon">info</span>
+          <div>
+            <h2 class="section-title">Consigli di Viaggio</h2>
+          </div>
+        </div>
+        <p style="font-size:0.875rem;line-height:1.5;color:var(--wb-text-secondary)">
+          Tieni a portata di mano i codici PNR e verifica in anticipo i documenti necessari per l'imbarco e il check-in.
+        </p>
+      </div>
+    }
+  </div>
+</div>

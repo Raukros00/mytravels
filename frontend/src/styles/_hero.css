@@ -1,0 +1,10 @@
+/* Altezza condivisa da tutte le hero con copertina (Esplora, dettaglio viaggio, lista viaggi) */
+:root {
+  --wb-hero-height: 500px;
+}
+
+@media (max-width: 600px) {
+  :root {
+    --wb-hero-height: 520px;
+  }
+}
