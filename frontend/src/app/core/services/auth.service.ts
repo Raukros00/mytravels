@@ -27,6 +27,11 @@ export class AuthService {
     if (USE_MOCK_DATA) return;
     // If we have a JWT token on startup, verify / refresh current user
     const token = this.storageService.getJwt();
+    if (!token && this.currentUserSignal()) {
+      // Utente in cache senza token: la sessione non è valida, non va considerato autenticato.
+      this.currentUserSignal.set(null);
+      this.storageService.setCurrentUser(null);
+    }
     if (token) {
       this.apiService.get<User>('/auth/me').subscribe({
         next: (user) => {
@@ -84,8 +89,7 @@ export class AuthService {
 
   public logout(): void {
     this.currentUserSignal.set(null);
-    this.storageService.setCurrentUser(null);
-    this.storageService.clearJwt();
+    this.storageService.clearSessionData();
     this.toastService.info('Disconnessione effettuata. A presto!');
     this.router.navigate(['/login']);
   }

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { User } from '../models/user.model';
 import { Group } from '../models/group.model';
 import { Trip } from '../models/trip.model';
+import { USE_MOCK_DATA } from '../config/mock.config';
 
 const STORAGE_KEYS = {
   USERS: 'wb_users',
@@ -12,12 +13,38 @@ const STORAGE_KEYS = {
   JWT: 'wb_jwt'
 };
 
+const SEED_VERSION_KEY = 'wb_seed_version';
+const NOTIFICATIONS_KEY = 'wb_notifications';
+
 @Injectable({
   providedIn: 'root'
 })
 export class StorageService {
   constructor() {
-    this.initializeSeedData();
+    if (USE_MOCK_DATA) {
+      this.initializeSeedData();
+    } else {
+      this.purgeMockSeed();
+    }
+  }
+
+  /**
+   * Rimuove i dati di sessione e la cache dell'utente (gruppi, viaggi, notifiche).
+   * Da chiamare al logout, così l'utente successivo non vede i dati del precedente.
+   */
+  public clearSessionData(): void {
+    Object.values(STORAGE_KEYS).forEach(k => this.removeItem(k));
+    this.removeItem(NOTIFICATIONS_KEY);
+  }
+
+  /**
+   * Con il backend reale, elimina i dati demo lasciati nel browser dalla modalità mock
+   * (utente finto "loggato" senza token, gruppi e viaggi di esempio).
+   */
+  private purgeMockSeed(): void {
+    if (this.getItem<string>(SEED_VERSION_KEY) === null) return;
+    this.clearSessionData();
+    this.removeItem(SEED_VERSION_KEY);
   }
 
   public getItem<T>(key: string): T | null {

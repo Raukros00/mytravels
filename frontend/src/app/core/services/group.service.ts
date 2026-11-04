@@ -55,12 +55,15 @@ export class GroupService {
     if (USE_MOCK_DATA) return;
     this.apiService.get<Group[]>('/api/v1/groups').subscribe({
       next: (groups) => {
-        if (groups && groups.length > 0) {
-          this.groupsSignal.set(groups);
-          this.storageService.setGroups(groups);
-          if (!this.activeGroupIdSignal() || !groups.find(g => g.id === this.activeGroupIdSignal())) {
-            this.setActiveGroup(groups[0].id);
-          }
+        // Il server è la fonte di verità: anche una lista vuota sostituisce la cache.
+        const list = groups ?? [];
+        this.groupsSignal.set(list);
+        this.storageService.setGroups(list);
+        if (list.length === 0) {
+          this.activeGroupIdSignal.set(null);
+          this.storageService.setActiveGroupId(null);
+        } else if (!this.activeGroupIdSignal() || !list.find(g => g.id === this.activeGroupIdSignal())) {
+          this.setActiveGroup(list[0].id);
         }
       },
       error: (err) => {
