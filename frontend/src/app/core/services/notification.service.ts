@@ -104,28 +104,33 @@ export class NotificationService {
     });
   }
 
+  /**
+   * Accepts on the backend, which adds the user to the group, then reloads the user's groups.
+   * The invited group is not in the local list before joining (the API returns only the
+   * user's own groups), so its existence is checked after the reload.
+   */
   public acceptInvite(notifId: string): void {
     const notif = this.notificationsSignal().find(n => n.id === notifId);
     if (!notif) return;
-    const user = this.authService.currentUser();
-    if (user) {
-      const groupExists = !!this.groupService.getGroupById(notif.groupId);
-      if (!groupExists) {
-        this.toastService.error(`Il gruppo "${notif.groupName}" non esiste più.`);
-        this.persist(this.notificationsSignal().map(n =>
-          n.id === notifId ? { ...n, status: 'declined' as const, read: true } : n
-        ));
-        return;
-      }
-      this.groupService.addMember(notif.groupId, user);
-      this.toastService.success(`Ti sei unito al gruppo "${notif.groupName}"!`);
-    }
-    this.persist(this.notificationsSignal().map(n =>
-      n.id === notifId ? { ...n, status: 'accepted' as const, read: true } : n
-    ));
 
     this.apiService.put<AppNotification>(`/api/v1/notifications/${notifId}/accept`, {}).subscribe({
-      error: (err) => console.error('Error accepting invite on backend:', err)
+      next: () => {
+        this.groupService.loadGroups(groups => {
+          const joined = groups.some(g => g.id === notif.groupId);
+          this.persist(this.notificationsSignal().map(n =>
+            n.id === notifId ? { ...n, status: joined ? 'accepted' as const : 'declined' as const, read: true } : n
+          ));
+          if (joined) {
+            this.toastService.success(`Ti sei unito al gruppo "${notif.groupName}"!`);
+          } else {
+            this.toastService.error(`Il gruppo "${notif.groupName}" non esiste più.`);
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error accepting invite on backend:', err);
+        this.toastService.error('Non è stato possibile accettare l\'invito.');
+      }
     });
   }
 

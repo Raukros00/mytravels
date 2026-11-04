@@ -68,6 +68,25 @@ export class TripService {
     });
   }
 
+  /**
+   * Loads a single trip from the backend if it is not in memory yet: only the active
+   * group's trips are preloaded, so a direct link or a reload of another group's trip
+   * would otherwise show "Viaggio non trovato".
+   */
+  public ensureTripLoaded(id: string): void {
+    if (USE_MOCK_DATA || id.startsWith('trip_') || this.getTripById(id)) return;
+    this.apiService.get<Trip>(`/api/v1/trips/${id}`).subscribe({
+      next: (trip) => {
+        if (!trip || this.getTripById(trip.id)) return;
+        const updated = [trip, ...this.tripsSignal()];
+        this.tripsSignal.set(updated);
+        this.storageService.setTrips(updated);
+      },
+      // 404: the trip does not exist, the page shows "Viaggio non trovato".
+      error: (err) => { if (err.status !== 404) console.warn('Could not load trip:', err.status); }
+    });
+  }
+
   public loadTripsByGroup(groupId: string): void {
     if (USE_MOCK_DATA) return;
     this.apiService.get<Trip[]>(`/api/v1/trips/group/${groupId}`).subscribe({
