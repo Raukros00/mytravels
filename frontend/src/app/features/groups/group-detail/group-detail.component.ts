@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -43,6 +43,15 @@ export class GroupDetailComponent {
   private readonly toastService = inject(ToastService);
 
   private readonly groupId = toSignal(this.route.paramMap.pipe(map(p => p.get('id') ?? '')), { initialValue: '' });
+
+  constructor() {
+    // TripService loads only the active group's trips: load this group's ones too
+    // (direct link, reload, or a group other than the active one).
+    effect(() => {
+      const id = this.groupId();
+      if (id) this.tripService.loadTripsByGroup(id);
+    });
+  }
 
   readonly group = computed(() =>
     this.groupService.allUserGroups().find(g => g.id === this.groupId()) ?? null
