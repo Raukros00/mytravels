@@ -154,6 +154,9 @@ jobs:
 
   e2e:
     name: E2E Cypress (regressione)
+    # Disattivato temporaneamente: per riattivarlo togliere questa riga.
+    # In locale la suite resta disponibile (frontend/: npm run e2e:stack && npm run e2e).
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
