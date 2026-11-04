@@ -1,4 +1,5 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { forkJoin, of, switchMap } from 'rxjs';
 import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
 import { GroupService } from './group.service';
@@ -28,6 +29,8 @@ export class TripService {
   private groupService = inject(GroupService);
   private apiService = inject(ApiService);
   private authService = inject(AuthService);
+  /** Optimistic local ids (trip_<timestamp>) → ids assigned by the backend. */
+  private readonly idAliases = signal<Record<string, string>>({});
 
   private tripsSignal = signal<Trip[]>(this.storageService.getTrips());
   public readonly trips = this.tripsSignal.asReadonly();
@@ -115,11 +118,7 @@ export class TripService {
       decision: localTrip.decision,
       proposedBy: localTrip.proposedBy
     }).subscribe({
-      next: (created) => {
-        const synced = this.tripsSignal().map(t => t.id === localTrip.id ? created : t);
-        this.tripsSignal.set(synced);
-        this.storageService.setTrips(synced);
-      },
+      next: (created) => this.replaceLocalTrip(localTrip.id, created),
       error: (err) => {
         console.error('Error creating trip on backend:', err);
       }
@@ -168,7 +167,41 @@ export class TripService {
     const updated = [trip, ...this.tripsSignal()];
     this.tripsSignal.set(updated);
     this.storageService.setTrips(updated);
+
+    // Persist on the backend: the trip first, then its activities, places and accommodation.
+    const { id: _id, activities, placesToEat, accommodation, status: _status, createdAt: _createdAt, ...base } = trip;
+    this.apiService.post<Trip>('/api/v1/trips', base).pipe(
+      switchMap(created => {
+        const children = [
+          ...(activities ?? []).map(({ id: _a, tripId: _t, ...a }) =>
+            this.apiService.post(`/api/v1/trips/${created.id}/activities`, a)),
+          ...(placesToEat ?? []).map(({ id: _p, tripId: _t, ...p }) =>
+            this.apiService.post(`/api/v1/trips/${created.id}/places-to-eat`, p)),
+          ...(accommodation ? [this.apiService.put(`/api/v1/trips/${created.id}/accommodation`, accommodation)] : [])
+        ];
+        return (children.length ? forkJoin(children) : of([])).pipe(
+          switchMap(() => this.apiService.get<Trip>(`/api/v1/trips/${created.id}`))
+        );
+      })
+    ).subscribe({
+      next: (saved) => this.replaceLocalTrip(id, saved),
+      error: (err) => {
+        console.error('Error creating trip from template on backend:', err);
+        this.toastService.error('Non è stato possibile salvare il viaggio sul server.');
+      }
+    });
     return trip;
+  }
+
+  /**
+   * Replaces the optimistic local trip with the one saved by the backend (new id)
+   * and remembers the alias, so a page opened on the local id keeps working.
+   */
+  private replaceLocalTrip(localId: string, saved: Trip): void {
+    this.idAliases.update(a => ({ ...a, [localId]: saved.id }));
+    const synced = this.tripsSignal().map(t => t.id === localId ? saved : t);
+    this.tripsSignal.set(synced);
+    this.storageService.setTrips(synced);
   }
 
   /** Votes that still count: only from current members of the group. */
@@ -204,6 +237,11 @@ export class TripService {
 
   public getTripById(id: string): Trip | undefined {
     return this.tripsSignal().find(t => t.id === id);
+  }
+
+  /** The current id of a trip: follows the optimistic local id once the backend has saved it. */
+  public resolveTripId(id: string): string {
+    return this.idAliases()[id] ?? id;
   }
 
   public updateTrip(id: string, partial: Partial<Trip>): Trip | undefined {
@@ -258,7 +296,7 @@ export class TripService {
     const trip = this.getTripById(tripId);
     if (trip) {
       const activities = [...(trip.activities || []), newAct];
-      this.updateTrip(tripId, { activities });
+      this.patchLocalTrip(tripId, { activities });
       this.toastService.success(`Attrazione "${newAct.name}" aggiunta! 🏛️`);
     }
 
@@ -268,7 +306,7 @@ export class TripService {
         const currentTrip = this.getTripById(tripId);
         if (currentTrip && currentTrip.activities) {
           const acts = currentTrip.activities.map(a => a.id === newAct.id ? savedAct : a);
-          this.updateTrip(tripId, { activities: acts });
+          this.patchLocalTrip(tripId, { activities: acts });
         }
       },
       error: (err) => console.error('Error adding activity to backend:', err)
@@ -286,7 +324,7 @@ export class TripService {
     const merged = { ...target, ...partial };
 
     const updatedActivities = trip.activities.map(a => a.id === activityId ? merged : a);
-    this.updateTrip(tripId, { activities: updatedActivities });
+    this.patchLocalTrip(tripId, { activities: updatedActivities });
     this.toastService.success('Attrazione aggiornata!');
 
     this.apiService.put<TripActivity>(`/api/v1/trips/${tripId}/activities/${activityId}`, merged).subscribe({
@@ -299,7 +337,7 @@ export class TripService {
     if (!trip || !trip.activities) return;
 
     const updatedActivities = trip.activities.filter(a => a.id !== activityId);
-    this.updateTrip(tripId, { activities: updatedActivities });
+    this.patchLocalTrip(tripId, { activities: updatedActivities });
     this.toastService.info('Attrazione rimossa dal viaggio.');
 
     this.apiService.delete(`/api/v1/trips/${tripId}/activities/${activityId}`).subscribe({
@@ -318,7 +356,7 @@ export class TripService {
     const trip = this.getTripById(tripId);
     if (trip) {
       const placesToEat = [...(trip.placesToEat || []), newPlace];
-      this.updateTrip(tripId, { placesToEat });
+      this.patchLocalTrip(tripId, { placesToEat });
       this.toastService.success(`Posto "${newPlace.name}" aggiunto ai ristoranti! 🍽️`);
     }
 
@@ -327,7 +365,7 @@ export class TripService {
         const currentTrip = this.getTripById(tripId);
         if (currentTrip && currentTrip.placesToEat) {
           const places = currentTrip.placesToEat.map(p => p.id === newPlace.id ? savedPlace : p);
-          this.updateTrip(tripId, { placesToEat: places });
+          this.patchLocalTrip(tripId, { placesToEat: places });
         }
       },
       error: (err) => console.error('Error adding place to eat to backend:', err)
@@ -345,7 +383,7 @@ export class TripService {
     const merged = { ...target, ...partial };
 
     const updatedPlaces = trip.placesToEat.map(p => p.id === placeId ? merged : p);
-    this.updateTrip(tripId, { placesToEat: updatedPlaces });
+    this.patchLocalTrip(tripId, { placesToEat: updatedPlaces });
     this.toastService.success('Locale aggiornato!');
 
     this.apiService.put<TripPlaceToEat>(`/api/v1/trips/${tripId}/places-to-eat/${placeId}`, merged).subscribe({
@@ -358,7 +396,7 @@ export class TripService {
     if (!trip || !trip.placesToEat) return;
 
     const updatedPlaces = trip.placesToEat.filter(p => p.id !== placeId);
-    this.updateTrip(tripId, { placesToEat: updatedPlaces });
+    this.patchLocalTrip(tripId, { placesToEat: updatedPlaces });
     this.toastService.info('Locale rimosso.');
 
     this.apiService.delete(`/api/v1/trips/${tripId}/places-to-eat/${placeId}`).subscribe({
@@ -368,7 +406,7 @@ export class TripService {
 
   // Flights & Logistics Management
   public updateFlights(tripId: string, flights: FlightDetails): void {
-    this.updateTrip(tripId, { flights });
+    this.patchLocalTrip(tripId, { flights });
     this.toastService.success('Dettagli voli salvati! ✈️');
     this.apiService.put<Trip>(`/api/v1/trips/${tripId}/flights`, flights).subscribe({
       error: (err) => console.error('Error updating flights on backend:', err)
@@ -376,7 +414,7 @@ export class TripService {
   }
 
   public updateTransfers(tripId: string, transfers: AirportTransfer): void {
-    this.updateTrip(tripId, { transfers });
+    this.patchLocalTrip(tripId, { transfers });
     this.toastService.success('Informazioni spostamenti aeroporto salvate! 🚇');
     this.apiService.put<Trip>(`/api/v1/trips/${tripId}/transfers`, transfers).subscribe({
       error: (err) => console.error('Error updating transfers on backend:', err)
@@ -384,7 +422,7 @@ export class TripService {
   }
 
   public updateAccommodation(tripId: string, accommodation: AccommodationDetails): void {
-    this.updateTrip(tripId, { accommodation });
+    this.patchLocalTrip(tripId, { accommodation });
     this.toastService.success('Dettagli hotel aggiornati! 🏨');
     this.apiService.put<Trip>(`/api/v1/trips/${tripId}/accommodation`, accommodation).subscribe({
       error: (err) => console.error('Error updating accommodation on backend:', err)
@@ -392,6 +430,17 @@ export class TripService {
   }
 
   // Expenses Management
+  /**
+   * Updates the trip in the local state only. For activities, places and logistics the
+   * backend is updated by their dedicated endpoint: a full PUT of the trip as well would
+   * write the same rows twice (duplicate key → 503).
+   */
+  private patchLocalTrip(tripId: string, partial: Partial<Trip>): void {
+    const updated = this.tripsSignal().map(t => t.id === tripId ? { ...t, ...partial } : t);
+    this.tripsSignal.set(updated);
+    this.storageService.setTrips(updated);
+  }
+
   private saveExpenses(tripId: string, expenses: TripExpense[]): void {
     const updated = this.tripsSignal().map(t => t.id === tripId ? { ...t, expenses } : t);
     this.tripsSignal.set(updated);
