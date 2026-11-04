@@ -1,14 +1,14 @@
 import { 
-  AfterViewInit, 
+  afterNextRender,
   Component, 
+  DestroyRef,
+  effect,
   ElementRef, 
-  Input, 
-  OnChanges, 
-  OnDestroy, 
-  SimpleChanges, 
-  ViewChild 
+  inject,
+  input,
+  signal,
+  viewChild 
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
 
 export interface MapStopPoint {
@@ -25,45 +25,51 @@ export interface MapStopPoint {
 @Component({
   selector: 'app-interactive-map',
   standalone: true,
-  imports: [CommonModule],
   templateUrl: './interactive-map.component.html',
   styleUrl: './interactive-map.component.css'
 })
-export class InteractiveMapComponent implements AfterViewInit, OnChanges, OnDestroy {
-  @ViewChild('mapContainer') mapContainer!: ElementRef<HTMLDivElement>;
+export class InteractiveMapComponent {
+  readonly mapContainer = viewChild.required<ElementRef<HTMLDivElement>>('mapContainer');
 
-  @Input() stops: MapStopPoint[] = [];
-  @Input() defaultCenter: [number, number] = [41.3851, 2.1734]; // Barcelona default
-  @Input() defaultZoom: number = 13;
+  readonly stops = input<MapStopPoint[]>([]);
+  readonly defaultCenter = input<[number, number]>([41.3851, 2.1734]); // Barcelona default
+  readonly defaultZoom = input<number>(13);
+  /** Dashed line connecting the stops in order (day itinerary); off for "points around a place" views. */
+  readonly showRoute = input(true);
+  readonly emptyMessage = input('Nessuna posizione geolocalizzata per questa giornata. Aggiungi tappe o hotel con indirizzo!');
 
   private map: L.Map | null = null;
   private markersLayer: L.LayerGroup = L.layerGroup();
   private routeLine: L.Polyline | null = null;
+  private mapReady = signal(false);
 
-  ngAfterViewInit(): void {
-    this.initMap();
-    this.renderStops();
-  }
+  constructor() {
+    afterNextRender(() => {
+      this.initMap();
+      this.mapReady.set(true);
+    });
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['stops'] && !changes['stops'].firstChange) {
-      this.renderStops();
-    }
-  }
+    // Re-render markers whenever the stops change (and once the map is ready)
+    effect(() => {
+      this.stops();
+      this.showRoute();
+      if (this.mapReady()) this.renderStops();
+    });
 
-  ngOnDestroy(): void {
-    if (this.map) {
-      this.map.remove();
-      this.map = null;
-    }
+    inject(DestroyRef).onDestroy(() => {
+      if (this.map) {
+        this.map.remove();
+        this.map = null;
+      }
+    });
   }
 
   private initMap(): void {
-    if (!this.mapContainer || this.map) return;
+    if (this.map) return;
 
-    this.map = L.map(this.mapContainer.nativeElement, {
-      center: this.defaultCenter,
-      zoom: this.defaultZoom,
+    this.map = L.map(this.mapContainer().nativeElement, {
+      center: this.defaultCenter(),
+      zoom: this.defaultZoom(),
       zoomControl: true,
       scrollWheelZoom: false // prevents accidental scroll on mobile while swiping
     });
@@ -80,20 +86,21 @@ export class InteractiveMapComponent implements AfterViewInit, OnChanges, OnDest
   private renderStops(): void {
     if (!this.map) return;
 
+    const stops = this.stops();
     this.markersLayer.clearLayers();
     if (this.routeLine) {
       this.routeLine.remove();
       this.routeLine = null;
     }
 
-    if (!this.stops || this.stops.length === 0) {
-      this.map.setView(this.defaultCenter, this.defaultZoom);
+    if (!stops || stops.length === 0) {
+      this.map.setView(this.defaultCenter(), this.defaultZoom());
       return;
     }
 
     const latLngs: [number, number][] = [];
 
-    this.stops.forEach((stop, index) => {
+    stops.forEach((stop, index) => {
       latLngs.push([stop.lat, stop.lng]);
 
       // Category Emoji
@@ -141,7 +148,7 @@ export class InteractiveMapComponent implements AfterViewInit, OnChanges, OnDest
     });
 
     // Draw route polyline connecting the day's stops
-    if (latLngs.length > 1) {
+    if (this.showRoute() && latLngs.length > 1) {
       this.routeLine = L.polyline(latLngs, {
         color: '#6366f1',
         weight: 4,

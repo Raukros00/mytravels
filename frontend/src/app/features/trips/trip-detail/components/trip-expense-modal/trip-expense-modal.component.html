@@ -1,0 +1,103 @@
+<app-modal
+  [isOpen]="isOpen()"
+  [title]="isEditing() ? 'Modifica spesa' : 'Aggiungi spesa'"
+  icon="payments"
+  (close)="closed.emit()">
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="form-group">
+      <label class="form-label" for="exp_title">Descrizione *</label>
+      <input type="text" id="exp_title" formControlName="title" class="form-input" placeholder="Es. Cena da Cal Pep, taxi aeroporto...">
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="exp_amount">Importo ({{ currency() }}) *</label>
+        <input type="number" id="exp_amount" formControlName="amount" class="form-input" min="0" step="0.01" inputmode="decimal" placeholder="0,00">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="exp_date">Data *</label>
+        <input type="date" id="exp_date" formControlName="date" class="form-input">
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="exp_category">Categoria *</label>
+        <select id="exp_category" formControlName="category" class="form-select">
+          @for (c of categories; track c.key) {
+            <option [value]="c.key">{{ c.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="exp_paidBy">Pagato da *</label>
+        <select id="exp_paidBy" formControlName="paidBy" class="form-select">
+          @for (m of visibleMembers(); track m.id) {
+            <option [value]="m.id">{{ m.name }}{{ m.id === currentUserId() ? ' (tu)' : '' }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <span class="form-label" id="exp_split_label">Diviso tra *</span>
+      <div class="split-members" role="group" aria-labelledby="exp_split_label">
+        @for (m of visibleMembers(); track m.id) {
+          <label class="split-member" [class.split-member--on]="isSelected(m.id)">
+            <input type="checkbox" [checked]="isSelected(m.id)" (change)="toggleMember(m.id)">
+            <span class="avatar avatar-sm" [style.background-color]="m.color">{{ m.avatar }}</span>
+            <span class="split-member-name">{{ m.name }}{{ m.id === currentUserId() ? ' (tu)' : '' }}</span>
+            @if (isSelected(m.id)) {
+              @if (mode() === 'equal') {
+                <span class="split-member-share">{{ shareFor(m.id) | currency:currency():'symbol':'1.2-2' }}</span>
+              } @else {
+                <input
+                  type="number"
+                  class="form-input split-member-input"
+                  min="0" step="0.01" inputmode="decimal"
+                  [attr.aria-label]="'Importo di ' + m.name"
+                  [value]="customValue(m.id)"
+                  (input)="setCustom(m.id, $any($event.target).value)">
+              }
+            }
+          </label>
+        }
+      </div>
+      @if (selected().length === 0) {
+        <p class="split-hint split-hint--error">Seleziona almeno una persona.</p>
+      }
+    </div>
+
+    <div class="form-group">
+      <span class="form-label" id="exp_mode_label">Come dividere</span>
+      <div class="split-toggle" role="group" aria-labelledby="exp_mode_label">
+        <button type="button" class="split-toggle-btn" [class.split-toggle-btn--active]="mode() === 'equal'" (click)="setMode('equal')">In parti uguali</button>
+        <button type="button" class="split-toggle-btn" [class.split-toggle-btn--active]="mode() === 'custom'" (click)="setMode('custom')">Importi personalizzati</button>
+      </div>
+      @if (mode() === 'custom' && selected().length > 0) {
+        <p class="split-hint" [class.split-hint--error]="remaining() !== 0" [class.split-hint--ok]="remaining() === 0">
+          @if (remaining() === 0) {
+            Il totale coincide con l'importo.
+          } @else if (remaining() > 0) {
+            Ancora da assegnare: {{ remaining() | currency:currency():'symbol':'1.2-2' }}
+          } @else {
+            Importi in eccesso di {{ -remaining() | currency:currency():'symbol':'1.2-2' }}
+          }
+        </p>
+      }
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="exp_notes">Note</label>
+      <textarea id="exp_notes" formControlName="notes" class="form-textarea" rows="2" placeholder="Opzionale"></textarea>
+    </div>
+  </form>
+
+  <div modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="closed.emit()">Annulla</button>
+    <button type="button" class="btn btn-primary" [disabled]="form.invalid || !splitValid()" (click)="save()">
+      {{ isEditing() ? 'Salva modifiche' : 'Aggiungi spesa' }}
+    </button>
+  </div>
+</app-modal>

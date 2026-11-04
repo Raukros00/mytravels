@@ -1,0 +1,51 @@
+<div class="trip-hero card animate-fade-in">
+
+  <!-- Full-width Cover with dark veil -->
+  <div class="hero-cover-banner">
+    @if (trip().coverUrl) {
+      <img [src]="trip().coverUrl" class="hero-cover-img" [alt]="trip().title">
+    } @else {
+      <!-- Gradient fallback when no image -->
+      <div class="hero-cover-gradient"></div>
+    }
+
+    <!-- Dark veil overlay -->
+    <div class="hero-cover-veil"></div>
+
+    <!-- Content overlaid on image -->
+    <div class="hero-cover-content">
+      <!-- Trip title -->
+      <h1 class="hero-cover-title">{{ trip().title }}</h1>
+
+      <!-- Destination + Duration chips -->
+      <div class="hero-cover-meta">
+        <span class="hero-cover-chip">
+          <span class="material-symbols-outlined">location_on</span>
+          {{ trip().destination }}{{ trip().country ? ', ' + trip().country : '' }}
+        </span>
+        @if (duration(); as dur) {
+          <span class="hero-cover-chip">
+            <span class="material-symbols-outlined">schedule</span>
+            {{ dur }}
+          </span>
+        }
+        <span class="hero-cover-chip">
+          <span class="material-symbols-outlined">calendar_today</span>
+          {{ dateRange() }}
+        </span>
+
+        <!-- Status pill, pushed to the far right of the chips row -->
+        <span class="trip-status" [class]="'trip-status--' + status()">
+          <span class="material-symbols-outlined">{{ statusIcon() }}</span>
+          {{ statusLabel() }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Share button (top-right corner) -->
+    <button type="button" class="hero-share-btn" (click)="share.emit()" title="Condividi itinerario">
+      <span class="material-symbols-outlined">share</span>
+    </button>
+  </div>
+
+</div>

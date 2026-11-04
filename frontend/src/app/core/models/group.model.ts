@@ -18,6 +18,9 @@ export interface Group {
   inviteCode: string;
   members: GroupMember[];
   createdAt: string;
+  currency?: string; // ISO 4217, default currency for the group's trips
+  archived?: boolean;
+  mutedBy?: string[]; // ids of members who muted the group
 }
 
 export interface CreateGroupDto {

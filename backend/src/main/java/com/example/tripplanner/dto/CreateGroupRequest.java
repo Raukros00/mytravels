@@ -11,4 +11,5 @@ public class CreateGroupRequest {
     private String icon;
     private String color;
     private String creatorId;
+    private String currency;
 }

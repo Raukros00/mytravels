@@ -1,0 +1,30 @@
+<app-modal
+  [isOpen]="isOpen()"
+  title="Pianifica nel Giorno"
+  icon="event"
+  (close)="closed.emit()">
+
+  <div class="assign-form">
+    <p class="assign-intro">Seleziona a quale giornata assegnare <strong>{{ itemName() }}</strong>:</p>
+
+    <div class="form-group mt-2">
+      <label class="form-label">Scegli Giorno *</label>
+      <select [ngModel]="day()" (ngModelChange)="day.set($event)" class="form-select">
+        <option [value]="0">Mantieni nel Backlog</option>
+        @for (d of days(); track d) {
+          <option [value]="d">Giorno {{ d }} ({{ dayLabel(d) }})</option>
+        }
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Fascia Oraria</label>
+      <input type="text" [ngModel]="timeSlot()" (ngModelChange)="timeSlot.set($event)" class="form-input" placeholder="Es. 10:00 - 12:30">
+    </div>
+  </div>
+
+  <div modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="closed.emit()">Annulla</button>
+    <button type="button" class="btn btn-primary" (click)="confirm()">Conferma</button>
+  </div>
+</app-modal>

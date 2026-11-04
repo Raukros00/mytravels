@@ -135,4 +135,54 @@ public class TripController {
         return updated.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+
+    // Sub-resources: Expenses
+    @GetMapping("/{id}/expenses")
+    public ResponseEntity<List<TripExpense>> getExpenses(@PathVariable String id) {
+        return ResponseEntity.ok(tripService.getExpensesByTrip(id));
+    }
+
+    @PostMapping("/{id}/expenses")
+    public ResponseEntity<TripExpense> addExpense(@PathVariable String id, @RequestBody TripExpense expense) {
+        Optional<TripExpense> created = tripService.addExpense(id, expense);
+        return created.map(e -> ResponseEntity.status(HttpStatus.CREATED).body(e))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @PutMapping("/{id}/expenses/{expenseId}")
+    public ResponseEntity<TripExpense> updateExpense(@PathVariable String id,
+                                                     @PathVariable String expenseId,
+                                                     @RequestBody TripExpense expense) {
+        Optional<TripExpense> updated = tripService.updateExpense(id, expenseId, expense);
+        return updated.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @DeleteMapping("/{id}/expenses/{expenseId}")
+    public ResponseEntity<?> deleteExpense(@PathVariable String id, @PathVariable String expenseId) {
+        boolean deleted = tripService.deleteExpense(id, expenseId);
+        if (deleted) {
+            return ResponseEntity.ok(Map.of("message", "Expense deleted successfully"));
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    // Voting
+    @PostMapping("/{id}/vote")
+    public ResponseEntity<Trip> toggleVote(@PathVariable String id,
+                                           @RequestBody(required = false) Map<String, String> body,
+                                           org.springframework.security.core.Authentication auth) {
+        String userId = null;
+        if (body != null && body.containsKey("userId")) {
+            userId = body.get("userId");
+        } else if (auth != null) {
+            userId = auth.getName();
+        }
+        if (userId == null || userId.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        Optional<Trip> updated = tripService.toggleVote(id, userId);
+        return updated.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
 }

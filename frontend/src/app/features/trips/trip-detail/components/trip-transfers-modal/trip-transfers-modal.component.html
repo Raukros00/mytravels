@@ -1,0 +1,50 @@
+<app-modal
+  [isOpen]="isOpen()"
+  title="Spostamenti Aeroporto → Hotel"
+  icon="subway"
+  (close)="closed.emit()">
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="form-group">
+      <label class="form-label">Opzione Consigliata</label>
+      <select formControlName="recommendedOption" class="form-select">
+        <option value="bus">Bus / Navetta</option>
+        <option value="metro">Metro</option>
+        <option value="train">Treno</option>
+        <option value="taxi">Taxi</option>
+        <option value="uber">Uber / Bolt</option>
+      </select>
+    </div>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Durata Stimata</label>
+        <input type="text" formControlName="estimatedDuration" class="form-input" placeholder="Es. 35 minuti">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Costo Stimato</label>
+        <input type="text" formControlName="estimatedCost" class="form-input">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Abbonamenti & Pass</label>
+      <input type="text" formControlName="passDetails" class="form-input">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Biglietti Speciali</label>
+      <input type="text" formControlName="specialTickets" class="form-input">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Taxi vs Uber</label>
+      <textarea formControlName="taxiVsUberAdvice" class="form-textarea" rows="2"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Indicazioni Passo-Passo</label>
+      <textarea formControlName="instructions" class="form-textarea" rows="3"></textarea>
+    </div>
+  </form>
+
+  <div modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="closed.emit()">Annulla</button>
+    <button type="button" class="btn btn-primary" (click)="save()">Salva</button>
+  </div>
+</app-modal>

@@ -1,0 +1,109 @@
+:host { display: block; }
+
+/* ── Name + thumbnail row ─────────────────────────── */
+.name-thumb-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.img-thumb-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.thumb-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 160px;
+  background: var(--wb-surface-0, #fff);
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius-md);
+  box-shadow: var(--wb-shadow-lg);
+  overflow: hidden;
+  z-index: 300;
+  animation: dropdown-in 120ms var(--wb-ease) both;
+}
+
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+.thumb-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.6rem 0.875rem;
+  background: transparent;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--wb-text-primary);
+  font-family: var(--wb-font-body);
+  cursor: pointer;
+  text-align: left;
+  transition: background 100ms ease;
+}
+
+.thumb-menu-item:hover { background: var(--wb-surface-1); }
+
+.thumb-menu-item .material-symbols-outlined {
+  font-size: 1rem;
+  color: var(--wb-text-secondary);
+}
+
+
+/* ── Image section ────────────────────────────────── */
+
+.img-thumb {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: var(--wb-radius-md);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.img-thumb--placeholder:hover {
+  background: var(--wb-surface-3, #e2e8f0);
+}
+
+.img-thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.38);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.img-thumb-overlay .material-symbols-outlined { font-size: 1.4rem; }
+
+@media (hover: hover) {
+  .img-thumb:not(.img-thumb--placeholder):hover .img-thumb-overlay {
+    opacity: 1;
+  }
+}
+
+/* ── Emoji grid ───────────────────────────────────── */
+.emoji-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 3px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--wb-border) transparent;
+}
+

@@ -91,6 +91,10 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.modal-body--overflow {
+  overflow: visible;
+}
+
 @media (min-width: 640px) {
   .modal-body {
     padding: 1.5rem;

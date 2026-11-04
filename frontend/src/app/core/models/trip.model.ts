@@ -1,5 +1,8 @@
 export type TripStatus = 'planning' | 'upcoming' | 'ongoing' | 'completed';
 
+/** 'proposal' = still to be voted by the group; missing value means 'confirmed'. */
+export type TripDecision = 'proposal' | 'confirmed';
+
 export type ActivityCategory = 'monument' | 'museum' | 'nature' | 'experience' | 'shopping' | 'other';
 export type FoodCategory = 'lunch' | 'dinner' | 'snack' | 'breakfast' | 'aperitivo';
 export type PriceRange = '€' | '€€' | '€€€' | '€€€€';
@@ -93,6 +96,27 @@ export interface AccommodationDetails {
   notes?: string;             // e.g. "Tassa di soggiorno €4/notte, deposito bagagli gratuito"
 }
 
+export type BudgetCategory = 'transport' | 'accommodation' | 'food' | 'activities' | 'other';
+
+/** 'settlement' = payment from `paidBy` to the single member in `splitAmong` (not a real expense). */
+export type ExpenseType = 'expense' | 'settlement';
+
+/** A shared expense of the trip (Splitwise-style). Amounts are in the trip currency. */
+export interface TripExpense {
+  id: string;
+  tripId: string;
+  title: string;
+  amount: number;
+  category: BudgetCategory;
+  date: string; // YYYY-MM-DD
+  paidBy: string; // member id
+  splitAmong: string[]; // member ids
+  /** Share owed by each participant; always sums to `amount`. */
+  shares: Record<string, number>;
+  type?: ExpenseType; // missing = 'expense'
+  notes?: string;
+}
+
 export interface Trip {
   id: string;
   groupId: string;
@@ -103,6 +127,9 @@ export interface Trip {
   endDate: string;   // YYYY-MM-DD
   coverUrl: string;
   status: TripStatus;
+  decision?: TripDecision;
+  proposedBy?: string; // user id, only for proposals
+  votes?: string[];    // ids of members who voted in favour
   budgetEstimate?: number;
   currency: string;
   tags: string[];
@@ -115,6 +142,7 @@ export interface Trip {
   flights?: FlightDetails;
   transfers?: AirportTransfer;
   accommodation?: AccommodationDetails;
+  expenses?: TripExpense[];
 }
 
 export interface CreateTripDto {
@@ -129,4 +157,17 @@ export interface CreateTripDto {
   currency: string;
   tags: string[];
   notes?: string;
+  asProposal?: boolean;
+}
+
+/** Timeline status derived from the dates, so it never gets stale. */
+export function deriveTripStatus(trip: Pick<Trip, 'startDate' | 'endDate'>, now = new Date()): TripStatus {
+  const today = now.toISOString().split('T')[0];
+  if (trip.endDate < today) return 'completed';
+  if (trip.startDate <= today) return 'ongoing';
+  return 'upcoming';
+}
+
+export function isProposal(trip: Pick<Trip, 'decision'>): boolean {
+  return trip.decision === 'proposal';
 }

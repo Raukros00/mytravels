@@ -1,0 +1,53 @@
+<ul [class]="variant() === 'modal' ? 'modal-members-list' : 'members-list'">
+  @for (member of visibleMembers(); track member.id) {
+    <li [class]="variant() === 'modal' ? 'modal-member-row' : 'member-row'">
+      <div class="avatar member-avatar" [style.background-color]="member.color">
+        {{ member.avatar }}
+      </div>
+      <div class="member-info">
+        <span class="member-name">{{ member.name }}</span>
+        @if (currentUserId() === member.id) {
+          @if (variant() === 'modal') {
+            <span class="you-badge">{{ 'groups.members_you_badge' | translate }}</span>
+          } @else {
+            <span class="you-label">{{ 'groups.members_you_label' | translate }}</span>
+          }
+        }
+      </div>
+      <div class="member-menu-wrap">
+        @if (member.role === 'admin') {
+          <span class="role-badge" title="Admin"><span class="material-symbols-outlined">star</span></span>
+        }
+        <button type="button" class="icon-btn-ghost" (click)="toggleMenu(member.id, $event)">
+          <span class="material-symbols-outlined">more_vert</span>
+        </button>
+        @if (activeMenu() === member.id) {
+          <div class="member-menu" [class.member-menu--up]="menuDirection() === 'up'">
+            @if (currentUserId() === member.id) {
+              <button type="button" class="member-menu-item member-menu-item--danger" (click)="leave.emit()">
+                <span class="material-symbols-outlined">logout</span>
+                {{ 'groups.member_leave' | translate }}
+              </button>
+            } @else if (isAdmin()) {
+              @if (member.role === 'admin') {
+                <button type="button" class="member-menu-item" (click)="setRole(member.id, 'member')">
+                  <span class="material-symbols-outlined">remove_moderator</span>
+                  {{ 'groups.member_remove_admin' | translate }}
+                </button>
+              } @else {
+                <button type="button" class="member-menu-item" (click)="setRole(member.id, 'admin')">
+                  <span class="material-symbols-outlined">star</span>
+                  {{ 'groups.member_add_admin' | translate }}
+                </button>
+              }
+              <button type="button" class="member-menu-item member-menu-item--danger" (click)="remove(member.id)">
+                <span class="material-symbols-outlined">person_remove</span>
+                {{ 'groups.member_remove' | translate }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </li>
+  }
+</ul>

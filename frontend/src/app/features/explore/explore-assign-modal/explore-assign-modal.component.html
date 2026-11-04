@@ -1,0 +1,66 @@
+<app-modal
+  [isOpen]="isOpen()"
+  title="Assegna a un gruppo"
+  icon="group_add"
+  (close)="closed.emit()">
+
+  @if (groupService.userGroups().length === 0) {
+    <div class="am-empty">
+      <span class="material-symbols-outlined">groups</span>
+      <p>Non fai ancora parte di nessun gruppo. Crea un gruppo per assegnargli questo itinerario.</p>
+      <a routerLink="/groups" class="btn btn-primary" (click)="closed.emit()">Vai ai gruppi</a>
+    </div>
+  } @else {
+    <div class="am-form">
+      <p class="am-intro">
+        <strong>{{ template().title }}</strong> diventerà un viaggio del gruppo che scegli: potrai modificarlo liberamente.
+      </p>
+
+      <div class="form-group">
+        <span class="form-label">Gruppo *</span>
+        <div class="am-groups" role="radiogroup" aria-label="Gruppo">
+          @for (group of groupService.userGroups(); track group.id) {
+            <button type="button" role="radio" class="am-group" [class.am-group--active]="selectedGroupId() === group.id"
+              [attr.aria-checked]="selectedGroupId() === group.id" (click)="selectedGroupId.set(group.id)">
+              <span class="am-group-icon">
+                @if (isImageIcon(group.icon)) {
+                  <img [src]="group.icon" alt="">
+                } @else {
+                  {{ group.icon }}
+                }
+              </span>
+              <span class="am-group-info">
+                <span class="am-group-name">{{ group.name }}</span>
+                <span class="am-group-members">{{ membersLabel(group) }}</span>
+              </span>
+              @if (selectedGroupId() === group.id) {
+                <span class="material-symbols-outlined am-check">check_circle</span>
+              }
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="am-start">Data di partenza *</label>
+        <input id="am-start" type="date" class="form-input" [min]="today" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)">
+      </div>
+
+      @if (startDate()) {
+        <div class="am-summary">
+          <span class="material-symbols-outlined">event</span>
+          <span>{{ formatDateIt(startDate()) }} - {{ formatDateIt(endDate()) }} ({{ daysLabel(template().durationDays) }})</span>
+        </div>
+      }
+    </div>
+  }
+
+  <div modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="closed.emit()">Annulla</button>
+    @if (groupService.userGroups().length > 0) {
+      <button type="button" class="btn btn-primary" [disabled]="!canConfirm()" (click)="confirm()">
+        <span class="material-symbols-outlined">check</span> Assegna e apri
+      </button>
+    }
+  </div>
+</app-modal>

@@ -1,0 +1,59 @@
+<div class="page-wrapper">
+  <div class="app-container">
+    <div class="page-header animate-fade-in">
+      <h1 class="page-title">Esplora</h1>
+      <p class="page-desc">Itinerari pronti creati da altri viaggiatori. Scegline uno, assegnalo a un gruppo e personalizzalo come vuoi.</p>
+    </div>
+
+    <app-explore-hero-carousel [templates]="explore.topRated()" />
+
+    <app-explore-filters
+      [filters]="explore.filters()"
+      [tags]="explore.allTags()"
+      [hasActive]="explore.hasActiveFilters()"
+      (textChange)="explore.setText($event)"
+      (tagToggle)="explore.toggleTag($event)"
+      (durationChange)="explore.setDuration($event)"
+      (budgetChange)="explore.setMaxBudget($event)"
+      (sortChange)="explore.setSort($event)"
+      (reset)="explore.resetFilters()" />
+
+    @if (showRails()) {
+      <div class="ex-rails">
+        @for (rail of rails(); track rail.title) {
+          <app-explore-rail
+            [title]="rail.title"
+            [icon]="rail.icon"
+            [templates]="rail.templates"
+            [topIds]="explore.topIds()" />
+        }
+      </div>
+
+      <div class="ex-show-all">
+        <button type="button" class="btn btn-outline" (click)="showAll.set(true)">
+          Mostra tutto ({{ explore.templates().length }})
+        </button>
+      </div>
+    } @else if (explore.results().length > 0) {
+      @if (showAll() && !explore.hasActiveFilters()) {
+        <button type="button" class="btn btn-ghost ex-back" (click)="showAll.set(false)">
+          <span class="material-symbols-outlined">arrow_back</span> Torna alle selezioni
+        </button>
+      }
+      <p class="ex-count">{{ explore.results().length }} {{ explore.results().length === 1 ? 'itinerario' : 'itinerari' }}</p>
+      <div class="ex-grid">
+        @for (tpl of explore.results(); track tpl.id) {
+          <app-explore-card class="animate-fade-in" [template]="tpl" [isTop]="explore.topIds().has(tpl.id)" />
+        }
+      </div>
+    } @else {
+      <app-empty-state
+        materialIcon="travel_explore"
+        title="Nessun itinerario trovato"
+        description="Prova a cambiare la ricerca o ad azzerare i filtri."
+        actionLabel="Azzera filtri"
+        actionMaterialIcon="filter_alt_off"
+        (action)="explore.resetFilters()" />
+    }
+  </div>
+</div>

@@ -1,0 +1,96 @@
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--wb-text-secondary);
+  text-decoration: none;
+  margin-bottom: 1.5rem;
+  transition: color 150ms var(--wb-ease);
+}
+
+.back-link:hover { color: var(--wb-primary); }
+.back-link .material-symbols-outlined { font-size: 1.1rem; }
+
+/* ── Page header ──────────────────────────────────── */
+.gf-header {
+  margin-bottom: 1.5rem;
+}
+
+.gf-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--wb-text-primary);
+  margin: 0 0 0.35rem;
+}
+
+.gf-desc {
+  font-size: 0.9rem;
+  color: var(--wb-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Form card ────────────────────────────────────── */
+.gf-container {
+  max-width: 640px;
+}
+
+.gf-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 1.5rem;
+}
+
+/* ── Image section ────────────────────────────────── */
+.img-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.img-thumb {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  border-radius: var(--wb-radius-md);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.img-actions {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 0.2rem;
+}
+
+/* ── Emoji grid ───────────────────────────────────── */
+.emoji-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 3px;
+  margin-top: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--wb-border) transparent;
+}
+
+/* ── Invite section ───────────────────────────────── */
+/* ── Form actions ─────────────────────────────────── */
+.gf-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--wb-border);
+}

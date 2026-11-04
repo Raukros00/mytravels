@@ -1,0 +1,74 @@
+:host {
+  display: block;
+}
+
+.rail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.rail-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--wb-text-primary);
+}
+
+.rail-title .material-symbols-outlined {
+  color: var(--wb-primary);
+  font-size: 1.35rem;
+}
+
+.rail-nav {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.rail-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--wb-border);
+  border-radius: 50%;
+  background: var(--wb-surface-0);
+  color: var(--wb-text-primary);
+  cursor: pointer;
+  transition: box-shadow 150ms var(--wb-ease), transform 150ms var(--wb-ease);
+}
+
+.rail-btn:hover {
+  box-shadow: var(--wb-shadow-sm);
+  transform: scale(1.06);
+}
+
+.rail-track {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-bottom: 0.25rem;
+
+  /* Full-bleed: break out of the page container to the viewport edges, while the
+     first card (and the snap position) stays aligned with the container content. */
+  margin-inline: calc(50% - 50vw);
+  padding-inline: calc(50vw - 50%);
+  scroll-padding-inline: calc(50vw - 50%);
+}
+
+.rail-item {
+  flex: 0 0 min(300px, 78vw);
+  scroll-snap-align: start;
+}
+
+@media (max-width: 600px) {
+  .rail-nav {
+    display: none;
+  }
+}

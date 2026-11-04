@@ -187,3 +187,13 @@
 .mt-3 {
   margin-top: 1.15rem;
 }
+
+.proposal-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.proposal-check input { margin-top: 0.25rem; }
+.proposal-check small { color: var(--wb-text-secondary); }

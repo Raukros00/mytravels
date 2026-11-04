@@ -1,5 +1,4 @@
 import { Component, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TripService } from '../../core/services/trip.service';
 import { GroupService } from '../../core/services/group.service';
@@ -8,7 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })

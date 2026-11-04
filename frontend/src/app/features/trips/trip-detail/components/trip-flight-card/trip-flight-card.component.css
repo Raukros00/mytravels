@@ -1,0 +1,19 @@
+:host{display:block}
+.airport-code-large{font-family:var(--wb-font-display)}
+.boarding-pass-card{border-radius:var(--wb-radius-md);border:1px solid var(--wb-border);overflow:hidden;background:var(--wb-surface-0);box-shadow:var(--wb-shadow-xs)}
+.boarding-pass-header{padding:.55rem .95rem;display:flex;align-items:center;justify-content:space-between;font-size:.78rem;font-weight:700;color:#fff}
+.boarding-pass-header--outbound{background:linear-gradient(135deg,var(--wb-primary) 0%,var(--wb-primary-dark) 100%)}
+.boarding-pass-header--return{background:linear-gradient(135deg,var(--wb-secondary) 0%,var(--wb-secondary-dark) 100%)}
+.boarding-pass-badge{display:flex;align-items:center;gap:.35rem}
+.boarding-pass-num{font-family:var(--wb-font-mono);font-size:.85rem;letter-spacing:.05em}
+.boarding-pass-body{padding:1.05rem}
+.flight-route-flex{display:flex;align-items:center;justify-content:space-between;gap:.85rem}
+.flight-city-col{display:flex;flex-direction:column}
+.flight-city-col--right{align-items:flex-end;text-align:right}
+.airport-code-large{font-size:1.5rem;font-weight:800;color:var(--wb-text-primary);line-height:1}
+.airport-city-name{font-size:.78rem;color:var(--wb-text-secondary);margin-top:.15rem}
+.flight-time-val{font-size:.78rem;font-weight:600;color:var(--wb-primary);margin-top:.2rem}
+.flight-path-col{flex:1;display:flex;flex-direction:column;align-items:center;padding:0 .75rem}
+.flight-airline-name{font-size:.75rem;font-weight:600;color:var(--wb-text-tertiary);margin-bottom:.2rem}
+.flight-line-track{width:100%;height:2px;background:var(--wb-border);position:relative;display:flex;align-items:center;justify-content:center}
+.flight-plane-icon{position:absolute;background:var(--wb-surface-0);padding:0 .25rem;color:var(--wb-primary);font-size:17px}

@@ -1,0 +1,68 @@
+<app-modal
+  [isOpen]="isOpen()"
+  title="Aggiungi Posto Dove Mangiare"
+  icon="restaurant"
+  (close)="closed.emit()">
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="form-group">
+      <label class="form-label" for="food_name">Nome del Locale / Ristorante *</label>
+      <input type="text" id="food_name" formControlName="name" class="form-input" placeholder="Es. Cervecería Catalana...">
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="food_category">Tipo Pasto *</label>
+        <select id="food_category" formControlName="category" class="form-select">
+          <option value="lunch">Pranzo</option>
+          <option value="dinner">Cena</option>
+          <option value="snack">Spuntino / Street Food</option>
+          <option value="breakfast">Colazione</option>
+          <option value="aperitivo">Aperitivo / Tapas</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="food_price">Fascia di Prezzo *</label>
+        <select id="food_price" formControlName="priceRange" class="form-select">
+          <option value="€">€ (Economico)</option>
+          <option value="€€">€€ (Medio)</option>
+          <option value="€€€">€€€ (Gourmet)</option>
+          <option value="€€€€">€€€€ (Alta Cucina)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="food_address">Indirizzo Completo</label>
+      <input type="text" id="food_address" formControlName="address" class="form-input">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="food_specialties">Specialità & Piatti Consigliati</label>
+      <input type="text" id="food_specialties" formControlName="specialties" class="form-input">
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="food_hours">Orari</label>
+        <input type="text" id="food_hours" formControlName="openingHours" class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="food_closing">Giorni di Chiusura</label>
+        <input type="text" id="food_closing" formControlName="closingDays" class="form-input">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="food_notes">Note & Prenotazione</label>
+      <textarea id="food_notes" formControlName="notes" class="form-textarea" rows="2"></textarea>
+    </div>
+  </form>
+
+  <div modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="closed.emit()">Annulla</button>
+    <button type="button" class="btn btn-primary" [disabled]="form.invalid" (click)="save()">Salva Locale</button>
+  </div>
+</app-modal>

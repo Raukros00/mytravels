@@ -1,4 +1,11 @@
 @import "leaflet/dist/leaflet.css";
+@import "./styles/_auth.css";
+@import "./styles/_invite.css";
+@import "./styles/_icon-picker.css";
+@import "./styles/_members.css";
+@import "./styles/_trip-shared.css";
+@import "./styles/_explore.css";
+@import "./styles/_hero.css";
 
 @tailwind base;
 @tailwind components;
@@ -185,9 +192,9 @@ body {
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(ellipse at 8% 0%, rgba(171, 47, 10, 0.055) 0%, transparent 50%),
-    radial-gradient(ellipse at 92% 100%, rgba(180, 83, 9, 0.04) 0%, transparent 50%),
-    #FAF7F2;
+    radial-gradient(ellipse at 8% 0%, rgba(171, 47, 10, 0.035) 0%, transparent 50%),
+    radial-gradient(ellipse at 92% 100%, rgba(180, 83, 9, 0.025) 0%, transparent 50%),
+    #FDFBF8;
   color: var(--wb-text-primary);
   line-height: 1.5;
   overflow-x: hidden;

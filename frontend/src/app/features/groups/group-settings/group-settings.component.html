@@ -1,0 +1,133 @@
+<div class="page-wrapper">
+  <div class="app-container settings-container">
+
+    @if (group(); as g) {
+      <a [routerLink]="['/groups', g.id]" class="back-link">
+        <span class="material-symbols-outlined">arrow_back</span>
+        {{ 'groups.settings_back' | translate }}
+      </a>
+
+      <header class="settings-header">
+        <h1 class="settings-title">{{ 'groups.settings_title' | translate }}</h1>
+        <p class="settings-subtitle">{{ g.name }}</p>
+      </header>
+
+      @if (g.archived) {
+        <div class="archived-banner">
+          <span class="material-symbols-outlined">inventory_2</span>
+          {{ 'groups.settings_archived_banner' | translate }}
+        </div>
+      }
+
+      <!-- Notifiche -->
+      <section class="settings-section">
+        <h2 class="settings-section-title">{{ 'groups.settings_notifications' | translate }}</h2>
+        <div class="settings-row">
+          <div class="settings-row-text">
+            <p class="settings-row-label">{{ 'groups.settings_mute_label' | translate }}</p>
+            <p class="settings-row-desc">{{ 'groups.settings_mute_desc' | translate }}</p>
+          </div>
+          <button type="button" class="switch" role="switch"
+                  [class.switch--on]="isMuted()" [attr.aria-checked]="isMuted()"
+                  [attr.aria-label]="'groups.settings_mute_label' | translate"
+                  (click)="toggleMute()">
+            <span class="switch-knob"></span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Generali -->
+      <section class="settings-section">
+        <h2 class="settings-section-title">{{ 'groups.settings_general' | translate }}</h2>
+        <div class="settings-row">
+          <div class="settings-row-text">
+            <p class="settings-row-label">{{ 'groups.settings_currency_label' | translate }}</p>
+            <p class="settings-row-desc">{{ 'groups.settings_currency_desc' | translate }}</p>
+          </div>
+          <select class="form-select settings-select" [disabled]="!isAdmin()"
+                  [value]="g.currency || 'EUR'" (change)="onCurrencyChange($event)">
+            @for (c of currencies; track c.code) {
+              <option [value]="c.code" [selected]="(g.currency || 'EUR') === c.code">{{ c.label }}</option>
+            }
+          </select>
+        </div>
+        @if (!isAdmin()) {
+          <p class="settings-note">{{ 'groups.settings_admin_only' | translate }}</p>
+        }
+      </section>
+
+      <!-- Zona pericolosa -->
+      @if (isAdmin()) {
+        <section class="settings-section">
+          <h2 class="settings-section-title settings-section-title--danger">{{ 'groups.danger_title' | translate }}</h2>
+          <div class="danger-zone">
+            <div class="settings-row">
+              <div class="settings-row-text">
+                <p class="settings-row-label">
+                  {{ (g.archived ? 'groups.settings_unarchive_label' : 'groups.settings_archive_label') | translate }}
+                </p>
+                <p class="settings-row-desc">
+                  {{ (g.archived ? 'groups.settings_unarchive_desc' : 'groups.settings_archive_desc') | translate }}
+                </p>
+              </div>
+              <button type="button" class="btn btn-danger" (click)="toggleArchive()">
+                <span class="material-symbols-outlined">{{ g.archived ? 'unarchive' : 'archive' }}</span>
+                {{ (g.archived ? 'groups.settings_unarchive_btn' : 'groups.settings_archive_btn') | translate }}
+              </button>
+            </div>
+
+            @if (isCreator()) {
+              <div class="settings-row">
+                <div class="settings-row-text">
+                  <p class="settings-row-label">{{ 'groups.danger_delete_label' | translate }}</p>
+                  <p class="settings-row-desc">{{ 'groups.danger_delete_desc' | translate }}</p>
+                </div>
+                <button type="button" class="btn btn-danger btn-danger--solid" (click)="openDeleteConfirm()">
+                  <span class="material-symbols-outlined">delete</span>
+                  {{ 'groups.danger_delete_btn' | translate }}
+                </button>
+              </div>
+            }
+          </div>
+        </section>
+      }
+    } @else {
+      <a routerLink="/groups" class="back-link">
+        <span class="material-symbols-outlined">arrow_back</span>
+        {{ 'groups.back' | translate }}
+      </a>
+    }
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<app-modal
+  [isOpen]="deleteConfirmVisible()"
+  [title]="'groups.delete_title' | translate"
+  icon="delete"
+  (close)="deleteConfirmVisible.set(false)">
+
+  <p style="font-size:0.9rem; color:var(--wb-text-secondary); line-height:1.6">
+    {{ 'groups.delete_text_1' | translate }} <strong>{{ group()?.name }}</strong>.<br>
+    {{ 'groups.delete_text_2' | translate }}
+  </p>
+
+  <div class="form-group" style="margin-top:1rem">
+    <label class="form-label" for="delete-confirm-input">
+      {{ 'groups.delete_confirm_prompt' | translate }} <strong>{{ 'groups.delete_confirm_word' | translate }}</strong>
+    </label>
+    <input id="delete-confirm-input" type="text" class="form-input" autocomplete="off"
+           [value]="deleteConfirmInput()"
+           (input)="deleteConfirmInput.set($any($event.target).value)"
+           [placeholder]="'groups.delete_confirm_word' | translate">
+  </div>
+
+  <div modal-footer>
+    <button type="button" class="btn btn-primary" style="background:#dc2626; border-color:#dc2626"
+            [disabled]="deleteConfirmInput().trim() !== ('groups.delete_confirm_word' | translate)"
+            (click)="deleteGroup()">
+      <span class="material-symbols-outlined">delete</span>
+      {{ 'groups.delete_btn' | translate }}
+    </button>
+  </div>
+</app-modal>

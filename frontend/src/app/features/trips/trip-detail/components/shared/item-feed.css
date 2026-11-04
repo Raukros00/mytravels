@@ -1,0 +1,31 @@
+.item-feed-title{font-family:var(--wb-font-display)}
+
+.meta-pill--price,.meta-pill--free{background:var(--wb-success-surface);color:var(--wb-success);border-color:var(--wb-success-border)}
+.meta-pill--category{background:var(--wb-primary-surface);color:var(--wb-primary);border-color:var(--wb-primary-border)}
+.meta-pill--day{background:var(--wb-secondary-surface);color:var(--wb-secondary);border-color:var(--wb-secondary-border)}
+.meta-pill--hours,.meta-pill--backlog{background:var(--wb-surface-1);color:var(--wb-text-secondary)}
+
+.search-input-wrapper{position:relative;display:flex;align-items:center;margin-bottom:.75rem}
+.search-icon{position:absolute;left:.8rem;color:var(--wb-text-tertiary);font-size:1.15rem;pointer-events:none}
+.search-input{padding-left:2.3rem;padding-right:2.1rem;height:40px;font-size:.85rem}
+.clear-search-btn{position:absolute;right:.5rem;background:none;border:none;color:var(--wb-text-tertiary);cursor:pointer;padding:.2rem;display:flex;align-items:center;justify-content:center}
+
+.items-cards-feed{display:grid;grid-template-columns:1fr;gap:.8rem;margin-bottom:.5rem}
+.item-feed-card{border-radius:var(--wb-radius-md);border:1px solid var(--wb-border);background:var(--wb-surface-0);padding:1.05rem;display:flex;flex-direction:column;gap:.45rem;box-shadow:var(--wb-shadow-xs)}
+.item-feed-card:hover{box-shadow:var(--wb-shadow-sm);border-color:var(--wb-border-strong)}
+.item-feed-header{display:flex;align-items:flex-start;justify-content:space-between;gap:.65rem}
+.item-feed-title-block{flex:1;min-width:0}
+.item-feed-title{margin:0 0 .2rem;font-size:1.025rem;font-weight:700;color:var(--wb-text-primary)}
+.item-feed-address{display:flex;align-items:center;gap:.25rem;margin:0;font-size:.78rem;color:var(--wb-text-secondary)}
+.item-feed-address .material-symbols-outlined{font-size:14px;color:var(--wb-primary)}
+.price-range-badge{font-family:var(--wb-font-mono);font-size:.8rem;font-weight:700;padding:.15rem .55rem;border-radius:var(--wb-radius-full);background:var(--wb-success-surface);color:var(--wb-success);border:1px solid var(--wb-success-border)}
+.item-feed-chips{display:flex;flex-wrap:wrap;gap:.35rem}
+.specialties-highlight-box{background:var(--wb-accent-surface);border-left:3px solid var(--wb-accent);padding:.45rem .65rem;border-radius:0 var(--wb-radius-sm) var(--wb-radius-sm) 0}
+.specialties-title{font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--wb-accent-dark);display:block}
+.specialties-desc{margin:.12rem 0 0;font-size:.8rem;color:var(--wb-text-primary)}
+.item-feed-notes{margin:0;font-size:.78rem;color:var(--wb-text-secondary);line-height:1.4}
+.item-feed-footer{display:flex;align-items:center;justify-content:space-between;padding-top:.55rem;border-top:1px solid var(--wb-border);margin-top:.2rem}
+.item-feed-footer-actions{display:flex;align-items:center;gap:.45rem}
+.btn-delete-ghost{background:transparent;border:none;color:var(--wb-text-tertiary);cursor:pointer;padding:.3rem;border-radius:var(--wb-radius-sm);display:flex;align-items:center;justify-content:center}
+.btn-delete-ghost:hover{color:var(--wb-error);background:var(--wb-error-surface)}
+.food-summary-content{display:flex;flex-direction:column}

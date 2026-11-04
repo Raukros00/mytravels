@@ -108,10 +108,11 @@ export class StorageService {
   }
 
   private initializeSeedData(): void {
-    const existingUsers = this.getItem<User[]>(STORAGE_KEYS.USERS);
-    if (existingUsers && existingUsers.length > 0) {
-      return; // Already initialized
-    }
+    const SEED_VERSION = '10';
+    if (this.getItem<string>('wb_seed_version') === SEED_VERSION) return;
+    // Clear stale data before re-seeding
+    Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
+
 
     const defaultUser: User = {
       id: 'usr_demo_1',
@@ -140,10 +141,16 @@ export class StorageService {
       joinedDate: '2026-02-15'
     };
 
+    const explorer1: User & { role: 'member' } = { id: 'usr_demo_4', name: 'Sofia Conti', email: 'sofia@example.com', avatar: '🌸', color: '#ec4899', joinedDate: '2026-03-01', role: 'member' };
+    const explorer2: User & { role: 'member' } = { id: 'usr_demo_5', name: 'Luca Ferrari', email: 'luca@example.com', avatar: '🏔️', color: '#0ea5e9', joinedDate: '2026-03-05', role: 'member' };
+    const explorer3: User & { role: 'member' } = { id: 'usr_demo_6', name: 'Martina Greco', email: 'martina@example.com', avatar: '🌊', color: '#14b8a6', joinedDate: '2026-03-10', role: 'member' };
+    const explorer4: User & { role: 'member' } = { id: 'usr_demo_7', name: 'Davide Esposito', email: 'davide@example.com', avatar: '🦅', color: '#f59e0b', joinedDate: '2026-03-15', role: 'member' };
+    const explorer5: User & { role: 'member' } = { id: 'usr_demo_8', name: 'Chiara Mancini', email: 'chiara@example.com', avatar: '🦋', color: '#a855f7', joinedDate: '2026-03-20', role: 'member' };
+
     const groups: Group[] = [
       {
         id: 'grp_1',
-        name: 'Weekend Foodies 🍕',
+        name: 'Weekend Foodies',
         description: 'Amanti del buon cibo e dei viaggi on-the-road culinari nel weekend.',
         icon: '🍕',
         color: '#f97316',
@@ -157,8 +164,26 @@ export class StorageService {
         ]
       },
       {
+        id: 'grp_3',
+        name: 'Gli Esploratori',
+        description: 'Viaggi off the beaten path, trekking, borghi nascosti e avventure senza mappa.',
+        icon: '🧭',
+        color: '#8b5cf6',
+        creatorId: defaultUser.id,
+        inviteCode: 'EXPLOR-888',
+        createdAt: '2026-05-20',
+        members: [
+          { id: defaultUser.id, name: defaultUser.name, avatar: defaultUser.avatar, role: 'admin', color: defaultUser.color },
+          { id: explorer1.id, name: explorer1.name, avatar: explorer1.avatar, role: explorer1.role, color: explorer1.color },
+          { id: explorer2.id, name: explorer2.name, avatar: explorer2.avatar, role: explorer2.role, color: explorer2.color },
+          { id: explorer3.id, name: explorer3.name, avatar: explorer3.avatar, role: explorer3.role, color: explorer3.color },
+          { id: explorer4.id, name: explorer4.name, avatar: explorer4.avatar, role: explorer4.role, color: explorer4.color },
+          { id: explorer5.id, name: explorer5.name, avatar: explorer5.avatar, role: explorer5.role, color: explorer5.color }
+        ]
+      },
+      {
         id: 'grp_2',
-        name: 'Giappone & Oriente 🗾',
+        name: 'Giappone & Oriente',
         description: 'Esplorazione culturale e gastronomica tra Tokyo, Kyoto e Osaka.',
         icon: '🍜',
         color: '#4f46e5',
@@ -459,6 +484,24 @@ export class StorageService {
         placesToEat: []
       },
       {
+        id: 'trip_4',
+        groupId: 'grp_1',
+        title: 'Weekend a Bologna: Tortellini, Mortadella & Osterie',
+        destination: 'Bologna',
+        country: 'Italia',
+        startDate: '2026-09-29',
+        endDate: '2026-10-04',
+        coverUrl: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80',
+        status: 'ongoing',
+        budgetEstimate: 420,
+        currency: 'EUR',
+        tags: ['Tortellini', 'Osterie', 'Portici'],
+        notes: 'Giro dei Quadrilatero e cena in osteria con tagliere misto.',
+        createdAt: '2026-08-20',
+        activities: [],
+        placesToEat: []
+      },
+      {
         id: 'trip_3',
         groupId: 'grp_2',
         title: 'Tokyo & Kyoto: Ramen, Sushi & Templi',
@@ -478,12 +521,24 @@ export class StorageService {
       }
     ];
 
-    this.setUsers([defaultUser, friend1, friend2]);
+    const tester1: User = { id: 'usr_test_1', name: 'Francesca Romano', email: 'francesca@example.com', avatar: '🌺', color: '#e11d48', joinedDate: '2026-04-01' };
+    const tester2: User = { id: 'usr_test_2', name: 'Andrea Moretti', email: 'andrea@example.com', avatar: '🎵', color: '#7c3aed', joinedDate: '2026-04-05' };
+    const tester3: User = { id: 'usr_test_3', name: 'Elena Ricci', email: 'elena@example.com', avatar: '🦉', color: '#059669', joinedDate: '2026-04-10' };
+    const tester4: User = { id: 'usr_test_4', name: 'Matteo Colombo', email: 'matteo@example.com', avatar: '🚀', color: '#dc2626', joinedDate: '2026-04-15' };
+    const tester5: User = { id: 'usr_test_5', name: 'Valentina Serra', email: 'valentina@example.com', avatar: '🌙', color: '#d97706', joinedDate: '2026-04-20' };
+    const tester6: User = { id: 'usr_test_6', name: 'Roberto Marini', email: 'roberto@example.com', avatar: '🎭', color: '#0891b2', joinedDate: '2026-04-25' };
+
+    // Utenti con nomi duplicati per testare il dropdown dei suggerimenti
+    const dup1: User = { id: 'usr_dup_1', name: 'Marco Rossi', email: 'marco.rossi2@example.com', avatar: '🏕️', color: '#64748b', joinedDate: '2026-05-01' };
+    const dup2: User = { id: 'usr_dup_2', name: 'Giulia Bianchi', email: 'giulia.bianchi2@example.com', avatar: '🎨', color: '#c026d3', joinedDate: '2026-05-03' };
+    const dup3: User = { id: 'usr_dup_3', name: 'Luca Ferrari', email: 'luca.ferrari2@example.com', avatar: '⛷️', color: '#0369a1', joinedDate: '2026-05-05' };
+
+    this.setUsers([defaultUser, friend1, friend2, explorer1, explorer2, explorer3, explorer4, explorer5, tester1, tester2, tester3, tester4, tester5, tester6, dup1, dup2, dup3]);
     this.setGroups(groups);
     this.setActiveGroupId('grp_1');
     this.setTrips(trips);
     this.setCurrentUser(defaultUser);
-    // Initialize JWT storage as empty
     this.clearJwt();
+    this.setItem('wb_seed_version', SEED_VERSION);
   }
 }

@@ -1,20 +1,18 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-empty-state',
   standalone: true,
-  imports: [CommonModule],
   templateUrl: './empty-state.component.html',
   styleUrl: './empty-state.component.css'
 })
 export class EmptyStateComponent {
-  @Input() icon = '🗺️';
-  @Input() materialIcon = '';
-  @Input() title = 'Nessun elemento trovato';
-  @Input() description = 'Inizia creando il tuo primo itinerario o aggiungendo nuovi dettagli.';
-  @Input() actionLabel = '';
-  @Input() actionIcon = '';
-  @Input() actionMaterialIcon = 'add';
-  @Output() action = new EventEmitter<void>();
+  readonly icon = input('🗺️');
+  readonly materialIcon = input('');
+  readonly title = input('Nessun elemento trovato');
+  readonly description = input( 'Inizia creando il tuo primo itinerario o aggiungendo nuovi dettagli.');
+  readonly actionLabel = input('');
+  readonly actionIcon = input('');
+  readonly actionMaterialIcon = input('add');
+  readonly action = output<void>();
 }

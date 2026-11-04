@@ -1,0 +1,37 @@
+<section class="dp card" [class.dp--locked]="locked()">
+  <header class="dp-header">
+    <span class="dp-day">{{ day() }}</span>
+    <div class="dp-titles">
+      <h3 class="dp-title">Giorno {{ day() }}</h3>
+      <p class="dp-counts">{{ countsLabel() }}</p>
+    </div>
+    @if (locked()) {
+      <span class="material-symbols-outlined dp-lock" aria-hidden="true">lock</span>
+    }
+  </header>
+
+  @if (locked()) {
+    <div class="dp-teaser">
+      <div class="dp-teaser-lines" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <button type="button" class="btn btn-outline btn-sm dp-teaser-btn" (click)="unlock.emit()">
+        <span class="material-symbols-outlined">lock_open</span> Assegna a un gruppo per sbloccare
+      </button>
+    </div>
+  } @else {
+    <ol class="dp-timeline">
+      @for (item of items(); track item.id) {
+        <li class="dp-item">
+          <span class="dp-icon" [class.dp-icon--food]="item.kind === 'food'">
+            <span class="material-symbols-outlined">{{ item.icon }}</span>
+          </span>
+          <div class="dp-item-text">
+            <span class="dp-time">{{ item.timeSlot }}</span>
+            <span class="dp-name">{{ item.name }}</span>
+          </div>
+        </li>
+      }
+    </ol>
+  }
+</section>

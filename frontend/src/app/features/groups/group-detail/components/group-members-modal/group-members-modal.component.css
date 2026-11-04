@@ -1,0 +1,26 @@
+/* Modal members list */
+.member-row--pending { opacity: 0.7; }
+.member-avatar--pending { opacity: 0.6; }
+.pending-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--wb-text-tertiary);
+  flex-shrink: 0;
+}
+.pending-badge .material-symbols-outlined { font-size: 0.95rem; }
+.modal-pending-section {
+  margin-top: 1rem;
+  border-top: 1px dashed var(--wb-border);
+  padding-top: 0.75rem;
+}
+.modal-pending-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--wb-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.5rem;
+}

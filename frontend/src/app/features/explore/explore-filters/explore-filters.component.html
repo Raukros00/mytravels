@@ -1,0 +1,41 @@
+<div class="ex-search">
+  <span class="material-symbols-outlined">search</span>
+  <input
+    type="search"
+    class="ex-search-input"
+    placeholder="Cerca una destinazione, un paese o un tema…"
+    aria-label="Cerca viaggi"
+    [ngModel]="filters().text"
+    (ngModelChange)="textChange.emit($event)">
+</div>
+
+<div class="ex-tags no-scrollbar" role="group" aria-label="Filtra per tag">
+  @for (tag of tags(); track tag) {
+    <button type="button" class="ex-chip" [class.ex-chip--active]="filters().tags.includes(tag)" (click)="tagToggle.emit(tag)">
+      {{ tag }}
+    </button>
+  }
+</div>
+
+<div class="ex-selects">
+  <select class="form-select" aria-label="Durata" [ngModel]="filters().duration" (ngModelChange)="durationChange.emit($event)">
+    @for (d of durations; track d.value) {
+      <option [value]="d.value">{{ d.label }}</option>
+    }
+  </select>
+  <select class="form-select" aria-label="Budget massimo" [ngModel]="filters().maxBudget" (ngModelChange)="budgetChange.emit(+$event)">
+    @for (b of budgets; track b.value) {
+      <option [ngValue]="b.value">{{ b.label }}</option>
+    }
+  </select>
+  <select class="form-select" aria-label="Ordina per" [ngModel]="filters().sort" (ngModelChange)="sortChange.emit($event)">
+    @for (s of sorts; track s.value) {
+      <option [value]="s.value">{{ s.label }}</option>
+    }
+  </select>
+  @if (hasActive()) {
+    <button type="button" class="btn btn-ghost btn-sm" (click)="reset.emit()">
+      <span class="material-symbols-outlined">close</span> Azzera filtri
+    </button>
+  }
+</div>

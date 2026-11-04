@@ -1,0 +1,58 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.ex-search {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.35rem 1.25rem;
+  background: var(--wb-surface-0);
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius-full);
+  box-shadow: var(--wb-shadow-md);
+  transition: border-color 150ms var(--wb-ease), box-shadow 150ms var(--wb-ease);
+}
+
+.ex-search:focus-within {
+  border-color: var(--wb-border-focus);
+  box-shadow: var(--wb-shadow-lg);
+}
+
+.ex-search .material-symbols-outlined { color: var(--wb-primary); font-size: 1.5rem; }
+
+.ex-search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0.8rem 0;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--wb-text-primary);
+}
+
+.ex-tags {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.15rem 0.1rem;
+}
+
+.ex-selects {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.ex-selects .form-select {
+  width: auto;
+  flex: 1 1 11rem;
+  max-width: 16rem;
+  border-radius: var(--wb-radius-full);
+}

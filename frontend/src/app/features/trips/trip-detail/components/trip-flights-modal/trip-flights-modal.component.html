@@ -1,0 +1,82 @@
+<app-modal
+  [isOpen]="isOpen()"
+  title="Dettagli Voli A/R"
+  icon="flight"
+  maxWidth="680px"
+  (close)="closed.emit()">
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <h4 class="form-sub-header"><span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle">flight_takeoff</span> Volo di Andata</h4>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Compagnia</label>
+        <input type="text" formControlName="outAirline" class="form-input" placeholder="Es. Vueling">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Codice Volo</label>
+        <input type="text" formControlName="outFlightNum" class="form-input" placeholder="Es. VY6101">
+      </div>
+    </div>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Aeroporto Partenza</label>
+        <input type="text" formControlName="outDepAirport" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data & Ora Decollo</label>
+        <input type="datetime-local" formControlName="outDepTime" class="form-input">
+      </div>
+    </div>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Aeroporto Arrivo</label>
+        <input type="text" formControlName="outArrAirport" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data & Ora Atterraggio</label>
+        <input type="datetime-local" formControlName="outArrTime" class="form-input">
+      </div>
+    </div>
+
+    <h4 class="form-sub-header mt-3"><span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle">flight_land</span> Volo di Ritorno</h4>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Compagnia</label>
+        <input type="text" formControlName="retAirline" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Codice Volo</label>
+        <input type="text" formControlName="retFlightNum" class="form-input">
+      </div>
+    </div>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Aeroporto Partenza</label>
+        <input type="text" formControlName="retDepAirport" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data & Ora Decollo</label>
+        <input type="datetime-local" formControlName="retDepTime" class="form-input">
+      </div>
+    </div>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Aeroporto Arrivo</label>
+        <input type="text" formControlName="retArrAirport" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data & Ora Atterraggio</label>
+        <input type="datetime-local" formControlName="retArrTime" class="form-input">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Codice PNR</label>
+      <input type="text" formControlName="pnr" class="form-input font-mono">
+    </div>
+  </form>
+
+  <div modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="closed.emit()">Annulla</button>
+    <button type="button" class="btn btn-primary" (click)="save()">Salva Voli</button>
+  </div>
+</app-modal>

@@ -1,0 +1,39 @@
+<div class="boarding-pass-card">
+  <div class="boarding-pass-header" [class.boarding-pass-header--outbound]="isOutbound()" [class.boarding-pass-header--return]="!isOutbound()">
+    <div class="boarding-pass-badge">
+      <span class="material-symbols-outlined" style="font-size:16px">{{ isOutbound() ? 'flight_takeoff' : 'flight_land' }}</span>
+      <span>{{ isOutbound() ? 'Volo di Andata' : 'Volo di Ritorno' }}</span>
+    </div>
+    <span class="boarding-pass-num">{{ flight()?.flightNumber || 'Da definire' }}</span>
+  </div>
+
+  <div class="boarding-pass-body">
+    <div class="flight-route-flex">
+      <div class="flight-city-col">
+        <span class="airport-code-large">{{ airportCode(flight()?.departureAirport) }}</span>
+        <span class="airport-city-name">{{ flight()?.departureCity || 'Partenza' }}</span>
+        <span class="flight-time-val">{{ formatDateTime(flight()?.departureDateTime) }}</span>
+      </div>
+
+      <div class="flight-path-col">
+        <span class="flight-airline-name">{{ flight()?.airline || 'Compagnia' }}</span>
+        <div class="flight-line-track">
+          <span class="material-symbols-outlined flight-plane-icon">flight</span>
+        </div>
+      </div>
+
+      <div class="flight-city-col flight-city-col--right">
+        <span class="airport-code-large">{{ airportCode(flight()?.arrivalAirport) }}</span>
+        <span class="airport-city-name">{{ flight()?.arrivalCity || 'Arrivo' }}</span>
+        <span class="flight-time-val">{{ formatDateTime(flight()?.arrivalDateTime) }}</span>
+      </div>
+    </div>
+
+    @if (flight()?.bookingReference) {
+      <div class="pnr-strip">
+        <span class="pnr-label">Codice PNR / Prenotazione</span>
+        <strong class="pnr-code">{{ flight()?.bookingReference }}</strong>
+      </div>
+    }
+  </div>
+</div>

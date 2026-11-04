@@ -1,0 +1,20 @@
+.main-grid,.section-card,.new-trip-btn,.item-feed-card,.filter-pill-btn,.btn-delete-ghost{transition:all 150ms var(--wb-ease)}
+.section-title{font-family:var(--wb-font-display)}
+
+.main-grid>.section-card{margin-bottom:0}
+.right-col>.section-card{margin-bottom:0}
+@media(max-width:860px){.main-grid{grid-template-columns:1fr}}
+
+.section-card{padding:1.25rem 1.4rem;margin-bottom:1rem;overflow:visible}
+.section-header{display:flex;align-items:flex-start;gap:.65rem;margin-bottom:1rem}
+.section-icon{font-size:1.25rem;color:var(--wb-primary);margin-top:.1rem;flex-shrink:0}
+.section-title{font-size:1rem;font-weight:700;margin:0 0 .15rem;color:var(--wb-text-primary)}
+.trip-counter{margin-left:auto;background:var(--wb-surface-1);border:1px solid var(--wb-border);color:var(--wb-text-secondary);border-radius:var(--wb-radius-full);font-size:.72rem;font-weight:700;padding:.12rem .5rem;flex-shrink:0}
+.new-trip-btn{width:100%;border:1.5px dashed var(--wb-border);border-radius:var(--wb-radius-md);background:transparent;padding:.7rem;color:var(--wb-text-secondary);font-family:var(--wb-font-body);font-weight:600;font-size:.85rem;display:flex;align-items:center;justify-content:center;gap:.35rem;cursor:pointer;margin-top:.75rem}
+.new-trip-btn:hover{border-color:var(--wb-primary);color:var(--wb-primary);background:var(--wb-primary-surface)}
+.mt-3{margin-top:.75rem}
+
+.filter-pills-row{display:flex;gap:.35rem;overflow-x:auto;padding:.15rem 0 .75rem;margin-bottom:.65rem;-webkit-overflow-scrolling:touch}
+.filter-pill-btn{padding:.35rem .8rem;border-radius:var(--wb-radius-full);border:1.5px solid var(--wb-border);background:var(--wb-surface-0);color:var(--wb-text-secondary);font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:.3rem}
+.filter-pill-btn:hover{background:var(--wb-surface-1);border-color:var(--wb-border-strong);color:var(--wb-text-primary)}
+.filter-pill-btn--active{background:var(--wb-primary-surface);border-color:var(--wb-primary);color:var(--wb-primary);font-weight:700}

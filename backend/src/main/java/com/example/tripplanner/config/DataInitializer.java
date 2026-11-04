@@ -158,6 +158,7 @@ public class DataInitializer implements CommandLineRunner {
         req.setCoverUrl(cover);
         req.setBudgetEstimate(budget);
         req.setCurrency(currency);
+        req.setDecision("confirmed");
         req.setTags(tags);
         req.setNotes(notes);
         Trip trip = tripService.createTrip(req);

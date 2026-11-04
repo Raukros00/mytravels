@@ -1,0 +1,8 @@
+:host { display: block; }
+
+/* ── Invite section ───────────────────────────────── */
+.invite-dropdown {
+  max-height: 200px;
+  overflow: auto;
+}
+

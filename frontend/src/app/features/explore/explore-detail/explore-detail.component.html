@@ -1,0 +1,110 @@
+<div class="page-wrapper">
+  <div class="app-container">
+    <a routerLink="/explore" class="ed-back"><span class="material-symbols-outlined">arrow_back</span> Esplora</a>
+
+    @if (template(); as t) {
+      <div class="ed-hero animate-fade-in">
+        <img [src]="t.coverUrl" [alt]="t.title" class="ed-hero-img">
+        <div class="ed-hero-veil"></div>
+        <div class="ed-hero-content">
+          <div class="ed-hero-tags">
+            @for (tag of t.tags; track tag) {
+              <span class="ex-badge">{{ tag }}</span>
+            }
+          </div>
+          <h1 class="ed-title">{{ t.title }}</h1>
+          <p class="ed-place"><span class="material-symbols-outlined">location_on</span>{{ t.destination }}, {{ t.country }}</p>
+        </div>
+      </div>
+
+      <div class="ed-layout">
+        <div class="ed-main">
+          <div class="ed-byline">
+            <span class="ex-author">
+              <span class="ex-author-bubble" [style.background-color]="t.authorColor || 'var(--wb-primary)'">{{ t.authorName.charAt(0) }}</span>
+              Itinerario di <strong>{{ t.authorName }}</strong>
+            </span>
+            <span class="ex-rating">
+              <span class="material-symbols-outlined">star</span>{{ formatRating(t.rating) }}
+              <small>({{ t.reviewsCount }} recensioni)</small>
+            </span>
+            <span class="ed-uses"><span class="material-symbols-outlined">group</span>usato da {{ t.usesCount }} gruppi</span>
+          </div>
+
+          <div class="ed-stats">
+            <div class="ed-stat"><span class="material-symbols-outlined">calendar_month</span><strong>{{ daysLabel(t.durationDays) }}</strong></div>
+            <div class="ed-stat"><span class="material-symbols-outlined">payments</span><strong>{{ formatBudget(t.budgetEstimate, t.currency) }}</strong> a persona</div>
+            <div class="ed-stat"><span class="material-symbols-outlined">attractions</span><strong>{{ t.activities.length }}</strong> attività</div>
+            <div class="ed-stat"><span class="material-symbols-outlined">restaurant</span><strong>{{ t.placesToEat.length }}</strong> locali</div>
+          </div>
+
+          <section class="ed-section">
+            <h2 class="ed-h2">Descrizione</h2>
+            <p class="ed-text">{{ t.description }}</p>
+          </section>
+
+          @if (highlights().length > 0) {
+            <section class="ed-section">
+              <h2 class="ed-h2">Highlights</h2>
+              <ul class="ed-highlights">
+                @for (h of highlights(); track h.name) {
+                  <li class="ed-highlight">
+                    <span class="material-symbols-outlined">{{ h.icon }}</span>
+                    <span class="ed-highlight-name">{{ h.name }}</span>
+                    @if (h.hint) {
+                      <span class="ed-highlight-hint">{{ h.hint }}</span>
+                    }
+                  </li>
+                }
+              </ul>
+            </section>
+          }
+
+          <section class="ed-section">
+            <h2 class="ed-h2">Itinerario</h2>
+            <p class="ed-text">Ti mostriamo i primi {{ freeDays }} giorni. Il resto si sblocca quando assegni l'itinerario a un gruppo.</p>
+            <div class="ed-days">
+              @for (d of days(); track d.day) {
+                <app-day-preview [day]="d.day" [items]="d.items" [locked]="d.locked" (unlock)="openAssign()" />
+              }
+            </div>
+          </section>
+
+          @if (mapStops().length > 0) {
+            <section class="ed-section">
+              <h2 class="ed-h2">Mappa del Giorno 1</h2>
+              <app-interactive-map [stops]="mapStops()" [defaultCenter]="mapCenter()" [showRoute]="true" />
+            </section>
+          }
+        </div>
+
+        <aside class="ed-aside">
+          <div class="ed-booking card">
+            <div class="ed-price"><strong>{{ formatBudget(t.budgetEstimate, t.currency) }}</strong><span>a persona (stima)</span></div>
+            <ul class="ed-booking-list">
+              <li><span class="material-symbols-outlined">calendar_month</span>{{ daysLabel(t.durationDays) }}</li>
+              <li><span class="material-symbols-outlined">attractions</span>{{ t.activities.length }} attività e {{ t.placesToEat.length }} locali</li>
+              <li><span class="material-symbols-outlined">edit</span>Modificabile liberamente dopo l'assegnazione</li>
+            </ul>
+            <button type="button" class="btn btn-primary btn-lg w-full" (click)="openAssign()">
+              <span class="material-symbols-outlined">group_add</span> Assegna a un gruppo
+            </button>
+            @if (hasLockedDays()) {
+              <p class="ed-booking-note">Assegna a un gruppo per sbloccare l'itinerario completo.</p>
+            }
+          </div>
+        </aside>
+      </div>
+
+      <app-explore-assign-modal [isOpen]="isAssignOpen()" [template]="t" (closed)="isAssignOpen.set(false)" />
+    } @else {
+      <app-empty-state
+        materialIcon="travel_explore"
+        title="Itinerario non trovato"
+        description="Questo itinerario non esiste o non è più disponibile."
+        actionLabel="Torna a Esplora"
+        actionMaterialIcon="arrow_back"
+        (action)="goBack()" />
+    }
+  </div>
+</div>

@@ -1,0 +1,147 @@
+    <div class="section-header">
+      <span class="material-symbols-outlined section-icon">luggage</span>
+      <div>
+        <h2 class="section-title">{{ 'groups.trips_title' | translate }}</h2>
+      </div>
+      <span class="trip-counter">{{ trips().length }}</span>
+    </div>
+
+    @if (trips().length > 0) {
+      <div #tripsScroller class="trips-scroll" [class.trips-scroll--expanded]="expanded()"
+           (scroll)="onScroll($event)">
+      <div class="trips-grid">
+        @for (card of visibleTrips(); track card.trip.id) {
+    @let trip = card.trip;
+          <div class="trip-card" [class]="'trip-card--' + card.status">
+            <div class="trip-cover" [style.background-image]="'url(' + trip.coverUrl + ')'">
+              <span class="trip-status" [class]="'trip-status--' + card.status">
+                <span class="material-symbols-outlined">{{ card.icon }}</span>
+                {{ 'groups.trip_status_' + card.status | translate }}
+              </span>
+            </div>
+            <div class="trip-body">
+              <h3 class="trip-title">{{ trip.title }}</h3>
+              <p class="trip-place">
+                <span class="material-symbols-outlined">location_on</span>
+                {{ trip.destination }}{{ trip.country ? ', ' + trip.country : '' }}
+              </p>
+              <p class="trip-meta">
+                <span class="material-symbols-outlined">calendar_today</span>
+                {{ trip.startDate | date:'d MMM' }} — {{ trip.endDate | date:'d MMM y' }}
+                <span class="trip-meta-sep">·</span>
+                {{ 'groups.trip_days' | translate: { count: card.days } }}
+              </p>
+              @if (card.note; as note) {
+                <div class="trip-note" [class]="'trip-note--' + card.status">
+                  {{ note.key | translate: note.params }}
+                  @if (note.progress !== undefined) {
+                    <div class="trip-progress"><div class="trip-progress-fill" [style.width.%]="note.progress"></div></div>
+                  }
+                </div>
+              }
+              <div class="trip-stats">
+                <span class="trip-stat" [title]="'groups.trip_activities' | translate">
+                  <span class="material-symbols-outlined">local_activity</span>{{ trip.activities?.length ?? 0 }}
+                </span>
+                <span class="trip-stat" [title]="'groups.trip_places' | translate">
+                  <span class="material-symbols-outlined">restaurant</span>{{ trip.placesToEat?.length ?? 0 }}
+                </span>
+                @if (trip.budgetEstimate) {
+                  <span class="trip-stat trip-stat--budget">
+                    {{ trip.budgetEstimate | currency:trip.currency:'symbol':'1.0-0' }}
+                  </span>
+                }
+              </div>
+              <a [routerLink]="['/trips', trip.id]" class="btn btn-secondary trip-open-btn">
+                {{ 'groups.trip_view' | translate }}
+                <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+      @if (hasMore()) {
+        <div class="trips-loading"><span class="material-symbols-outlined">progress_activity</span></div>
+      }
+      </div>
+      @if (canExpand()) {
+        @if (expanded()) {
+          <button type="button" class="link-btn link-btn--right" (click)="collapse(tripsScroller)">
+            {{ 'groups.trips_show_less' | translate }}
+            <span class="material-symbols-outlined">expand_less</span>
+          </button>
+        } @else {
+          <button type="button" class="link-btn link-btn--right" (click)="expand()">
+            {{ 'groups.trips_see_all' | translate }} ({{ trips().length }})
+            <span class="material-symbols-outlined">expand_more</span>
+          </button>
+        }
+      }
+    } @else {
+      <div class="trips-empty">
+        <span class="material-symbols-outlined trips-empty-icon">flight_takeoff</span>
+        <p>{{ 'groups.trips_empty' | translate }}</p>
+      </div>
+    }
+
+    @if (proposals().length > 0) {
+      <div class="proposals-header">
+        <h3 class="proposals-title">{{ 'groups.proposals_title' | translate }}</h3>
+        <span class="trip-counter">{{ proposals().length }}</span>
+      </div>
+      <div class="trips-grid">
+        @for (p of proposalCards(); track p.trip.id) {
+    @let trip = p.trip;
+          <div class="trip-card">
+            <div class="trip-cover" [style.background-image]="'url(' + trip.coverUrl + ')'">
+              <span class="trip-status trip-status--proposal">
+                <span class="material-symbols-outlined">how_to_vote</span>
+                {{ 'groups.trip_status_proposal' | translate }}
+              </span>
+            </div>
+            <div class="trip-body">
+              <h3 class="trip-title">{{ trip.title }}</h3>
+              <p class="trip-place">
+                <span class="material-symbols-outlined">location_on</span>
+                {{ trip.destination }}{{ trip.country ? ', ' + trip.country : '' }}
+              </p>
+              <p class="trip-meta">
+                <span class="material-symbols-outlined">calendar_today</span>
+                {{ trip.startDate | date:'d MMM' }} — {{ trip.endDate | date:'d MMM y' }}
+                <span class="trip-meta-sep">·</span>
+                {{ 'groups.trip_days' | translate: { count: p.days } }}
+              </p>
+              @if (p.proposer) {
+                <p class="trip-meta">
+                  <span class="material-symbols-outlined">person</span>
+                  {{ 'groups.proposal_by' | translate: { name: p.proposer } }}
+                </p>
+              }
+              <div class="vote-box">
+                <div class="vote-bar">
+                  <div class="vote-bar-fill" [style.width.%]="(p.votes / p.needed) * 100"></div>
+                </div>
+                <span class="vote-count">
+                  {{ 'groups.proposal_votes' | translate: { votes: p.votes, needed: p.needed } }}
+                </span>
+              </div>
+              <div class="proposal-actions">
+                <button type="button" class="btn" [class.btn-primary]="!p.hasVoted" [class.btn-secondary]="p.hasVoted"
+                        (click)="toggleVote(trip)">
+                  <span class="material-symbols-outlined" style="font-size:18px">{{ p.hasVoted ? 'undo' : 'thumb_up' }}</span>
+                  {{ (p.hasVoted ? 'groups.proposal_unvote' : 'groups.proposal_vote') | translate }}
+                </button>
+                <a [routerLink]="['/trips', trip.id]" class="btn btn-secondary">
+                  {{ 'groups.trip_view' | translate }}
+                </a>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <button type="button" class="new-trip-btn" (click)="createTrip()">
+      <span class="material-symbols-outlined">add</span>
+      {{ 'groups.new_trip' | translate }}
+    </button>

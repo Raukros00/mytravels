@@ -1,0 +1,40 @@
+<a class="ex-card" [routerLink]="['/explore', template().id]">
+  <div class="ex-card-cover">
+    <img [src]="template().coverUrl" [alt]="template().title" loading="lazy">
+    <div class="ex-card-badges">
+      @if (isTop()) {
+        <span class="ex-badge"><span class="material-symbols-outlined">workspace_premium</span>Più scelto</span>
+      } @else if (template().tags.length > 0) {
+        <span class="ex-badge">{{ template().tags[0] }}</span>
+      }
+    </div>
+  </div>
+
+  <div class="ex-card-body">
+    <div class="ex-card-row">
+      <h3 class="ex-card-title">{{ template().title }}</h3>
+      <span class="ex-rating">
+        <span class="material-symbols-outlined">star</span>{{ formatRating(template().rating) }}
+        <small>({{ template().reviewsCount }})</small>
+      </span>
+    </div>
+
+    <p class="ex-card-place">{{ template().destination }}, {{ template().country }}</p>
+
+    <p class="ex-meta-line">
+      <span>{{ daysLabel(template().durationDays) }}</span>
+      <span class="ex-dot">·</span>
+      <span>da <strong>{{ formatBudget(template().budgetEstimate, template().currency) }}</strong> a persona</span>
+    </p>
+
+    <div class="ex-card-footer">
+      <span class="ex-author">
+        <span class="ex-author-bubble" [style.background-color]="template().authorColor || 'var(--wb-primary)'">{{ template().authorName.charAt(0) }}</span>
+        di {{ template().authorName }}
+      </span>
+      <span class="ex-card-uses">
+        <span class="material-symbols-outlined">group</span>usato da {{ template().usesCount }} gruppi
+      </span>
+    </div>
+  </div>
+</a>

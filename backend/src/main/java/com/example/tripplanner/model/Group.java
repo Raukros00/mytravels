@@ -40,6 +40,17 @@ public class Group implements Persistable<String> {
     @Column(name = "created_at")
     private String createdAt;
 
+    private String currency;
+
+    @Builder.Default
+    private Boolean archived = false;
+
+    @ElementCollection
+    @CollectionTable(name = "group_muted_users", joinColumns = @JoinColumn(name = "group_id"))
+    @Column(name = "user_id")
+    @Builder.Default
+    private List<String> mutedBy = new ArrayList<>();
+
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<GroupMember> members = new ArrayList<>();

@@ -1,0 +1,52 @@
+<app-modal
+  [isOpen]="isOpen()"
+  title="Dettagli Alloggio & Hotel"
+  icon="hotel"
+  (close)="closed.emit()">
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="form-group">
+      <label class="form-label">Nome Hotel / Struttura *</label>
+      <input type="text" formControlName="name" class="form-input">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Indirizzo Completo *</label>
+      <input type="text" formControlName="address" class="form-input">
+    </div>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Data Check-in</label>
+        <div class="d-flex gap-1">
+          <input type="date" formControlName="checkInDate" class="form-input">
+          <input type="time" formControlName="checkInTime" class="form-input" style="max-width: 110px;">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data Check-out</label>
+        <div class="d-flex gap-1">
+          <input type="date" formControlName="checkOutDate" class="form-input">
+          <input type="time" formControlName="checkOutTime" class="form-input" style="max-width: 110px;">
+        </div>
+      </div>
+    </div>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Codice Prenotazione</label>
+        <input type="text" formControlName="bookingCode" class="form-input font-mono">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Telefono / Email</label>
+        <input type="text" formControlName="phoneOrContact" class="form-input">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Note</label>
+      <textarea formControlName="notes" class="form-textarea" rows="2"></textarea>
+    </div>
+  </form>
+
+  <div modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="closed.emit()">Annulla</button>
+    <button type="button" class="btn btn-primary" (click)="save()">Salva Alloggio</button>
+  </div>
+</app-modal>

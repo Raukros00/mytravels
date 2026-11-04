@@ -1,0 +1,36 @@
+:host{display:block}
+.sub-section-title,.hotel-title{font-family:var(--wb-font-display)}
+
+.logistics-content-block{display:flex;flex-direction:column;gap:1rem}
+.sub-section-header{display:flex;align-items:center;justify-content:space-between;gap:.65rem;margin-bottom:.2rem}
+.sub-section-title{font-size:.95rem;font-weight:700;margin:0;color:var(--wb-text-primary)}
+.flight-return{margin-top:.75rem}
+
+/* Hotel */
+.hotel-details-card,.transfers-card{display:flex;flex-direction:column;gap:.9rem}
+.hotel-details-header{display:flex;align-items:center;gap:.85rem}
+.hotel-icon-badge{width:44px;height:44px;border-radius:var(--wb-radius-md);background:var(--wb-secondary-surface);color:var(--wb-secondary);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hotel-icon-badge .material-symbols-outlined{font-size:24px}
+.hotel-title{margin:0 0 .15rem;font-size:1.1rem;font-weight:700;color:var(--wb-text-primary)}
+.hotel-address{margin:0;font-size:.8rem;color:var(--wb-text-secondary);display:flex;align-items:center;gap:.25rem}
+.hotel-address .material-symbols-outlined{font-size:14px;color:var(--wb-primary)}
+.hotel-check-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+.check-box{padding:.65rem .85rem;border-radius:var(--wb-radius-md);border:1px solid var(--wb-border);background:var(--wb-surface-1);display:flex;flex-direction:column;gap:.15rem}
+.check-box-header{display:flex;align-items:center;gap:.25rem;font-size:.72rem;font-weight:700;color:var(--wb-text-secondary)}
+.check-box-header .material-symbols-outlined{font-size:14px}
+.check-box-date{font-size:.9rem;color:var(--wb-text-primary)}
+.check-box-hour{font-size:.75rem;color:var(--wb-text-tertiary)}
+.notes-banner{display:flex;align-items:flex-start;gap:.45rem;padding:.65rem .85rem;background:var(--wb-accent-surface);border-left:3px solid var(--wb-accent);border-radius:0 var(--wb-radius-sm) var(--wb-radius-sm) 0;font-size:.8rem;color:var(--wb-accent-dark)}
+.notes-banner p{margin:0;line-height:1.4}
+
+/* Transfers */
+.transfer-highlights-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem}
+.highlight-item{padding:.65rem;background:var(--wb-surface-1);border-radius:var(--wb-radius-md);border:1px solid var(--wb-border);display:flex;flex-direction:column;gap:.2rem}
+.highlight-label{font-size:.7rem;font-weight:600;color:var(--wb-text-tertiary);text-transform:uppercase}
+.highlight-value{font-size:.9rem;font-weight:700;color:var(--wb-text-primary)}
+.transfer-info-card{display:flex;align-items:flex-start;gap:.65rem;padding:.75rem .9rem;background:var(--wb-surface-1);border-radius:var(--wb-radius-md);border:1px solid var(--wb-border)}
+.transfer-info-card--warning{background:var(--wb-accent-surface);border-color:var(--wb-accent-border)}
+.info-icon{color:var(--wb-primary);font-size:19px;margin-top:.1rem;flex-shrink:0}
+.transfer-info-card--warning .info-icon{color:var(--wb-accent)}
+.info-title{margin:0 0 .15rem;font-size:.85rem;font-weight:700;color:var(--wb-text-primary)}
+.info-desc{margin:0;font-size:.8rem;color:var(--wb-text-secondary);line-height:1.4}
