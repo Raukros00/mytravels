@@ -6,7 +6,13 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "e2e:stack": "docker compose -f ../docker-compose.e2e.yml up -d --build --wait",
+    "e2e:stack:down": "docker compose -f ../docker-compose.e2e.yml down",
+    "e2e:serve": "ng serve --configuration development --port 4300 --proxy-config proxy.e2e.conf.json",
+    "cy:open": "cypress open --e2e",
+    "cy:run": "cypress run --e2e",
+    "e2e": "start-server-and-test e2e:serve http://localhost:4300 cy:run"
   },
   "private": true,
   "dependencies": {
@@ -30,6 +36,7 @@
     "@angular/compiler-cli": "^21.2.0",
     "@types/jasmine": "~5.1.0",
     "autoprefixer": "^10.6.1",
+    "cypress": "^14.5.4",
     "jasmine-core": "~5.1.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
@@ -37,6 +44,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "postcss": "^8.5.28",
+    "start-server-and-test": "^2.1.5",
     "tailwindcss": "^3.4.19",
     "typescript": "~5.9.3"
   }
