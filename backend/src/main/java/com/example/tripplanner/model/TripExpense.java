@@ -2,6 +2,8 @@ package com.example.tripplanner.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -43,13 +45,15 @@ public class TripExpense {
     @Column(name = "paid_by")
     private String paidBy;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @CollectionTable(name = "trip_expense_split_among", joinColumns = @JoinColumn(name = "expense_id"))
     @Column(name = "member_id")
     @Builder.Default
     private List<String> splitAmong = new ArrayList<>();
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @CollectionTable(name = "trip_expense_shares", joinColumns = @JoinColumn(name = "expense_id"))
     @MapKeyColumn(name = "member_id")
     @Column(name = "share_amount")
