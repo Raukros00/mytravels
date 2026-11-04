@@ -2,6 +2,8 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
+# Cypress serve solo per i test e2e: niente download del binario nell'immagine.
+ENV CYPRESS_INSTALL_BINARY=0
 RUN npm ci
 COPY . .
 RUN npm run build -- --configuration production

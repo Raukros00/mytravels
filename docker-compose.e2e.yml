@@ -1,0 +1,47 @@
+# Stack effimero per i test end-to-end Cypress (backend + Postgres con dati demo).
+# Il database vive in tmpfs: `down` + `up` riparte sempre da zero.
+#
+#   docker compose -f docker-compose.e2e.yml up -d --build --wait
+#   docker compose -f docker-compose.e2e.yml down
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: e2e-tripplanner-postgres
+    environment:
+      POSTGRES_DB: tripplanner
+      POSTGRES_USER: tripplanner
+      POSTGRES_PASSWORD: tripplanner
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tripplanner -d tripplanner"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: mytravels-backend:e2e
+    container_name: e2e-tripplanner-backend
+    ports:
+      - "127.0.0.1:18083:8080"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: tripplanner
+      POSTGRES_USER: tripplanner
+      POSTGRES_PASSWORD: tripplanner
+      # Solo per i test locali/CI: non è un segreto reale.
+      JWT_SECRET: e2e-only-secret-not-for-real-use-0123456789abcdef
+      SEED_DEMO_DATA: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
