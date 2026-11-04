@@ -82,13 +82,6 @@ export class AuthService {
     });
   }
 
-  public quickDemoLogin(): void {
-    this.login({
-      email: 'admin@example.com',
-      password: 'admin123'
-    });
-  }
-
   public logout(): void {
     this.currentUserSignal.set(null);
     this.storageService.setCurrentUser(null);

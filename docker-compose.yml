@@ -34,6 +34,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-tripplanner}
       POSTGRES_USER: ${POSTGRES_USER:-tripplanner}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tripplanner}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET non impostata nel .env}
+      JPA_SHOW_SQL: ${JPA_SHOW_SQL:-false}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
     depends_on:
       postgres:
         condition: service_healthy

@@ -9,11 +9,17 @@ import com.example.tripplanner.service.AuthService;
 import com.example.tripplanner.service.GroupService;
 import com.example.tripplanner.service.TripService;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * Popola il database con utenti, gruppi e viaggi demo.
+ * Attivo solo con app.seed-demo-data=true (env SEED_DEMO_DATA): mai in prod.
+ */
 @Component
+@ConditionalOnProperty(name = "app.seed-demo-data", havingValue = "true")
 public class DataInitializer implements CommandLineRunner {
 
     private final AuthService authService;
