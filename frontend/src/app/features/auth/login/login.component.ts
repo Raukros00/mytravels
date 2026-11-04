@@ -15,8 +15,8 @@ export class LoginComponent {
   private authService = inject(AuthService);
 
   public loginForm = this.fb.group({
-    email: ['alessandro@example.com', [Validators.required, Validators.email]],
-    password: ['password123']
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', Validators.required]
   });
 
   onSubmit(): void {
@@ -27,9 +27,5 @@ export class LoginComponent {
       email: val.email!,
       password: val.password || ''
     });
-  }
-
-  onDemoLogin(): void {
-    this.authService.quickDemoLogin();
   }
 }

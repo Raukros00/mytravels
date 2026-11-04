@@ -9,24 +9,6 @@
       <p class="auth-subtitle">Accedi per organizzare i viaggi e le soste gastronomiche con i tuoi compagni di avventura.</p>
     </div>
 
-    <!-- Quick Demo Login Banner -->
-    <div class="demo-banner">
-      <div class="demo-info">
-        <span class="demo-icon material-symbols-outlined">bolt</span>
-        <div>
-          <strong>Vuoi provare subito?</strong>
-          <p>Entra con l'account demo preconfigurato</p>
-        </div>
-      </div>
-      <button type="button" class="btn btn-primary" (click)="onDemoLogin()">
-        Demo Login Rapido
-      </button>
-    </div>
-
-    <div class="auth-divider">
-      <span>oppure con le tue credenziali</span>
-    </div>
-
     <!-- Login Form -->
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
