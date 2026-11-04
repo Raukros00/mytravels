@@ -15,3 +15,9 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# SSH keys & secrets
+mac-alessandro*
+*.pem
+id_rsa*
+id_ed25519*

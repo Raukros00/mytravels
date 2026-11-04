@@ -6,10 +6,15 @@ Questo repository contiene il frontend (Angular PWA), il backend (Spring Boot) e
 
 ## Panoramica Ambienti e Porte
 
-| Ambiente | Dominio | Frontend (Host Port) | Backend (Host Port) | MongoDB (Host Port) | Compose File | Compose Project |
+| Ambiente | Dominio | Frontend (Host Port) | Backend (Host Port) | PostgreSQL (solo localhost) | Compose File | Compose Project |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **TEST** | `test.alessandrodominici.dev` | `8081` $\rightarrow$ `80` | `8083` $\rightarrow$ `8080` | `27017` $\rightarrow$ `27017` | `docker-compose.test.yml` | `mytravels-test` |
-| **PROD** | `wanderbite.alessandrodominici.dev` | `8091` $\rightarrow$ `80` | `8093` $\rightarrow$ `8080` | `27018` $\rightarrow$ `27017` | `docker-compose.prod.yml` | `wanderbite-prod` |
+| **TEST** | `test.alessandrodominici.dev` | `8091` $\rightarrow$ `80` | `8093` $\rightarrow$ `8080` | `127.0.0.1:5443` $\rightarrow$ `5432` | `docker-compose.test.yml` | `mytravels-test` |
+| **PROD** | `wanderbite.alessandrodominici.dev` | `8081` $\rightarrow$ `80` | `8083` $\rightarrow$ `8080` | `127.0.0.1:5433` $\rightarrow$ `5432` | `docker-compose.prod.yml` | `wanderbite-prod` |
+
+Variabili obbligatorie nel `.env` di ogni ambiente (vedi `.env.example`): `POSTGRES_PASSWORD`, `JWT_SECRET` (diverso per ambiente, `openssl rand -hex 32`).
+Il backend espone `GET /actuator/health`, usato dall'healthcheck Docker. Postgres è escluso dagli aggiornamenti automatici di Watchtower.
+
+Per collegarsi al database da un altro PC usare un tunnel SSH, es. `ssh -L 5433:localhost:5433 alessandrodominici@192.168.0.36`.
 
 Entrambi gli ambienti hanno nomi di container, network e volumi Docker distinti, permettendo l'esecuzione simultanea sullo stesso server senza conflitti.
 
