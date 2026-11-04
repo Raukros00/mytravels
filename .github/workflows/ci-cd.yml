@@ -178,7 +178,8 @@ jobs:
         with:
           working-directory: frontend
           start: npm run e2e:serve
-          wait-on: 'http://localhost:4300'
+          # IPv4 esplicito: sul runner `localhost` può risolversi in ::1, dove ng serve non ascolta.
+          wait-on: 'http://127.0.0.1:4300'
           wait-on-timeout: 240
           browser: electron
 
