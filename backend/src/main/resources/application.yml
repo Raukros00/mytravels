@@ -33,6 +33,10 @@ management:
     health:
       show-details: never
 
+app:
+  # Dati demo (utenti/gruppi/viaggi di esempio). Disattivato di default; true solo in locale/test.
+  seed-demo-data: ${SEED_DEMO_DATA:false}
+
 jwt:
   # Obbligatorio: almeno 32 caratteri, diverso per ogni ambiente (es. `openssl rand -hex 32`).
   secret: ${JWT_SECRET}
