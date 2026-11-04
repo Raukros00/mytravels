@@ -392,8 +392,6 @@ export class TripService {
   }
 
   // Expenses Management
-  // NOTE: the backend has no expenses support yet and updateTrip() replaces the trip with the backend
-  // response (which would drop them), so expenses are kept client-side only: tripsSignal + storage.
   private saveExpenses(tripId: string, expenses: TripExpense[]): void {
     const updated = this.tripsSignal().map(t => t.id === tripId ? { ...t, expenses } : t);
     this.tripsSignal.set(updated);
@@ -410,14 +408,34 @@ export class TripService {
     };
     this.saveExpenses(tripId, [...(trip.expenses ?? []), created]);
     this.toastService.success(expense.type === 'settlement' ? 'Pagamento registrato!' : `Spesa "${created.title}" aggiunta! 💸`);
+
+    this.apiService.post<TripExpense>(`/api/v1/trips/${tripId}/expenses`, created).subscribe({
+      next: (savedExpense) => {
+        const currentTrip = this.getTripById(tripId);
+        if (currentTrip && currentTrip.expenses) {
+          const expenses = currentTrip.expenses.map(e => e.id === created.id ? savedExpense : e);
+          this.saveExpenses(tripId, expenses);
+        }
+      },
+      error: (err) => console.error('Error adding expense to backend:', err)
+    });
+
     return created;
   }
 
   public updateExpense(tripId: string, expenseId: string, partial: Partial<Omit<TripExpense, 'id' | 'tripId'>>): void {
     const trip = this.getTripById(tripId);
     if (!trip?.expenses?.some(e => e.id === expenseId)) return;
-    this.saveExpenses(tripId, trip.expenses.map(e => e.id === expenseId ? { ...e, ...partial } : e));
+    const target = trip.expenses.find(e => e.id === expenseId);
+    if (!target) return;
+    const merged = { ...target, ...partial };
+
+    this.saveExpenses(tripId, trip.expenses.map(e => e.id === expenseId ? merged : e));
     this.toastService.success('Spesa aggiornata!');
+
+    this.apiService.put<TripExpense>(`/api/v1/trips/${tripId}/expenses/${expenseId}`, merged).subscribe({
+      error: (err) => console.error('Error updating expense on backend:', err)
+    });
   }
 
   public deleteExpense(tripId: string, expenseId: string): void {
@@ -425,5 +443,9 @@ export class TripService {
     if (!trip?.expenses) return;
     this.saveExpenses(tripId, trip.expenses.filter(e => e.id !== expenseId));
     this.toastService.info('Spesa rimossa.');
+
+    this.apiService.delete(`/api/v1/trips/${tripId}/expenses/${expenseId}`).subscribe({
+      error: (err) => console.error('Error deleting expense on backend:', err)
+    });
   }
 }

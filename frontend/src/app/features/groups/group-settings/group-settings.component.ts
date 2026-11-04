@@ -11,6 +11,7 @@ import { ModalComponent } from '../../../shared/components/modal/modal.component
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-group-settings',
+  standalone: true,
   imports: [RouterModule, ModalComponent, TranslatePipe],
   templateUrl: './group-settings.component.html',
   styleUrl: './group-settings.component.css'

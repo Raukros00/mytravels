@@ -1,7 +1,9 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { AuthService } from './auth.service';
 import { GroupService } from './group.service';
 import { ToastService } from './toast.service';
+import { ApiService } from './api.service';
+import { USE_MOCK_DATA } from '../config/mock.config';
 
 export type NotificationStatus = 'pending' | 'accepted' | 'declined';
 
@@ -26,6 +28,7 @@ export class NotificationService {
   private authService = inject(AuthService);
   private groupService = inject(GroupService);
   private toastService = inject(ToastService);
+  private apiService = inject(ApiService);
 
   private notificationsSignal = signal<AppNotification[]>(this.load());
 
@@ -42,6 +45,29 @@ export class NotificationService {
   public readonly unreadCount = computed(() =>
     this.userNotifications().filter(n => !n.read).length
   );
+
+  constructor() {
+    effect(() => {
+      const user = this.authService.currentUser();
+      if (user) {
+        this.loadNotifications();
+      }
+    });
+  }
+
+  public loadNotifications(): void {
+    if (USE_MOCK_DATA) return;
+    const user = this.authService.currentUser();
+    if (!user) return;
+    this.apiService.get<AppNotification[]>(`/api/v1/notifications?recipientId=${user.id}`).subscribe({
+      next: (notifs) => {
+        if (notifs) {
+          this.persist(notifs);
+        }
+      },
+      error: (err) => console.warn('Could not load notifications from backend:', err)
+    });
+  }
 
   private load(): AppNotification[] {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
@@ -72,6 +98,10 @@ export class NotificationService {
       status: 'pending'
     };
     this.persist([...this.notificationsSignal(), notif]);
+
+    this.apiService.post<AppNotification>('/api/v1/notifications', notif).subscribe({
+      error: (err) => console.error('Error sending invite to backend:', err)
+    });
   }
 
   public acceptInvite(notifId: string): void {
@@ -93,16 +123,28 @@ export class NotificationService {
     this.persist(this.notificationsSignal().map(n =>
       n.id === notifId ? { ...n, status: 'accepted' as const, read: true } : n
     ));
+
+    this.apiService.put<AppNotification>(`/api/v1/notifications/${notifId}/accept`, {}).subscribe({
+      error: (err) => console.error('Error accepting invite on backend:', err)
+    });
   }
 
   public declineInvite(notifId: string): void {
     this.persist(this.notificationsSignal().map(n =>
       n.id === notifId ? { ...n, status: 'declined' as const, read: true } : n
     ));
+
+    this.apiService.put<AppNotification>(`/api/v1/notifications/${notifId}/decline`, {}).subscribe({
+      error: (err) => console.error('Error declining invite on backend:', err)
+    });
   }
 
   public revokeInvite(notifId: string): void {
     this.persist(this.notificationsSignal().filter(n => n.id !== notifId));
+
+    this.apiService.delete(`/api/v1/notifications/${notifId}`).subscribe({
+      error: (err) => console.error('Error revoking invite on backend:', err)
+    });
   }
 
   public markAllRead(): void {
@@ -114,5 +156,12 @@ export class NotificationService {
         .filter(n => !n.read || n.createdAt >= cutoffISO)
         .map(n => ({ ...n, read: true }))
     );
+
+    const user = this.authService.currentUser();
+    if (user) {
+      this.apiService.put(`/api/v1/notifications/mark-all-read?recipientId=${user.id}`, {}).subscribe({
+        error: (err) => console.error('Error marking all read on backend:', err)
+      });
+    }
   }
 }

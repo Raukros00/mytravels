@@ -19,6 +19,7 @@ const tripDays = (trip: Trip): number => daysBetween(trip.startDate, trip.endDat
 
 @Component({
   selector: 'app-group-trips',
+  standalone: true,
   imports: [CurrencyPipe, DatePipe, RouterLink, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './group-trips.component.html',
