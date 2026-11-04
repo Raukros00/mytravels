@@ -36,6 +36,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER non impostata nel .env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD non impostata nel .env}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET non impostata nel .env}
+      # Prod parte sempre senza dati demo.
+      SEED_DEMO_DATA: "false"
     depends_on:
       postgres:
         condition: service_healthy
