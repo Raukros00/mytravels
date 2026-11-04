@@ -21,3 +21,8 @@ mac-alessandro*
 *.pem
 id_rsa*
 id_ed25519*
+
+# Cypress
+frontend/cypress/screenshots/
+frontend/cypress/videos/
+frontend/cypress/downloads/

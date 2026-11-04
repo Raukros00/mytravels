@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
@@ -79,10 +79,18 @@ export class TripDetailComponent {
     { initialValue: this.route.snapshot.paramMap.get('id') }
   );
 
-  // Always reflects the latest state held by TripService (no manual reload after mutations)
+  // Always reflects the latest state held by TripService (no manual reload after mutations).
+  // A just-created trip may be opened on its temporary id: follow it to the backend id.
   protected readonly trip = computed(() => {
     const id = this.tripId();
-    return id ? this.tripService.getTripById(id) : undefined;
+    return id ? this.tripService.getTripById(this.tripService.resolveTripId(id)) : undefined;
+  });
+
+  private readonly syncUrlWithSavedId = effect(() => {
+    const id = this.tripId();
+    if (!id) return;
+    const resolved = this.tripService.resolveTripId(id);
+    if (resolved !== id) this.router.navigate(['/trips', resolved], { replaceUrl: true });
   });
 
   protected readonly activeTab = signal<DetailTab>('itinerary');

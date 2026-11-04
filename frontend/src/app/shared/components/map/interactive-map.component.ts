@@ -58,6 +58,7 @@ export class InteractiveMapComponent {
 
     inject(DestroyRef).onDestroy(() => {
       if (this.map) {
+        this.map.stop();
         this.map.remove();
         this.map = null;
       }
@@ -94,7 +95,8 @@ export class InteractiveMapComponent {
     }
 
     if (!stops || stops.length === 0) {
-      this.map.setView(this.defaultCenter(), this.defaultZoom());
+      // No animation: if the map is destroyed mid-animation (tab change) Leaflet throws on _leaflet_pos.
+      this.map.setView(this.defaultCenter(), this.defaultZoom(), { animate: false });
       return;
     }
 
@@ -159,6 +161,6 @@ export class InteractiveMapComponent {
 
     // Auto-fit all bounds
     const bounds = L.latLngBounds(latLngs);
-    this.map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
+    this.map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16, animate: false });
   }
 }
