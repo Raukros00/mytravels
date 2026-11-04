@@ -11,6 +11,7 @@ import { GroupInvitePickerComponent } from './components/group-invite-picker/gro
 
 @Component({
   selector: 'app-group-create-modal',
+  standalone: true,
   imports: [ReactiveFormsModule, ModalComponent, TranslatePipe, GroupIconPickerComponent, GroupInvitePickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './group-create-modal.component.html',

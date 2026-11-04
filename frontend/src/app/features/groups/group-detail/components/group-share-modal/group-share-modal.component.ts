@@ -9,6 +9,7 @@ import { ModalComponent } from '../../../../../shared/components/modal/modal.com
 
 @Component({
   selector: 'app-group-share-modal',
+  standalone: true,
   imports: [ModalComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './group-share-modal.component.html',

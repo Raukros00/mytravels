@@ -7,6 +7,7 @@ import { User } from '../../../../../core/models/user.model';
 
 @Component({
   selector: 'app-group-hero',
+  standalone: true,
   imports: [DatePipe, RouterLink, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './group-hero.component.html',

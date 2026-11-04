@@ -46,6 +46,7 @@ interface CurrentTripVm {
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
   host: { '(document:click)': 'openMenuId.set(null)' },
   selector: 'app-trip-list',
   imports: [RouterModule, FormsModule, EmptyStateComponent],

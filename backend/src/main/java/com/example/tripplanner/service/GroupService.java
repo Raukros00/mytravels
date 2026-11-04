@@ -48,6 +48,9 @@ public class GroupService {
                 .creatorId(creatorId)
                 .inviteCode(inviteCode)
                 .createdAt(Instant.now().toString().split("T")[0])
+                .currency(request.getCurrency() != null && !request.getCurrency().isBlank() ? request.getCurrency() : "EUR")
+                .archived(false)
+                .mutedBy(new ArrayList<>())
                 .members(new ArrayList<>())
                 .build();
 
@@ -109,6 +112,16 @@ public class GroupService {
             if (request.getColor() != null && !request.getColor().isBlank()) {
                 existing.setColor(request.getColor());
             }
+            if (request.getCurrency() != null && !request.getCurrency().isBlank()) {
+                existing.setCurrency(request.getCurrency());
+            }
+            if (request.getArchived() != null) {
+                existing.setArchived(request.getArchived());
+            }
+            if (request.getMutedBy() != null) {
+                existing.getMutedBy().clear();
+                existing.getMutedBy().addAll(request.getMutedBy());
+            }
             return groupRepository.save(existing);
         });
     }
@@ -156,6 +169,29 @@ public class GroupService {
     public Optional<Group> removeMember(String groupId, String memberId) {
         return groupRepository.findById(groupId).map(group -> {
             group.getMembers().removeIf(m -> m.getId() != null && m.getId().equals(memberId));
+            return groupRepository.save(group);
+        });
+    }
+
+    @Transactional
+    public Optional<Group> updateMemberRole(String groupId, String memberId, String role) {
+        return groupRepository.findById(groupId).map(group -> {
+            group.getMembers().stream()
+                    .filter(m -> m.getId() != null && m.getId().equals(memberId))
+                    .findFirst()
+                    .ifPresent(m -> m.setRole(role));
+            return groupRepository.save(group);
+        });
+    }
+
+    @Transactional
+    public Optional<Group> toggleMuteGroup(String groupId, String userId) {
+        return groupRepository.findById(groupId).map(group -> {
+            if (group.getMutedBy().contains(userId)) {
+                group.getMutedBy().remove(userId);
+            } else {
+                group.getMutedBy().add(userId);
+            }
             return groupRepository.save(group);
         });
     }

@@ -36,6 +36,18 @@ public class Trip implements Persistable<String> {
     /** 'planning' | 'upcoming' | 'ongoing' | 'completed' */
     private String status;
 
+    /** 'proposal' | 'confirmed' */
+    private String decision;
+
+    @Column(name = "proposed_by")
+    private String proposedBy;
+
+    @ElementCollection
+    @CollectionTable(name = "trip_votes", joinColumns = @JoinColumn(name = "trip_id"))
+    @Column(name = "voter_id")
+    @Builder.Default
+    private List<String> votes = new ArrayList<>();
+
     @Column(name = "budget_estimate") private Double budgetEstimate;
     private String currency;
 
@@ -56,6 +68,10 @@ public class Trip implements Persistable<String> {
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<TripPlaceToEat> placesToEat = new ArrayList<>();
+
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<TripExpense> expenses = new ArrayList<>();
 
     @Embedded
     private FlightDetails flights;

@@ -12,6 +12,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
   host: { '(document:click)': 'closeMenu()' },
   selector: 'app-group-list',
   imports: [

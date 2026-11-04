@@ -80,4 +80,35 @@ public class GroupController {
         return groupOpt.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+
+    @PutMapping("/{groupId}/members/{memberId}/role")
+    public ResponseEntity<?> updateMemberRole(@PathVariable String groupId,
+                                              @PathVariable String memberId,
+                                              @RequestBody Map<String, String> body) {
+        String role = body.get("role");
+        if (role == null || role.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Role is required"));
+        }
+        Optional<Group> groupOpt = groupService.updateMemberRole(groupId, memberId, role);
+        return groupOpt.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @PostMapping("/{groupId}/mute")
+    public ResponseEntity<?> toggleMuteGroup(@PathVariable String groupId,
+                                             @RequestBody(required = false) Map<String, String> body,
+                                             Authentication auth) {
+        String userId = null;
+        if (body != null && body.containsKey("userId")) {
+            userId = body.get("userId");
+        } else if (auth != null) {
+            userId = auth.getName();
+        }
+        if (userId == null || userId.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        Optional<Group> groupOpt = groupService.toggleMuteGroup(groupId, userId);
+        return groupOpt.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
 }

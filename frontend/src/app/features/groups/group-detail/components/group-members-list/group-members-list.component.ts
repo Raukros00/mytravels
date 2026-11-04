@@ -5,6 +5,7 @@ import { GroupService } from '../../../../../core/services/group.service';
 
 @Component({
   selector: 'app-group-members-list',
+  standalone: true,
   imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:click)': 'onDocumentClick($event)' },

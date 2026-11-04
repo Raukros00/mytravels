@@ -18,6 +18,7 @@ import { GroupShareModalComponent } from './components/group-share-modal/group-s
 
 @Component({
   selector: 'app-group-detail',
+  standalone: true,
   imports: [
     RouterLink,
     ModalComponent,

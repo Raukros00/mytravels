@@ -6,6 +6,7 @@ const isImageIcon = (icon: string): boolean =>
 
 @Component({
   selector: 'app-group-icon-picker',
+  standalone: true,
   imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:click)': 'showThumbMenu.set(false)' },

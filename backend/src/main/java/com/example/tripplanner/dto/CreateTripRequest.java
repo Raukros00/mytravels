@@ -24,4 +24,8 @@ public class CreateTripRequest {
     private String currency;
     private List<String> tags;
     private String notes;
+    private Boolean asProposal;
+    private String decision;
+    private String proposedBy;
+    private List<String> votes;
 }

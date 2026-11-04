@@ -8,6 +8,7 @@ import { GroupMembersListComponent } from '../group-members-list/group-members-l
 
 @Component({
   selector: 'app-group-members-modal',
+  standalone: true,
   imports: [ModalComponent, TranslatePipe, GroupMembersListComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './group-members-modal.component.html',

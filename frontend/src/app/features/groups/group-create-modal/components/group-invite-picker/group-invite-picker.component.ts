@@ -6,6 +6,7 @@ import { Group } from '../../../../../core/models/group.model';
 
 @Component({
   selector: 'app-group-invite-picker',
+  standalone: true,
   imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './group-invite-picker.component.html',

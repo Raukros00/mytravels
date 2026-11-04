@@ -221,6 +221,9 @@ export class GroupService {
     );
     this.groupsSignal.set(updated);
     this.storageService.setGroups(updated);
+    this.apiService.put<Group>(`/api/v1/groups/${groupId}/members/${memberId}/role`, { role }).subscribe({
+      error: (err) => console.error('Error updating member role on backend:', err)
+    });
     this.toastService.success(role === 'admin' ? 'Membro promosso ad admin.' : 'Ruolo rimosso.');
   }
 

@@ -4,6 +4,7 @@ import com.example.tripplanner.dto.CreateTripRequest;
 import com.example.tripplanner.dto.UpdateTripRequest;
 import com.example.tripplanner.model.*;
 import com.example.tripplanner.repository.TripActivityRepository;
+import com.example.tripplanner.repository.TripExpenseRepository;
 import com.example.tripplanner.repository.TripPlaceToEatRepository;
 import com.example.tripplanner.repository.TripRepository;
 import org.springframework.stereotype.Service;
@@ -22,17 +23,25 @@ public class TripService {
     private final TripRepository tripRepository;
     private final TripActivityRepository activityRepository;
     private final TripPlaceToEatRepository placeRepository;
+    private final TripExpenseRepository expenseRepository;
 
     public TripService(TripRepository tripRepository,
                        TripActivityRepository activityRepository,
-                       TripPlaceToEatRepository placeRepository) {
+                       TripPlaceToEatRepository placeRepository,
+                       TripExpenseRepository expenseRepository) {
         this.tripRepository = tripRepository;
         this.activityRepository = activityRepository;
         this.placeRepository = placeRepository;
+        this.expenseRepository = expenseRepository;
     }
 
     @Transactional
     public Trip createTrip(CreateTripRequest request) {
+        String decision = request.getDecision();
+        if (decision == null) {
+            decision = Boolean.TRUE.equals(request.getAsProposal()) ? "proposal" : "confirmed";
+        }
+
         Trip trip = Trip.builder()
                 .id(UUID.randomUUID().toString())
                 .groupId(request.getGroupId())
@@ -45,6 +54,9 @@ public class TripService {
                         ? request.getCoverUrl()
                         : "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80")
                 .status("planning")
+                .decision(decision)
+                .proposedBy(request.getProposedBy())
+                .votes(request.getVotes() != null ? new ArrayList<>(request.getVotes()) : new ArrayList<>())
                 .budgetEstimate(request.getBudgetEstimate() != null ? request.getBudgetEstimate() : 0.0)
                 .currency(request.getCurrency() != null ? request.getCurrency() : "EUR")
                 .tags(request.getTags() != null && !request.getTags().isEmpty()
@@ -54,6 +66,7 @@ public class TripService {
                 .createdAt(Instant.now().toString().split("T")[0])
                 .activities(new ArrayList<>())
                 .placesToEat(new ArrayList<>())
+                .expenses(new ArrayList<>())
                 .build();
 
         return tripRepository.save(trip);
@@ -81,12 +94,20 @@ public class TripService {
             if (request.getEndDate() != null)     existing.setEndDate(request.getEndDate());
             if (request.getCoverUrl() != null)    existing.setCoverUrl(request.getCoverUrl());
             if (request.getStatus() != null)      existing.setStatus(request.getStatus());
+            if (request.getDecision() != null)    existing.setDecision(request.getDecision());
+            if (request.getProposedBy() != null)  existing.setProposedBy(request.getProposedBy());
             if (request.getBudgetEstimate() != null) existing.setBudgetEstimate(request.getBudgetEstimate());
             if (request.getCurrency() != null)    existing.setCurrency(request.getCurrency());
             if (request.getNotes() != null)       existing.setNotes(request.getNotes().trim());
             if (request.getFlights() != null)     existing.setFlights(request.getFlights());
             if (request.getTransfers() != null)   existing.setTransfers(request.getTransfers());
             if (request.getAccommodation() != null) existing.setAccommodation(request.getAccommodation());
+
+            // Replace votes via clear+addAll
+            if (request.getVotes() != null) {
+                existing.getVotes().clear();
+                existing.getVotes().addAll(request.getVotes());
+            }
 
             // Replace tags via clear+addAll to avoid reassigning the managed collection
             if (request.getTags() != null) {
@@ -117,6 +138,19 @@ public class TripService {
                     p.setTripId(existing.getId());
                     p.setTrip(existing);
                     existing.getPlacesToEat().add(p);
+                }
+            }
+
+            // Replace expenses via clear+addAll
+            if (request.getExpenses() != null) {
+                existing.getExpenses().clear();
+                for (TripExpense e : request.getExpenses()) {
+                    if (e.getId() == null || e.getId().isBlank()) {
+                        e.setId("exp_" + UUID.randomUUID().toString().substring(0, 8));
+                    }
+                    e.setTripId(existing.getId());
+                    e.setTrip(existing);
+                    existing.getExpenses().add(e);
                 }
             }
 
@@ -225,6 +259,59 @@ public class TripService {
     public Optional<Trip> updateAccommodation(String tripId, AccommodationDetails accommodation) {
         return tripRepository.findById(tripId).map(trip -> {
             trip.setAccommodation(accommodation);
+            return tripRepository.save(trip);
+        });
+    }
+
+    // ── Expenses ──────────────────────────────────────────────────────────────
+
+    public List<TripExpense> getExpensesByTrip(String tripId) {
+        return expenseRepository.findByTripId(tripId);
+    }
+
+    @Transactional
+    public Optional<TripExpense> addExpense(String tripId, TripExpense expense) {
+        return tripRepository.findById(tripId).map(trip -> {
+            if (expense.getId() == null || expense.getId().isBlank()) {
+                expense.setId("exp_" + UUID.randomUUID().toString().substring(0, 8));
+            }
+            expense.setTripId(tripId);
+            expense.setTrip(trip);
+            trip.getExpenses().add(expense);
+            tripRepository.save(trip);
+            return expense;
+        });
+    }
+
+    @Transactional
+    public Optional<TripExpense> updateExpense(String tripId, String expenseId, TripExpense updated) {
+        return expenseRepository.findById(expenseId).flatMap(existing -> {
+            if (!tripId.equals(existing.getTripId())) return Optional.empty();
+            updated.setId(expenseId);
+            updated.setTripId(tripId);
+            return Optional.of(expenseRepository.save(updated));
+        });
+    }
+
+    @Transactional
+    public boolean deleteExpense(String tripId, String expenseId) {
+        return expenseRepository.findById(expenseId).map(existing -> {
+            if (!tripId.equals(existing.getTripId())) return false;
+            expenseRepository.deleteById(expenseId);
+            return true;
+        }).orElse(false);
+    }
+
+    // ── Voting ────────────────────────────────────────────────────────────────
+
+    @Transactional
+    public Optional<Trip> toggleVote(String tripId, String userId) {
+        return tripRepository.findById(tripId).map(trip -> {
+            if (trip.getVotes().contains(userId)) {
+                trip.getVotes().remove(userId);
+            } else {
+                trip.getVotes().add(userId);
+            }
             return tripRepository.save(trip);
         });
     }
