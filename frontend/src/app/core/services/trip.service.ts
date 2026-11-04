@@ -1,5 +1,4 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
 import { forkJoin, of, switchMap } from 'rxjs';
 import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
@@ -30,7 +29,8 @@ export class TripService {
   private groupService = inject(GroupService);
   private apiService = inject(ApiService);
   private authService = inject(AuthService);
-  private router = inject(Router);
+  /** Optimistic local ids (trip_<timestamp>) → ids assigned by the backend. */
+  private readonly idAliases = signal<Record<string, string>>({});
 
   private tripsSignal = signal<Trip[]>(this.storageService.getTrips());
   public readonly trips = this.tripsSignal.asReadonly();
@@ -194,16 +194,14 @@ export class TripService {
   }
 
   /**
-   * Replaces the optimistic local trip with the one saved by the backend (new id).
-   * If the user is already on the local trip's page, the URL follows the new id.
+   * Replaces the optimistic local trip with the one saved by the backend (new id)
+   * and remembers the alias, so a page opened on the local id keeps working.
    */
   private replaceLocalTrip(localId: string, saved: Trip): void {
+    this.idAliases.update(a => ({ ...a, [localId]: saved.id }));
     const synced = this.tripsSignal().map(t => t.id === localId ? saved : t);
     this.tripsSignal.set(synced);
     this.storageService.setTrips(synced);
-    if (this.router.url.split(/[?#]/)[0] === `/trips/${localId}`) {
-      this.router.navigate(['/trips', saved.id], { replaceUrl: true });
-    }
   }
 
   /** Votes that still count: only from current members of the group. */
@@ -239,6 +237,11 @@ export class TripService {
 
   public getTripById(id: string): Trip | undefined {
     return this.tripsSignal().find(t => t.id === id);
+  }
+
+  /** The current id of a trip: follows the optimistic local id once the backend has saved it. */
+  public resolveTripId(id: string): string {
+    return this.idAliases()[id] ?? id;
   }
 
   public updateTrip(id: string, partial: Partial<Trip>): Trip | undefined {
