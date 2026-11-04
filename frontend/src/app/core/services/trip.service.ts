@@ -1,4 +1,6 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { forkJoin, of, switchMap } from 'rxjs';
 import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
 import { GroupService } from './group.service';
@@ -28,6 +30,7 @@ export class TripService {
   private groupService = inject(GroupService);
   private apiService = inject(ApiService);
   private authService = inject(AuthService);
+  private router = inject(Router);
 
   private tripsSignal = signal<Trip[]>(this.storageService.getTrips());
   public readonly trips = this.tripsSignal.asReadonly();
@@ -115,11 +118,7 @@ export class TripService {
       decision: localTrip.decision,
       proposedBy: localTrip.proposedBy
     }).subscribe({
-      next: (created) => {
-        const synced = this.tripsSignal().map(t => t.id === localTrip.id ? created : t);
-        this.tripsSignal.set(synced);
-        this.storageService.setTrips(synced);
-      },
+      next: (created) => this.replaceLocalTrip(localTrip.id, created),
       error: (err) => {
         console.error('Error creating trip on backend:', err);
       }
@@ -168,7 +167,43 @@ export class TripService {
     const updated = [trip, ...this.tripsSignal()];
     this.tripsSignal.set(updated);
     this.storageService.setTrips(updated);
+
+    // Persist on the backend: the trip first, then its activities, places and accommodation.
+    const { id: _id, activities, placesToEat, accommodation, status: _status, createdAt: _createdAt, ...base } = trip;
+    this.apiService.post<Trip>('/api/v1/trips', base).pipe(
+      switchMap(created => {
+        const children = [
+          ...(activities ?? []).map(({ id: _a, tripId: _t, ...a }) =>
+            this.apiService.post(`/api/v1/trips/${created.id}/activities`, a)),
+          ...(placesToEat ?? []).map(({ id: _p, tripId: _t, ...p }) =>
+            this.apiService.post(`/api/v1/trips/${created.id}/places-to-eat`, p)),
+          ...(accommodation ? [this.apiService.put(`/api/v1/trips/${created.id}/accommodation`, accommodation)] : [])
+        ];
+        return (children.length ? forkJoin(children) : of([])).pipe(
+          switchMap(() => this.apiService.get<Trip>(`/api/v1/trips/${created.id}`))
+        );
+      })
+    ).subscribe({
+      next: (saved) => this.replaceLocalTrip(id, saved),
+      error: (err) => {
+        console.error('Error creating trip from template on backend:', err);
+        this.toastService.error('Non è stato possibile salvare il viaggio sul server.');
+      }
+    });
     return trip;
+  }
+
+  /**
+   * Replaces the optimistic local trip with the one saved by the backend (new id).
+   * If the user is already on the local trip's page, the URL follows the new id.
+   */
+  private replaceLocalTrip(localId: string, saved: Trip): void {
+    const synced = this.tripsSignal().map(t => t.id === localId ? saved : t);
+    this.tripsSignal.set(synced);
+    this.storageService.setTrips(synced);
+    if (this.router.url.split(/[?#]/)[0] === `/trips/${localId}`) {
+      this.router.navigate(['/trips', saved.id], { replaceUrl: true });
+    }
   }
 
   /** Votes that still count: only from current members of the group. */
