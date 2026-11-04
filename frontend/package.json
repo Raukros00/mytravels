@@ -9,10 +9,10 @@
     "test": "ng test",
     "e2e:stack": "docker compose -f ../docker-compose.e2e.yml up -d --build --wait",
     "e2e:stack:down": "docker compose -f ../docker-compose.e2e.yml down",
-    "e2e:serve": "ng serve --configuration development --port 4300 --proxy-config proxy.e2e.conf.json",
+    "e2e:serve": "ng serve --configuration development --host 127.0.0.1 --port 4300 --proxy-config proxy.e2e.conf.json",
     "cy:open": "cypress open --e2e",
     "cy:run": "cypress run --e2e",
-    "e2e": "start-server-and-test e2e:serve http://localhost:4300 cy:run"
+    "e2e": "start-server-and-test e2e:serve http://127.0.0.1:4300 cy:run"
   },
   "private": true,
   "dependencies": {

@@ -8,7 +8,8 @@ import { defineConfig } from 'cypress';
  */
 export default defineConfig({
   e2e: {
-    baseUrl: 'http://localhost:4300',
+    // IPv4 esplicito: sui runner Linux `localhost` può risolversi in ::1, dove ng serve non ascolta.
+    baseUrl: 'http://127.0.0.1:4300',
     specPattern: 'cypress/e2e/**/*.cy.ts',
     supportFile: 'cypress/support/e2e.ts',
     viewportWidth: 1280,
