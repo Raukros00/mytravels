@@ -1,6 +1,8 @@
 package com.example.tripplanner.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import lombok.*;
 import org.springframework.data.domain.Persistable;
 
@@ -42,7 +44,8 @@ public class Trip implements Persistable<String> {
     @Column(name = "proposed_by")
     private String proposedBy;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @CollectionTable(name = "trip_votes", joinColumns = @JoinColumn(name = "trip_id"))
     @Column(name = "voter_id")
     @Builder.Default
@@ -51,7 +54,8 @@ public class Trip implements Persistable<String> {
     @Column(name = "budget_estimate") private Double budgetEstimate;
     private String currency;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @CollectionTable(name = "trip_tags", joinColumns = @JoinColumn(name = "trip_id"))
     @OrderColumn(name = "tag_order")
     @Column(name = "tag")
@@ -61,15 +65,18 @@ public class Trip implements Persistable<String> {
     @Column(columnDefinition = "text") private String notes;
     @Column(name = "created_at")       private String createdAt;
 
-    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @Builder.Default
     private List<TripActivity> activities = new ArrayList<>();
 
-    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @Builder.Default
     private List<TripPlaceToEat> placesToEat = new ArrayList<>();
 
-    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @Builder.Default
     private List<TripExpense> expenses = new ArrayList<>();
 
