@@ -1,6 +1,8 @@
 package com.example.tripplanner.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import lombok.*;
 import org.springframework.data.domain.Persistable;
 
@@ -45,13 +47,15 @@ public class Group implements Persistable<String> {
     @Builder.Default
     private Boolean archived = false;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @CollectionTable(name = "group_muted_users", joinColumns = @JoinColumn(name = "group_id"))
     @Column(name = "user_id")
     @Builder.Default
     private List<String> mutedBy = new ArrayList<>();
 
-    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @Builder.Default
     private List<GroupMember> members = new ArrayList<>();
 
