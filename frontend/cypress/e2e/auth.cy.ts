@@ -185,46 +185,190 @@ describe('Autenticazione (modale)', () => {
       cy.get('#auth-tab-register').should('have.attr', 'aria-selected', 'true');
     });
 
-    it('crea un nuovo account ed entra', () => {
-      const name = uniq('Tester');
+    /** Data ISO di `years` anni fa (± `days`). */
+    const yearsAgo = (years: number, days = 0) => {
+      const d = new Date();
+      d.setFullYear(d.getFullYear() - years);
+      d.setDate(d.getDate() + days);
+      return d.toISOString().split('T')[0];
+    };
+
+    function fillRegistration(first: string, last: string, email: string, birthDate = '1990-05-17') {
+      cy.get('#auth-register-first-name').type(first);
+      cy.get('#auth-register-last-name').type(last);
+      cy.get('#auth-register-birth-date').type(birthDate);
+      cy.get('#auth-register-email').type(email);
+      cy.get('#auth-register-password').type('Segreta123!');
+    }
+
+    it('crea un nuovo account con nome, cognome, data di nascita e avatar', () => {
+      const first = uniq('Mario');
       const email = `e2e.${Date.now()}@example.com`;
+      cy.intercept('POST', '/auth/register').as('register');
 
       authModal().within(() => {
         cy.contains('button', 'Crea account').should('be.disabled');
-        cy.get('#auth-register-name').type(name);
-        cy.get('#auth-register-email').type(email);
-        cy.get('#auth-register-password').type('Segreta123!');
+        fillRegistration(first, 'Rossi', email);
         cy.get('.avatar-select-btn').eq(2).click().should('have.class', 'selected');
         cy.get('.color-btn').eq(1).click().should('have.class', 'selected');
         cy.contains('button', 'Crea account').click();
       });
 
+      cy.wait('@register').then(({ request, response }) => {
+        expect(response?.statusCode).to.eq(201);
+        expect(request.body).to.include({ firstName: first, lastName: 'Rossi', birthDate: '1990-05-17', email });
+        expect(request.body.profileImage).to.be.null;
+        expect(response?.body.user).to.include({ firstName: first, lastName: 'Rossi', name: `${first} Rossi`, birthDate: '1990-05-17' });
+      });
       cy.get('[role="dialog"]').should('not.exist');
-      cy.toast(`Benvenuto su WanderBite, ${name}!`).should('be.visible');
+      cy.toast(`Benvenuto su WanderBite, ${first} Rossi!`).should('be.visible');
+
+      // Senza foto la navbar mostra l'avatar scelto; il profilo mostra la data di nascita.
+      cy.get(`header button[title="${first} Rossi"]`).should('contain.text', '🎒');
+      cy.visit('/profile');
+      cy.contains('h1', `${first} Rossi`).should('be.visible');
+      cy.contains('Data di nascita').next().should('contain.text', '17 maggio 1990');
 
       // Un utente nuovo non vede gruppi né viaggi di altri.
-      cy.get('header nav').contains('a', 'Viaggi').click();
+      cy.visit('/trips');
       cy.contains('Nessun viaggio ancora').should('be.visible');
+    });
 
-      cy.request('POST', '/auth/login', { email, password: 'Segreta123!' }).its('status').should('eq', 200);
+    it('carica e ritaglia una foto profilo', () => {
+      const first = uniq('Giulia');
+      const email = `e2e.foto.${Date.now()}@example.com`;
+      cy.intercept('POST', '/auth/register').as('register');
+
+      authModal().within(() => {
+        fillRegistration(first, 'Verdi', email);
+        cy.get('.avatar-grid').should('be.visible');
+        cy.get('#auth-register-photo').selectFile('cypress/fixtures/profile-photo.png', { force: true });
+
+        // Editor di ritaglio: zoom e trascinamento, finché non si conferma non si può inviare.
+        cy.get('.cropper-stage').should('be.visible');
+        cy.get('.cropper-img').should('be.visible');
+        cy.contains('button', 'Crea account').should('be.disabled');
+        cy.get('input[aria-label="Zoom"]').invoke('val', 2).trigger('input');
+        cy.get('.cropper-stage')
+          .trigger('pointerdown', { pointerId: 1, clientX: 200, clientY: 200 })
+          .trigger('pointermove', { pointerId: 1, clientX: 120, clientY: 200 })
+          .trigger('pointerup', { pointerId: 1 });
+        cy.contains('button', 'Usa questa foto').click();
+
+        cy.get('.cropper-stage').should('not.exist');
+        cy.get('img.photo-preview').should('have.attr', 'src').and('match', /^data:image\/jpeg;base64,/);
+        // Con la foto l'avatar emoji non serve più.
+        cy.get('.avatar-grid').should('not.exist');
+        cy.contains('button', 'Crea account').click();
+      });
+
+      cy.wait('@register').then(({ request, response }) => {
+        expect(response?.statusCode).to.eq(201);
+        const photo: string = request.body.profileImage;
+        expect(photo).to.match(/^data:image\/jpeg;base64,/);
+        expect(photo.length, 'foto compressa').to.be.lessThan(60_000);
+        expect(response?.body.user.profileImage).to.eq(photo);
+
+        // L'immagine esportata è 320×320.
+        cy.window().then(win => new Cypress.Promise<{ w: number; h: number }>(resolve => {
+          const img = new win.Image();
+          img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+          img.src = photo;
+        })).should('deep.equal', { w: 320, h: 320 });
+      });
+
+      cy.get(`header button[title="${first} Verdi"] img`).should('have.attr', 'src').and('match', /^data:image\/jpeg/);
+      cy.visit('/profile');
+      cy.get('app-user-avatar img').should('be.visible');
+    });
+
+    it('la foto si può annullare, cambiare e rimuovere', () => {
+      authModal().within(() => {
+        cy.get('#auth-register-photo').selectFile('cypress/fixtures/profile-photo.png', { force: true });
+        cy.contains('.cropper-actions button', 'Annulla').click();
+        cy.get('.cropper-stage').should('not.exist');
+        cy.get('img.photo-preview').should('not.exist');
+
+        cy.get('#auth-register-photo').selectFile('cypress/fixtures/profile-photo.png', { force: true });
+        cy.contains('button', 'Usa questa foto').click();
+        cy.contains('label', 'Cambia foto').should('be.visible');
+        cy.contains('button', 'Rimuovi').click();
+        cy.get('img.photo-preview').should('not.exist');
+        cy.contains('label', 'Carica una foto').should('be.visible');
+      });
+    });
+
+    it('rifiuta un file che non è un\'immagine', () => {
+      authModal().within(() => {
+        cy.get('#auth-register-photo').selectFile('cypress/fixtures/not-an-image.txt', { force: true });
+        cy.contains('.form-error', 'Formato non supportato').should('be.visible');
+        cy.get('.cropper-stage').should('not.exist');
+      });
     });
 
     it('rifiuta un\'email già registrata', () => {
       authModal().within(() => {
-        cy.get('#auth-register-name').type('Doppione');
-        cy.get('#auth-register-email').type(USERS.admin.email);
-        cy.get('#auth-register-password').type('Segreta123!');
+        fillRegistration('Doppio', 'Account', USERS.admin.email);
         cy.contains('button', 'Crea account').click();
         cy.get('.auth-error').should('contain.text', 'Esiste già un account con questa email.');
       });
     });
 
-    it('valida nome e password', () => {
+    it('richiede nome, cognome, data di nascita e una password di almeno 6 caratteri', () => {
       authModal().within(() => {
-        cy.get('#auth-register-name').type('A').blur();
-        cy.contains('.form-error', 'minimo 2 caratteri').should('be.visible');
+        cy.get('#auth-register-first-name').focus().blur();
+        cy.contains('.form-error', 'Inserisci il tuo nome.').should('be.visible');
+        cy.get('#auth-register-last-name').focus().blur();
+        cy.contains('.form-error', 'Inserisci il tuo cognome.').should('be.visible');
+        cy.get('#auth-register-birth-date').focus().blur();
+        cy.contains('.form-error', 'Inserisci la tua data di nascita.').should('be.visible');
         cy.get('#auth-register-password').type('123').blur();
         cy.contains('.form-error', 'almeno 6 caratteri').should('be.visible');
+      });
+    });
+
+    it('richiede almeno 14 anni', () => {
+      authModal().within(() => {
+        cy.get('#auth-register-birth-date').should('have.attr', 'max', yearsAgo(14));
+        fillRegistration('Troppo', 'Giovane', `e2e.minore.${Date.now()}@example.com`, yearsAgo(14, 1));
+        cy.contains('.form-error', 'almeno 14 anni').should('be.visible');
+        cy.contains('button', 'Crea account').should('be.disabled');
+        cy.get('#auth-register-birth-date').clear().type(yearsAgo(14));
+        cy.contains('.form-error', 'almeno 14 anni').should('not.exist');
+        cy.contains('button', 'Crea account').should('be.enabled');
+      });
+    });
+  });
+
+  describe('registrazione – validazione lato backend', () => {
+    const valid = () => ({
+      firstName: 'Api', lastName: 'Test', birthDate: '1990-01-01',
+      email: `e2e.api.${Date.now()}.${Math.floor(Math.random() * 1e6)}@example.com`, password: 'Segreta123!',
+    });
+    const register = (body: Record<string, unknown>) =>
+      cy.request({ method: 'POST', url: '/auth/register', body, failOnStatusCode: false });
+
+    it('rifiuta chi ha meno di 14 anni', () => {
+      const d = new Date();
+      d.setFullYear(d.getFullYear() - 13);
+      register({ ...valid(), birthDate: d.toISOString().split('T')[0] }).then(res => {
+        expect(res.status).to.eq(400);
+        expect(res.body.message).to.contain('birthDate');
+      });
+    });
+
+    it('rifiuta dati mancanti o una foto non valida', () => {
+      register({ ...valid(), firstName: '' }).its('status').should('eq', 400);
+      register({ ...valid(), birthDate: null }).its('status').should('eq', 400);
+      register({ ...valid(), password: '123' }).its('status').should('eq', 400);
+      register({ ...valid(), profileImage: 'javascript:alert(1)' }).its('status').should('eq', 400);
+      register({ ...valid(), profileImage: `data:image/jpeg;base64,${'A'.repeat(400_004)}` }).its('status').should('eq', 400);
+    });
+
+    it('accetta una registrazione valida e salva il nome completo', () => {
+      register(valid()).then(res => {
+        expect(res.status).to.eq(201);
+        expect(res.body.user).to.include({ name: 'Api Test', firstName: 'Api', lastName: 'Test', birthDate: '1990-01-01' });
       });
     });
   });
