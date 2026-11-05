@@ -147,7 +147,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
-          file: ./frontend/Dockerfile
+          # Copia in nginx la build fatta nello step precedente (niente npm/ng sotto QEMU).
+          file: ./frontend/Dockerfile.ci
           platforms: linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.tags.outputs.tags }}
