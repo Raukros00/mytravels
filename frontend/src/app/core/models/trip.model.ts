@@ -129,6 +129,11 @@ export interface Trip {
   /** Credito del fotografo per le copertine Unsplash. */
   coverCreditName?: string | null;
   coverCreditUrl?: string | null;
+  /** Città scelta dai suggerimenti (GeoNames): id, nome internazionale e coordinate. */
+  destinationPlaceId?: string | null;
+  destinationIntlName?: string | null;
+  destinationLat?: number | null;
+  destinationLng?: number | null;
   status: TripStatus;
   decision?: TripDecision;
   proposedBy?: string; // user id, only for proposals
@@ -159,6 +164,11 @@ export interface CreateTripDto {
   /** Credito del fotografo per le copertine Unsplash. */
   coverCreditName?: string | null;
   coverCreditUrl?: string | null;
+  /** Città scelta dai suggerimenti (GeoNames): id, nome internazionale e coordinate. */
+  destinationPlaceId?: string | null;
+  destinationIntlName?: string | null;
+  destinationLat?: number | null;
+  destinationLng?: number | null;
   budgetEstimate?: number;
   currency: string;
   tags: string[];

@@ -224,3 +224,84 @@
   color: var(--wb-text-secondary);
   text-decoration: underline;
 }
+
+/* Destinazione con suggerimenti di città (combobox) */
+.place-field {
+  position: relative;
+}
+
+.place-list {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0.35rem;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius-md);
+  box-shadow: var(--wb-shadow-md, 0 8px 24px rgba(0, 0, 0, 0.12));
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.place-option {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--wb-radius-sm, 8px);
+  cursor: pointer;
+}
+
+.place-option .material-symbols-outlined {
+  font-size: 20px;
+  color: var(--wb-primary);
+}
+
+.place-option--active {
+  background: var(--wb-surface-1);
+}
+
+.place-option-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.place-option-text strong {
+  font-size: 0.9rem;
+  color: var(--wb-text-primary);
+}
+
+.place-option-text small {
+  font-size: 0.78rem;
+  color: var(--wb-text-secondary);
+}
+
+.place-attribution {
+  padding: 0.35rem 0.6rem 0.15rem;
+  font-size: 0.7rem;
+  color: var(--wb-text-tertiary);
+}
+
+.place-attribution a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.place-picked {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  color: #047857;
+}
+
+.place-picked .material-symbols-outlined {
+  font-size: 16px;
+}
