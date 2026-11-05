@@ -1,0 +1,11 @@
+# Immagine usata dalla CI: l'app Angular è già compilata nello step precedente
+# (nativo, ~20s), qui viene solo copiata in nginx. Evita di rifare npm ci e
+# ng build dentro l'immagine arm64, che sui runner x86 gira emulata con QEMU
+# (lentissima, a volte bloccata). Per le build locali resta il Dockerfile.
+FROM nginx:alpine
+RUN rm -rf /usr/share/nginx/html/*
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY dist/frontend/browser /usr/share/nginx/html
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

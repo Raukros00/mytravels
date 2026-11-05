@@ -1,0 +1,7 @@
+# Il Dockerfile esegue npm ci e la build da solo: niente artefatti locali nel contesto.
+node_modules
+dist
+.angular
+cypress
+cypress.config.ts
+*.log
