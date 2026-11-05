@@ -20,16 +20,46 @@ describe('Autenticazione (modale)', () => {
       cy.get('[role="dialog"]').should('not.exist');
     });
 
-    it('la navbar mostra solo Esplora, Accedi e Registrati', () => {
+    it('l\'header mostra logo, Esplora, lingua e l\'utente anonimo', () => {
       cy.visit('/explore');
-      cy.get('header nav').within(() => {
-        cy.contains('a', 'Esplora').should('be.visible');
-        cy.contains('a', 'Viaggi').should('not.exist');
-        cy.contains('a', 'Gruppi').should('not.exist');
+      cy.get('header').within(() => {
+        cy.contains('a', 'WanderBite').should('have.attr', 'href', '/explore');
+        cy.contains('nav a', 'Esplora').should('be.visible').and('have.class', 'desktop-nav-active');
+        cy.contains('nav a', 'Viaggi').should('not.exist');
+        cy.contains('nav a', 'Gruppi').should('not.exist');
+        cy.contains('button', 'EN').should('be.visible');
+        cy.get('button[aria-label="Accedi o registrati"]').should('be.visible');
+        cy.get('button[title="Notifiche"]').should('not.exist');
       });
-      cy.get('header').contains('button', 'Accedi').should('be.visible');
-      cy.get('header').contains('button', 'Registrati').should('be.visible');
-      cy.get('button[title="Notifiche"]').should('not.exist');
+    });
+
+    it('il selettore della lingua funziona anche senza login', () => {
+      cy.visit('/explore');
+      cy.get('header').contains('button', 'EN').click();
+      cy.get('header').contains('button', 'IT').should('be.visible');
+      cy.window().its('localStorage').invoke('getItem', 'wb_lang').should('eq', 'en');
+    });
+
+    it('l\'utente anonimo apre la modale di accesso', () => {
+      cy.visit('/explore');
+      cy.get('header button[aria-label="Accedi o registrati"]').click();
+      cy.dialog('Accedi o registrati').should('be.visible');
+      cy.get('#auth-tab-login').should('have.attr', 'aria-selected', 'true');
+    });
+
+    describe('su mobile', () => {
+      beforeEach(() => cy.viewport('iphone-x'));
+
+      it('l\'header resta visibile con Esplora, lingua e utente anonimo', () => {
+        cy.visit('/explore');
+        cy.get('header').within(() => {
+          cy.contains('a', 'WanderBite').should('be.visible');
+          cy.contains('nav a', 'Esplora').should('be.visible');
+          cy.contains('button', 'EN').should('be.visible');
+          cy.get('button[aria-label="Accedi o registrati"]').should('be.visible').click();
+        });
+        cy.dialog('Accedi o registrati').should('be.visible');
+      });
     });
 
     it('una pagina protetta apre la modale sopra Esplora e dopo il login porta alla pagina', () => {
@@ -83,7 +113,7 @@ describe('Autenticazione (modale)', () => {
           win.localStorage.setItem('wb_groups', JSON.stringify([{ id: 'grp_1', name: 'Weekend Foodies', members: [] }]));
         },
       });
-      cy.get('header').contains('button', 'Accedi').should('be.visible');
+      cy.get('header button[aria-label="Accedi o registrati"]').should('be.visible');
       cy.window().its('localStorage').invoke('getItem', 'wb_current_user').should('be.null');
       cy.window().its('localStorage').invoke('getItem', 'wb_groups').should('be.null');
     });
@@ -92,7 +122,7 @@ describe('Autenticazione (modale)', () => {
   describe('accedi', () => {
     beforeEach(() => {
       cy.visit('/explore');
-      cy.get('header').contains('button', 'Accedi').click();
+      cy.get('header button[aria-label="Accedi o registrati"]').click();
       authModal().should('be.visible');
     });
 
@@ -142,7 +172,7 @@ describe('Autenticazione (modale)', () => {
     it('riaprendo la modale i campi sono di nuovo vuoti', () => {
       authModal().find('#auth-login-email').type('qualcuno@example.com');
       authModal().find('button[aria-label="Chiudi modale"]').click();
-      cy.get('header').contains('button', 'Accedi').click();
+      cy.get('header button[aria-label="Accedi o registrati"]').click();
       authModal().find('#auth-login-email').should('have.value', '');
     });
   });
@@ -150,7 +180,8 @@ describe('Autenticazione (modale)', () => {
   describe('registrati', () => {
     beforeEach(() => {
       cy.visit('/explore');
-      cy.get('header').contains('button', 'Registrati').click();
+      cy.get('header button[aria-label="Accedi o registrati"]').click();
+      authModal().find('#auth-tab-register').click();
       cy.get('#auth-tab-register').should('have.attr', 'aria-selected', 'true');
     });
 
@@ -216,7 +247,7 @@ describe('Autenticazione (modale)', () => {
         },
       });
       cy.location('pathname').should('eq', '/explore');
-      cy.get('header').contains('button', 'Accedi').should('be.visible');
+      cy.get('header button[aria-label="Accedi o registrati"]').should('be.visible');
     });
 
     it('il logout dal menu utente chiude la sessione e svuota la cache', () => {

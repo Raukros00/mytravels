@@ -1,6 +1,6 @@
 import i18n from '../../public/i18n/it.json';
 import { uniq } from '../support/e2e';
-import { GROUPS, TRIPS } from '../support/users';
+import { DemoUser, GROUPS, TRIPS } from '../support/users';
 
 const t = i18n.groups;
 
@@ -10,9 +10,12 @@ function openCardMenu(name: string) {
   groupCard(name).find('.card-menu-btn').click();
 }
 
-/** Attende che il gruppo salvato sul backend soddisfi `assert`. */
-function savedGroup(id: string, assert: (group: any) => void) {
-  return cy.apiUntil('admin', `/api/v1/groups/${id}`, assert);
+/**
+ * Attende che il gruppo salvato sul backend soddisfi `assert`.
+ * `as` deve essere un membro: il backend non mostra i gruppi di cui non si fa parte.
+ */
+function savedGroup(id: string, assert: (group: any) => void, as: DemoUser = 'admin') {
+  return cy.apiUntil(as, `/api/v1/groups/${id}`, assert);
 }
 
 const memberIds = (g: any): string[] => g.members.map((m: any) => m.id);
@@ -134,7 +137,7 @@ describe('Gruppi – lista', () => {
       cy.toast(`Hai lasciato il gruppo "${name}".`).should('be.visible');
       cy.contains('.group-name', name).should('not.exist');
       cy.me('admin').then(me => {
-        savedGroup(group.id, g => expect(memberIds(g)).not.to.include(me.id));
+        savedGroup(group.id, g => expect(memberIds(g)).not.to.include(me.id), 'marco');
       });
     });
   });
@@ -368,7 +371,7 @@ describe('Gruppi – inviti tramite notifica', () => {
         cy.toast(`Ti sei unito al gruppo "${name}"!`).should('be.visible');
         cy.contains('header', '✓ Accettato').should('be.visible');
         cy.contains('.group-name', name).should('be.visible');
-        savedGroup(group.id, g => expect(memberIds(g)).to.include(admin.id));
+        savedGroup(group.id, g => expect(memberIds(g)).to.include(admin.id), 'marco');
       });
     });
   });
@@ -389,7 +392,7 @@ describe('Gruppi – inviti tramite notifica', () => {
         cy.contains('header p', name).closest('.flex-1').contains('button', 'Rifiuta').click();
         cy.contains('header', '✕ Rifiutato').should('be.visible');
         cy.contains('.group-name', name).should('not.exist');
-        savedGroup(group.id, g => expect(g.members).to.have.length(1));
+        savedGroup(group.id, g => expect(g.members).to.have.length(1), 'marco');
       });
     });
   });
