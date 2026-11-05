@@ -63,11 +63,17 @@ describe('Autenticazione (modale)', () => {
           cy.contains('button', 'Accedi').click();
         });
         cy.dialog('Benvenuto su WanderBite').within(() => {
+          cy.contains('button', 'Accedi o registrati').should('be.visible');
+        });
+        cy.dialog('Benvenuto su WanderBite').within(() => {
           cy.contains('button', 'Switch to English').click();
           cy.contains('button', 'Passa all\'italiano').should('be.visible');
           cy.contains('button', 'Accedi o registrati').click();
         });
-        cy.dialog('Accedi o registrati').should('be.visible');
+        cy.dialog('Accedi o registrati').within(() => {
+          // Testo dei campi ≥ 16px: iOS non ingrandisce la pagina al tocco (e non resta zoomata dopo il login).
+          cy.get('#auth-login-email').should($i => expect(parseFloat(getComputedStyle($i[0]).fontSize)).to.be.gte(16));
+        });
       });
     });
 

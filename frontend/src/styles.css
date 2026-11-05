@@ -617,3 +617,14 @@ a:hover {
   border-radius: inherit;
   display: block;
 }
+
+/* iOS Safari ingrandisce la pagina quando si tocca un campo con testo sotto i 16px e non torna
+   indietro da solo (dopo il login da mobile bisognava "dezoomare"). Su mobile tutti i campi
+   hanno almeno 16px. !important perché molti campi hanno dimensioni nei CSS dei componenti. */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
