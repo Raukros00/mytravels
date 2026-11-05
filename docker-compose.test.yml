@@ -38,6 +38,8 @@ services:
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET non impostata nel .env}
       # Copertine suggerite (Unsplash, "Access Key"): vuota = funzione disattivata.
       UNSPLASH_ACCESS_KEY: ${UNSPLASH_ACCESS_KEY:-}
+      # Suggerimenti di città (username GeoNames): vuoto = destinazione a testo libero.
+      GEONAMES_USERNAME: ${GEONAMES_USERNAME:-}
       JPA_SHOW_SQL: ${JPA_SHOW_SQL:-false}
       SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
     depends_on:

@@ -22,6 +22,10 @@ public class CreateTripRequest {
     private String coverUrl;
     private String coverCreditName;
     private String coverCreditUrl;
+    private String destinationPlaceId;
+    private String destinationIntlName;
+    private Double destinationLat;
+    private Double destinationLng;
     private Double budgetEstimate;
     private String currency;
     private List<String> tags;

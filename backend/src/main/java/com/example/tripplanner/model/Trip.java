@@ -37,6 +37,11 @@ public class Trip implements Persistable<String> {
     /** Credito del fotografo (copertine Unsplash): nome e link al profilo. */
     @Column(name = "cover_credit_name") private String coverCreditName;
     @Column(name = "cover_credit_url", columnDefinition = "text") private String coverCreditUrl;
+    /** Luogo scelto dai suggerimenti (GeoNames): id, nome internazionale (es. "Zürich") e coordinate. */
+    @Column(name = "destination_place_id") private String destinationPlaceId;
+    @Column(name = "destination_intl_name") private String destinationIntlName;
+    @Column(name = "destination_lat") private Double destinationLat;
+    @Column(name = "destination_lng") private Double destinationLng;
 
     /** 'planning' | 'upcoming' | 'ongoing' | 'completed' */
     private String status;
