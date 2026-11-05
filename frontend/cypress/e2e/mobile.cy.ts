@@ -44,26 +44,33 @@ describe('Mobile – header e barra in basso', () => {
     });
   });
 
+  it('la barra in basso lascia spazio sotto le icone (barra Home dell\'iPhone)', () => {
+    cy.visit('/trips');
+    bottomNav().should($nav => {
+      expect(parseFloat(getComputedStyle($nav[0]).paddingBottom)).to.be.gte(12);
+      const item = $nav[0].querySelector('.wb-nav-item')!.getBoundingClientRect();
+      expect($nav[0].getBoundingClientRect().bottom - item.bottom).to.be.gte(12);
+    });
+    cy.get('meta[name="viewport"]').should('have.attr', 'content').and('contain', 'viewport-fit=cover');
+  });
+
   it('i campi hanno testo di almeno 16px (niente zoom automatico di iOS al tocco)', () => {
     cy.visit('/trips/new');
     ['#title', '#destination', '#notes', '#groupId'].forEach(sel =>
       cy.get(sel).should($el => expect(parseFloat(getComputedStyle($el[0]).fontSize)).to.be.gte(16)));
   });
 
-  it('scorrendo verso il basso l\'header sparisce e torna scorrendo verso l\'alto', () => {
+  it('scorrendo l\'header resta fisso in alto', () => {
     cy.visit('/trips');
     cy.get('.trip-card').should('have.length.greaterThan', 2);
-    cy.get('header').should('not.have.class', '-translate-y-full');
     // Lo scroll della pagina è animato (scroll-behavior: smooth): si aspetta che arrivi a destinazione.
     cy.scrollTo(0, 900);
     cy.window().its('scrollY').should('be.gte', 600);
-    cy.get('header').should('have.class', '-translate-y-full');
+    cy.wait(400); // eventuali transizioni
+    cy.get('header').should('be.visible').then($h => expect($h[0].getBoundingClientRect().top).to.eq(0));
     cy.scrollTo(0, 300);
     cy.window().its('scrollY').should('be.lte', 320);
-    cy.get('header').should('not.have.class', '-translate-y-full');
-    cy.scrollTo(0, 0);
-    cy.window().its('scrollY').should('eq', 0);
-    cy.get('header').should('not.have.class', '-translate-y-full');
+    cy.get('header').then($h => expect($h[0].getBoundingClientRect().top).to.eq(0));
   });
 
   it('la barra in basso ha il profilo con l\'avatar e il pallino delle notifiche non lette', () => {
