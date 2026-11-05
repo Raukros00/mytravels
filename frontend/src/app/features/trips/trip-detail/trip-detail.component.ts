@@ -86,6 +86,11 @@ export class TripDetailComponent {
     return id ? this.tripService.getTripById(this.tripService.resolveTripId(id)) : undefined;
   });
 
+  private readonly loadTripIfMissing = effect(() => {
+    const id = this.tripId();
+    if (id) this.tripService.ensureTripLoaded(this.tripService.resolveTripId(id));
+  });
+
   private readonly syncUrlWithSavedId = effect(() => {
     const id = this.tripId();
     if (!id) return;

@@ -55,7 +55,8 @@ export class GroupService {
     });
   }
 
-  public loadGroups(): void {
+  /** Loads the user's groups from the backend; `onLoaded` runs with the fresh list. */
+  public loadGroups(onLoaded?: (groups: Group[]) => void): void {
     if (USE_MOCK_DATA) return;
     this.apiService.get<Group[]>('/api/v1/groups').subscribe({
       next: (groups) => {
@@ -71,6 +72,7 @@ export class GroupService {
         } else if (!this.activeGroupIdSignal() || !list.find(g => g.id === this.activeGroupIdSignal())) {
           this.setActiveGroup(list[0].id);
         }
+        onLoaded?.(list);
       },
       error: (err) => {
         console.warn('Backend unavailable, using cached groups:', err.status, err.error?.message || err.message);
