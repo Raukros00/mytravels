@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { Observable, catchError, map, of, tap, throwError } from 'rxjs';
 import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
 import { ApiService } from './api.service';
@@ -46,51 +47,49 @@ export class AuthService {
     }
   }
 
-  public login(dto: LoginDto): void {
+  /**
+   * Accede e avvia la sessione. Non naviga: chi chiama (la modale di accesso) decide dove andare.
+   * In caso di errore l'Observable fallisce con il messaggio da mostrare all'utente.
+   */
+  public login(dto: LoginDto): Observable<User> {
     if (USE_MOCK_DATA) {
       const user = this.storageService.getCurrentUser();
-      if (user) {
-        this.currentUserSignal.set(user);
-        this.toastService.success(`Bentornato, ${user.name}! 👋`);
-        this.router.navigate(['/trips']);
-      }
-      return;
+      if (!user) return throwError(() => new Error('Nessun utente demo disponibile.'));
+      this.currentUserSignal.set(user);
+      this.toastService.success(`Bentornato, ${user.name}! 👋`);
+      return of(user);
     }
-    this.apiService.post<{ token: string; user: User }>('/auth/login', dto).subscribe({
-      next: (res) => {
-        this.storageService.setJwt(res.token);
-        this.currentUserSignal.set(res.user);
-        this.storageService.setCurrentUser(res.user);
-        this.toastService.success(`Bentornato, ${res.user.name}! 👋`);
-        this.router.navigate(['/trips']);
-      },
-      error: (err) => {
-        const msg = err.error?.message || 'Email o password non validi.';
-        this.toastService.error(msg);
-      }
-    });
+    return this.apiService.post<{ token: string; user: User }>('/auth/login', dto).pipe(
+      map(res => this.startSession(res)),
+      tap(user => this.toastService.success(`Bentornato, ${user.name}! 👋`)),
+      catchError(err => throwError(() => new Error(
+        err.status === 401 ? 'Email o password non corretti.' : (err.error?.message || 'Accesso non riuscito, riprova.')
+      )))
+    );
   }
 
-  public register(dto: RegisterDto): void {
-    this.apiService.post<{ token: string; user: User }>('/auth/register', dto).subscribe({
-      next: (res) => {
-        this.storageService.setJwt(res.token);
-        this.currentUserSignal.set(res.user);
-        this.storageService.setCurrentUser(res.user);
-        this.toastService.success(`Benvenuto su WanderBite, ${res.user.name}! 🚀`);
-        this.router.navigate(['/trips']);
-      },
-      error: (err) => {
-        const msg = err.error?.message || 'Errore durante la registrazione.';
-        this.toastService.error(msg);
-      }
-    });
+  /** Registra il nuovo account e avvia la sessione (vedi `login`). */
+  public register(dto: RegisterDto): Observable<User> {
+    return this.apiService.post<{ token: string; user: User }>('/auth/register', dto).pipe(
+      map(res => this.startSession(res)),
+      tap(user => this.toastService.success(`Benvenuto su WanderBite, ${user.name}! 🚀`)),
+      catchError(err => throwError(() => new Error(
+        err.status === 409 ? 'Esiste già un account con questa email.' : (err.error?.message || 'Errore durante la registrazione.')
+      )))
+    );
+  }
+
+  private startSession(res: { token: string; user: User }): User {
+    this.storageService.setJwt(res.token);
+    this.currentUserSignal.set(res.user);
+    this.storageService.setCurrentUser(res.user);
+    return res.user;
   }
 
   public logout(): void {
     this.currentUserSignal.set(null);
     this.storageService.clearSessionData();
     this.toastService.info('Disconnessione effettuata. A presto!');
-    this.router.navigate(['/login']);
+    this.router.navigate(['/explore']);
   }
 }
