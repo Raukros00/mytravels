@@ -34,6 +34,9 @@ public class Trip implements Persistable<String> {
     @Column(name = "start_date") private String startDate;
     @Column(name = "end_date")   private String endDate;
     @Column(name = "cover_url", columnDefinition = "text") private String coverUrl;
+    /** Credito del fotografo (copertine Unsplash): nome e link al profilo. */
+    @Column(name = "cover_credit_name") private String coverCreditName;
+    @Column(name = "cover_credit_url", columnDefinition = "text") private String coverCreditUrl;
 
     /** 'planning' | 'upcoming' | 'ongoing' | 'completed' */
     private String status;

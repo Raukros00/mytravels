@@ -1,9 +1,12 @@
-import { Component, effect, inject, signal, untracked } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, debounceTime, distinctUntilChanged, map, of, switchMap, tap } from 'rxjs';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TripService } from '../../../core/services/trip.service';
 import { GroupService } from '../../../core/services/group.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { CoverService, CoverSuggestion, UNSPLASH_LINK } from '../../../core/services/cover.service';
 
 interface CoverPreset {
   title: string;
@@ -24,6 +27,14 @@ export class TripCreateComponent {
   public tripService = inject(TripService);
   public groupService = inject(GroupService);
   private route = inject(ActivatedRoute);
+  private covers = inject(CoverService);
+  private destroyRef = inject(DestroyRef);
+
+  /** Copertine suggerite per la destinazione scritta (Unsplash, tramite backend). */
+  protected readonly coverSuggestions = signal<CoverSuggestion[]>([]);
+  protected readonly coverQuery = signal('');
+  protected readonly coversLoading = signal(false);
+  protected readonly unsplashLink = UNSPLASH_LINK;
   /** Gruppo da cui si arriva ("Nuovo viaggio" dal dettaglio gruppo: /trips/new?groupId=...). */
   private requestedGroupId = this.route.snapshot.queryParamMap.get('groupId');
   private toastService = inject(ToastService);
@@ -78,7 +89,33 @@ export class TripCreateComponent {
     asProposal: [false]
   });
 
+  /** Copertina scelta tra i suggerimenti (null se è un preset o un URL personalizzato). */
+  private readonly coverUrlValue = toSignal(this.tripForm.controls.coverUrl.valueChanges, {
+    initialValue: this.tripForm.controls.coverUrl.value
+  });
+  protected readonly selectedSuggestion = computed(() =>
+    this.coverSuggestions().find(c => c.url === this.coverUrlValue()) ?? null
+  );
+
   constructor() {
+    // Suggerimenti di copertina mentre si scrive la destinazione (dopo una breve pausa).
+    this.tripForm.controls.destination.valueChanges.pipe(
+      map(v => (v ?? '').trim()),
+      debounceTime(500),
+      distinctUntilChanged(),
+      tap(q => {
+        this.coverQuery.set(q.length >= 3 ? q : '');
+        this.coversLoading.set(q.length >= 3);
+      }),
+      switchMap(q => q.length < 3
+        ? of(null)
+        : this.covers.search(q).pipe(catchError(() => of(null)))),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(res => {
+      this.coversLoading.set(false);
+      this.coverSuggestions.set(res?.enabled ? res.results : []);
+    });
+
     // I gruppi possono arrivare dopo l'apertura della pagina: appena ci sono, se il gruppo
     // selezionato non è valido scelgo quello richiesto (o l'attivo, o il primo).
     effect(() => {
@@ -113,6 +150,10 @@ export class TripCreateComponent {
     return isImage || !icon ? group.name : `${icon} ${group.name}`;
   }
 
+  selectSuggestion(cover: CoverSuggestion): void {
+    this.tripForm.patchValue({ coverUrl: cover.url });
+  }
+
   addTag(event?: Event): void {
     if (event) event.preventDefault();
     const tag = this.currentTag().trim().replace(/^#/, '');
@@ -133,6 +174,8 @@ export class TripCreateComponent {
     }
 
     const val = this.tripForm.value;
+    const suggestion = this.selectedSuggestion();
+    if (suggestion) this.covers.trackDownload(suggestion.downloadLocation);
     const created = this.tripService.createTrip({
       groupId: val.groupId!,
       title: val.title!,
@@ -141,6 +184,8 @@ export class TripCreateComponent {
       startDate: val.startDate!,
       endDate: val.endDate!,
       coverUrl: val.coverUrl || this.coverPresets[0].url,
+      coverCreditName: suggestion?.authorName ?? null,
+      coverCreditUrl: suggestion?.authorUrl ?? null,
       budgetEstimate: Number(val.budgetEstimate) || 0,
       currency: val.currency || 'EUR',
       tags: this.tagsList(),

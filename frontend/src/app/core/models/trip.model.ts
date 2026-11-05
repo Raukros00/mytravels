@@ -126,6 +126,9 @@ export interface Trip {
   startDate: string; // YYYY-MM-DD
   endDate: string;   // YYYY-MM-DD
   coverUrl: string;
+  /** Credito del fotografo per le copertine Unsplash. */
+  coverCreditName?: string | null;
+  coverCreditUrl?: string | null;
   status: TripStatus;
   decision?: TripDecision;
   proposedBy?: string; // user id, only for proposals
@@ -153,6 +156,9 @@ export interface CreateTripDto {
   startDate: string;
   endDate: string;
   coverUrl: string;
+  /** Credito del fotografo per le copertine Unsplash. */
+  coverCreditName?: string | null;
+  coverCreditUrl?: string | null;
   budgetEstimate?: number;
   currency: string;
   tags: string[];

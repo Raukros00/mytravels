@@ -20,6 +20,8 @@ public class CreateTripRequest {
     private String startDate;
     private String endDate;
     private String coverUrl;
+    private String coverCreditName;
+    private String coverCreditUrl;
     private Double budgetEstimate;
     private String currency;
     private List<String> tags;

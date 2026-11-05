@@ -12,6 +12,14 @@
     <!-- Dark veil overlay -->
     <div class="hero-cover-veil"></div>
 
+    @if (trip().coverCreditName && trip().coverCreditUrl) {
+      <!-- Credito obbligatorio per le foto Unsplash -->
+      <p class="hero-cover-credit">
+        Foto di <a [href]="trip().coverCreditUrl" target="_blank" rel="noopener">{{ trip().coverCreditName }}</a>
+        su <a [href]="unsplashLink" target="_blank" rel="noopener">Unsplash</a>
+      </p>
+    }
+
     <!-- Content overlaid on image -->
     <div class="hero-cover-content">
       <!-- Trip title -->
