@@ -1,0 +1,4 @@
+# Contesto di Dockerfile.ci: solo la build già pronta e la configurazione di nginx.
+*
+!dist/frontend/browser/**
+!nginx.conf
