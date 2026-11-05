@@ -8,7 +8,10 @@
 <app-toast></app-toast>
 
 <!-- Accesso / registrazione (modale unica, aperta da navbar, guard ed Esplora) -->
-<app-auth-modal />
+@defer (when authModal.isOpen()) {
+  <!-- Scaricata alla prima apertura: fuori dal bundle iniziale (form, cropper...). -->
+  <app-auth-modal />
+}
 
 <footer class="app-footer">
   <div class="app-container footer-inner">

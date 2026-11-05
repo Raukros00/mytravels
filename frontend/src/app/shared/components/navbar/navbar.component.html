@@ -55,11 +55,10 @@
         <!-- User Avatar -->
         <button
           type="button"
-          class="w-9 h-9 rounded-full flex items-center justify-center font-label-lg text-label-lg text-white overflow-hidden min-w-[36px] min-h-[36px] active:scale-95 transition-transform"
-          [style.background-color]="authService.currentUser()?.color || '#ab2f0a'"
+          class="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden min-w-[36px] min-h-[36px] active:scale-95 transition-transform"
           (click)="toggleUserMenu($event)"
           [title]="authService.currentUser()?.name || 'Utente'">
-          {{ authService.currentUser()?.name?.charAt(0)?.toUpperCase() || 'U' }}
+          <app-user-avatar [user]="authService.currentUser()" [size]="36" />
         </button>
       } @else {
         <!-- Utente anonimo: apre la modale di accesso / registrazione -->
@@ -95,34 +94,73 @@
           @for (notif of notifService.userNotifications(); track notif.id) {
             <div class="px-4 py-3 border-b border-outline-variant/20 last:border-0" [class.bg-surface-container]="!notif.read">
               <div class="flex items-start gap-3">
-                <div class="w-9 h-9 rounded-full flex items-center justify-center text-base shrink-0 border-2"
+                <div class="w-9 h-9 rounded-full flex items-center justify-center text-base shrink-0 border-2 overflow-hidden"
                   [style.background-color]="notif.groupColor + '22'"
                   [style.border-color]="notif.groupColor">
-                  {{ notif.groupIcon }}
+                  @if (isImageIcon(notif.groupIcon)) {
+                    <img [src]="notif.groupIcon" alt="" class="w-full h-full object-cover">
+                  } @else {
+                    {{ notif.groupIcon }}
+                  }
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="font-body-sm text-body-sm text-on-surface leading-snug">
-                    <strong>{{ notif.senderName }}</strong> ti ha invitato nel gruppo <strong>{{ notif.groupName }}</strong>
-                  </p>
-                  @if (notif.status === 'pending') {
-                    <div class="flex gap-2 mt-2">
-                      <button type="button"
-                        class="px-3 py-1 rounded-full font-label-sm text-label-sm bg-primary text-on-primary transition-all active:scale-95"
-                        (click)="notifService.acceptInvite(notif.id)">
-                        Accetta
-                      </button>
-                      <button type="button"
-                        class="px-3 py-1 rounded-full font-label-sm text-label-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors"
-                        (click)="notifService.declineInvite(notif.id)">
-                        Rifiuta
-                      </button>
-                    </div>
-                  } @else {
-                    <p class="font-body-sm text-body-sm mt-1"
-                      [class.text-primary]="notif.status === 'accepted'"
-                      [class.text-on-surface-variant]="notif.status === 'declined'">
-                      {{ notif.status === 'accepted' ? '✓ Accettato' : '✕ Rifiutato' }}
-                    </p>
+                  @switch (notif.type) {
+                    @case ('join_request') {
+                      <p class="font-body-sm text-body-sm text-on-surface leading-snug">
+                        <strong>{{ notif.senderName }}</strong> chiede di entrare nel gruppo <strong>{{ notif.groupName }}</strong>
+                      </p>
+                      @if (notif.status === 'pending') {
+                        <a class="inline-block mt-2 px-3 py-1 rounded-full font-label-sm text-label-sm bg-primary text-on-primary no-underline"
+                          [routerLink]="['/groups', notif.groupId]" (click)="isNotifPanelOpen.set(false)">
+                          Gestisci richiesta
+                        </a>
+                      } @else {
+                        <p class="font-body-sm text-body-sm mt-1"
+                          [class.text-primary]="notif.status === 'approved'"
+                          [class.text-on-surface-variant]="notif.status !== 'approved'">
+                          {{ notif.status === 'approved' ? '✓ Accettata' : '✕ Rifiutata' }}
+                        </p>
+                      }
+                    }
+                    @case ('join_approved') {
+                      <p class="font-body-sm text-body-sm text-on-surface leading-snug">
+                        La tua richiesta per <strong>{{ notif.groupName }}</strong> è stata accettata 🎉
+                      </p>
+                      <a class="inline-block mt-2 font-label-sm text-label-sm text-primary no-underline"
+                        [routerLink]="['/groups', notif.groupId]" (click)="isNotifPanelOpen.set(false)">
+                        Apri il gruppo →
+                      </a>
+                    }
+                    @case ('join_declined') {
+                      <p class="font-body-sm text-body-sm text-on-surface leading-snug">
+                        La tua richiesta per <strong>{{ notif.groupName }}</strong> non è stata accettata.
+                      </p>
+                    }
+                    @default {
+                      <p class="font-body-sm text-body-sm text-on-surface leading-snug">
+                        <strong>{{ notif.senderName }}</strong> ti ha invitato nel gruppo <strong>{{ notif.groupName }}</strong>
+                      </p>
+                      @if (notif.status === 'pending') {
+                        <div class="flex gap-2 mt-2">
+                          <button type="button"
+                            class="px-3 py-1 rounded-full font-label-sm text-label-sm bg-primary text-on-primary transition-all active:scale-95"
+                            (click)="notifService.acceptInvite(notif.id)">
+                            Accetta
+                          </button>
+                          <button type="button"
+                            class="px-3 py-1 rounded-full font-label-sm text-label-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors"
+                            (click)="notifService.declineInvite(notif.id)">
+                            Rifiuta
+                          </button>
+                        </div>
+                      } @else {
+                        <p class="font-body-sm text-body-sm mt-1"
+                          [class.text-primary]="notif.status === 'accepted'"
+                          [class.text-on-surface-variant]="notif.status === 'declined'">
+                          {{ notif.status === 'accepted' ? '✓ Accettato' : '✕ Rifiutato' }}
+                        </p>
+                      }
+                    }
                   }
                 </div>
               </div>
@@ -137,10 +175,7 @@
   @if (isUserMenuOpen() && authService.isAuthenticated()) {
     <div class="absolute top-16 right-gutter w-64 bg-surface-container-lowest rounded-xl shadow-[0_16px_36px_rgba(45,30,24,0.14)] border border-outline-variant/40 overflow-hidden z-50 animate-fade-in" (click)="$event.stopPropagation()">
       <div class="px-space-md py-space-md flex items-center gap-space-sm border-b border-outline-variant/30">
-        <div class="w-10 h-10 rounded-full flex items-center justify-center font-label-lg text-label-lg text-white"
-          [style.background-color]="authService.currentUser()?.color || '#ab2f0a'">
-          {{ authService.currentUser()?.name?.charAt(0)?.toUpperCase() || 'U' }}
-        </div>
+        <app-user-avatar [user]="authService.currentUser()" [size]="40" />
         <div class="flex flex-col min-w-0">
           <span class="font-label-lg text-label-lg text-on-surface truncate">{{ authService.currentUser()?.name }}</span>
           <span class="font-body-sm text-body-sm text-on-surface-variant truncate">{{ authService.currentUser()?.email }}</span>
@@ -192,7 +227,10 @@
 }
 
 <!-- Create Group Modal -->
-<app-group-create-modal
-  [isOpen]="isCreateGroupModalOpen()"
-  (closeModal)="isCreateGroupModalOpen.set(false)">
-</app-group-create-modal>
+@defer (when isCreateGroupModalOpen()) {
+  <!-- Scaricata alla prima apertura: fuori dal bundle iniziale. -->
+  <app-group-create-modal
+    [isOpen]="isCreateGroupModalOpen()"
+    (closeModal)="isCreateGroupModalOpen.set(false)">
+  </app-group-create-modal>
+}

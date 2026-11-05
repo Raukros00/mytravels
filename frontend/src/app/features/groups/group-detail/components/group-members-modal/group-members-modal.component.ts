@@ -1,15 +1,17 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Group } from '../../../../../core/models/group.model';
 import { AuthService } from '../../../../../core/services/auth.service';
-import { NotificationService } from '../../../../../core/services/notification.service';
+import { NotificationService, PendingGroupInvite } from '../../../../../core/services/notification.service';
+import { ToastService } from '../../../../../core/services/toast.service';
 import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
+import { UserAvatarComponent } from '../../../../../shared/components/user-avatar/user-avatar.component';
 import { GroupMembersListComponent } from '../group-members-list/group-members-list.component';
 
 @Component({
   selector: 'app-group-members-modal',
   standalone: true,
-  imports: [ModalComponent, TranslatePipe, GroupMembersListComponent],
+  imports: [ModalComponent, TranslatePipe, GroupMembersListComponent, UserAvatarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './group-members-modal.component.html',
   styleUrl: './group-members-modal.component.css'
@@ -17,6 +19,7 @@ import { GroupMembersListComponent } from '../group-members-list/group-members-l
 export class GroupMembersModalComponent {
   private readonly authService = inject(AuthService);
   private readonly notificationService = inject(NotificationService);
+  private readonly toastService = inject(ToastService);
 
   readonly isOpen = input(false);
   readonly group = input<Group | null>(null);
@@ -27,31 +30,24 @@ export class GroupMembersModalComponent {
 
   readonly currentUserId = computed(() => this.authService.currentUser()?.id);
 
-  readonly pendingInvites = computed(() => {
-    const g = this.group();
-    if (!g) return [];
-    const users = this.authService.platformUsers();
-    const seen = new Set<string>();
-    return this.notificationService.allNotifications()
-      .filter(n => n.groupId === g.id && n.status === 'pending')
-      .filter(n => {
-        if (seen.has(n.recipientId)) return false;
-        seen.add(n.recipientId);
-        return true;
-      })
-      .map(n => {
-        const user = users.find(u => u.id === n.recipientId);
-        return {
-          notifId: n.id,
-          recipientId: n.recipientId,
-          name: user?.name ?? 'Utente',
-          avatar: user?.avatar ?? '👤',
-          color: user?.color ?? '#9ca3af'
-        };
-      });
-  });
+  /** Inviti diretti ancora in attesa, letti dal server a ogni apertura. */
+  readonly pendingInvites = signal<PendingGroupInvite[]>([]);
+
+  constructor() {
+    effect(() => {
+      const g = this.group();
+      if (!this.isOpen() || !g) return;
+      untracked(() => this.notificationService.groupInvites(g.id).subscribe({
+        next: invites => this.pendingInvites.set(invites),
+        error: () => this.pendingInvites.set([])
+      }));
+    });
+  }
 
   revokeInvite(notifId: string): void {
-    this.notificationService.revokeInvite(notifId);
+    this.notificationService.revokeInvite(notifId).subscribe({
+      next: () => this.pendingInvites.update(list => list.filter(i => i.notifId !== notifId)),
+      error: () => this.toastService.error('Non è stato possibile revocare l\'invito.')
+    });
   }
 }

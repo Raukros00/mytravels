@@ -22,6 +22,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
   {
+    // Link invito a un gruppo: chi non è loggato accede dalla modale e poi torna qui.
+    path: 'join/:code',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/groups/group-join/group-join.component').then(m => m.GroupJoinComponent)
+  },
+  {
     path: 'groups',
     canActivate: [authGuard],
     children: [

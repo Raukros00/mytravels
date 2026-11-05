@@ -1,0 +1,37 @@
+<div class="us-wrap">
+  <span class="material-symbols-outlined us-icon" aria-hidden="true">person_search</span>
+  <input
+    type="search"
+    class="us-input"
+    autocomplete="off"
+    aria-label="Cerca utenti da invitare"
+    [placeholder]="placeholder()"
+    [value]="query()"
+    (input)="query.set($any($event.target).value)">
+
+  @if (showDropdown()) {
+    <div class="us-dropdown" role="listbox">
+      @if (tooShort()) {
+        <p class="us-empty">Scrivi almeno 2 caratteri.</p>
+      } @else if (loading()) {
+        <p class="us-empty">Ricerca in corso…</p>
+      } @else if (users().length === 0) {
+        <p class="us-empty">Nessun utente trovato. Puoi cercare per nome o per indirizzo email completo.</p>
+      } @else {
+        <ul class="us-list">
+          @for (user of users(); track user.id) {
+            <li class="us-row">
+              <app-user-avatar [user]="user" [size]="34" />
+              <span class="us-name">{{ user.name }}</span>
+              @if (isInvited(user.id)) {
+                <span class="us-badge"><span class="material-symbols-outlined">check</span> Invitato</span>
+              } @else {
+                <button type="button" class="btn btn-outline btn-sm" (click)="pick(user)">{{ actionLabel() }}</button>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  }
+</div>

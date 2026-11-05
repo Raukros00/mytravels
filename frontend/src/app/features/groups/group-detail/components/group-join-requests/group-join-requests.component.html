@@ -1,0 +1,28 @@
+@if (requests().length > 0) {
+  <div class="section-card card jr-card">
+    <div class="section-header">
+      <span class="material-symbols-outlined section-icon">how_to_reg</span>
+      <div>
+        <h2 class="section-title">{{ 'groups.join_requests_title' | translate }}</h2>
+      </div>
+      <span class="trip-counter">{{ requests().length }}</span>
+    </div>
+
+    <ul class="jr-list">
+      @for (r of requests(); track r.id) {
+        <li class="jr-row">
+          <app-user-avatar [user]="{ name: r.userName, avatar: r.avatar, color: r.color, profileImage: r.profileImage }" [size]="38" />
+          <span class="jr-name">{{ r.userName }}</span>
+          <div class="jr-actions">
+            <button type="button" class="btn btn-secondary btn-sm" [disabled]="busyId() === r.id" (click)="decide(r, false)">
+              {{ 'groups.join_requests_decline' | translate }}
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" [disabled]="busyId() === r.id" (click)="decide(r, true)">
+              {{ 'groups.join_requests_approve' | translate }}
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  </div>
+}

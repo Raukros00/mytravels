@@ -1,0 +1,76 @@
+/* Stessi stili delle sezioni del dettaglio gruppo (gli stili del padre non arrivano ai figli). */
+.section-card {
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.section-icon {
+  font-size: 1.2rem;
+  color: var(--wb-primary);
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.15rem;
+  color: var(--wb-text-primary);
+}
+
+.trip-counter {
+  margin-left: auto;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  background: var(--wb-primary);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.jr-card {
+  border: 1.5px solid var(--wb-primary-surface, #fde7dc);
+}
+
+.jr-list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.jr-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.jr-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jr-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}

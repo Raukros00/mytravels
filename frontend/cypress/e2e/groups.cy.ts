@@ -94,37 +94,50 @@ describe('Gruppi – lista', () => {
     });
   });
 
-  it('entra in un gruppo con il codice invito', () => {
+  it('il codice invito porta alla richiesta di accesso; dopo l\'approvazione si entra', () => {
     const name = uniq('E2E Gruppo di Marco');
     cy.createGroup('marco', name).then(group => {
       cy.contains('button', t.join_btn).click();
       cy.dialog(t.join_modal_title).within(() => {
         cy.contains('button', t.join_now).should('be.disabled');
-        cy.get('#inviteCodeInput').type(group.inviteCode);
+        cy.get('#inviteCodeInput').type(group.inviteCode.toLowerCase());
         cy.contains('button', t.join_now).click();
       });
 
-      cy.toast(`Ti sei unito al gruppo "${name}"!`).should('be.visible');
-      groupCard(name).should('be.visible');
-      cy.me('admin').then(me => {
-        savedGroup(group.id, g => expect(memberIds(g)).to.include(me.id));
+      cy.location('pathname').should('eq', `/join/${group.inviteCode}`);
+      cy.contains('h1', name).should('be.visible');
+      cy.contains('button', 'Invia richiesta').click();
+      cy.contains('[role="status"]', 'Richiesta inviata').should('be.visible');
+
+      // Non è ancora membro: il gruppo non compare tra i suoi.
+      cy.visit('/groups');
+      cy.contains('.group-name', name).should('not.exist');
+
+      // Marco (admin) approva.
+      cy.api<any[]>('marco', 'GET', `/api/v1/groups/${group.id}/join-requests`).then(requests => {
+        expect(requests).to.have.length(1);
+        cy.api('marco', 'POST', `/api/v1/groups/${group.id}/join-requests/${requests[0].id}/approve`);
       });
+      cy.reload();
+      groupCard(name).should('be.visible');
+      cy.me('admin').then(me => savedGroup(group.id, g => expect(memberIds(g)).to.include(me.id)));
     });
   });
 
-  it('un codice invito errato mostra un errore', () => {
+  it('un codice invito errato mostra "Invito non valido"', () => {
     cy.contains('button', t.join_btn).click();
     cy.dialog(t.join_modal_title).within(() => {
       cy.get('#inviteCodeInput').type('CODICE-SBAGLIATO');
       cy.contains('button', t.join_now).click();
     });
-    cy.get('.toast-item.toast-error').should('be.visible');
+    cy.location('pathname').should('eq', '/join/CODICE-SBAGLIATO');
+    cy.contains('h1', 'Invito non valido').should('be.visible');
   });
 
   it('lascia un gruppo di cui si è membro, dopo conferma', () => {
     const name = uniq('E2E Da lasciare');
     cy.createGroup('marco', name).then(group => {
-      cy.joinGroup('admin', group.inviteCode);
+      cy.joinGroup('admin', group.inviteCode, 'marco');
       cy.reload();
 
       openCardMenu(name);

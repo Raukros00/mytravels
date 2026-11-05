@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.domain.Persistable;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @Builder
@@ -19,7 +21,21 @@ public class User implements Persistable<String> {
     @EqualsAndHashCode.Include
     private String id;
 
+    /** Nome completo "Nome Cognome", usato nel resto dell'app (membri dei gruppi, notifiche...). */
     private String name;
+
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
+
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
+    /** Foto profilo opzionale (data URL dell'immagine ritagliata). */
+    @Column(name = "profile_image", columnDefinition = "text")
+    private String profileImage;
 
     @Column(nullable = false, unique = true)
     private String email;

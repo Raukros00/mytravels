@@ -36,11 +36,25 @@
       </div>
     }
 
-    <input #fileInput type="file" accept="image/*" class="file-input-hidden" (change)="onImageChange($event)">
+    <input #fileInput id="group-icon-file" type="file" accept="image/jpeg,image/png,image/webp" class="file-input-hidden" (change)="onImageChange($event)">
   </div>
 
   <ng-content />
 </div>
+
+<!-- Ritaglio dell'immagine scelta (editor caricato solo quando serve) -->
+@if (cropFile(); as file) {
+  <div class="icon-cropper">
+    @defer (on immediate) {
+      <app-image-cropper [file]="file" (cropped)="onCropped($event)" (cancelled)="cropFile.set(null)" />
+    } @loading {
+      <p class="icon-cropper-loading">Caricamento editor foto…</p>
+    }
+  </div>
+}
+@if (imageError(); as msg) {
+  <span class="form-error">{{ msg }}</span>
+}
 
 <!-- Emoji picker -->
 @if (showEmojiPicker()) {

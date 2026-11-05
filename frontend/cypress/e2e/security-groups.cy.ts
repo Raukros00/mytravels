@@ -56,18 +56,21 @@ describe('Sicurezza – accesso ai gruppi', () => {
     });
   });
 
-  it('il join aggiunge sempre l\'utente autenticato, non quello indicato nel body', () => {
+  it('la richiesta di accesso è sempre dell\'utente autenticato e il join diretto non esiste più', () => {
     const name = uniq('E2E Join forzato');
     cy.createGroup('marco', name).then(group => {
       cy.me('sofia').then(sofia => {
         cy.me('luca').then(luca => {
-          // luca prova a far entrare sofia: entra luca, sofia no.
-          cy.api('luca', 'POST', '/api/v1/groups/join', { inviteCode: group.inviteCode, userId: sofia.id, userName: 'Sofia' });
-          cy.api<any>('marco', 'GET', `/api/v1/groups/${group.id}`).then(g => {
-            const ids = g.members.map((m: any) => m.id);
-            expect(ids).to.include(luca.id);
-            expect(ids).not.to.include(sofia.id);
+          // luca prova a far entrare sofia passando il suo id: la richiesta resta di luca.
+          cy.api<any>('luca', 'POST', `/api/v1/groups/invite/${group.inviteCode}/request`, { userId: sofia.id }).then(r => {
+            expect(r.userId).to.eq(luca.id);
+            expect(r.status).to.eq('pending');
           });
+          // Senza approvazione non è membro.
+          cy.api<any>('marco', 'GET', `/api/v1/groups/${group.id}`).its('members').should('have.length', 1);
+          // L'ingresso diretto non esiste più (404/405 a seconda del routing) e non rende membri.
+          rawApi('luca', 'POST', '/api/v1/groups/join', { inviteCode: group.inviteCode }).its('status').should('be.oneOf', [404, 405]);
+          cy.api<any>('marco', 'GET', `/api/v1/groups/${group.id}`).its('members').should('have.length', 1);
         });
       });
     });

@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { GroupService } from '../../../core/services/group.service';
+import { GroupInviteService } from '../../../core/services/group-invite.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Group } from '../../../core/models/group.model';
 import { GroupCreateModalComponent } from '../group-create-modal/group-create-modal.component';
@@ -30,6 +31,8 @@ export class GroupListComponent {
   public authService = inject(AuthService);
   public groupService = inject(GroupService);
   private toastService = inject(ToastService);
+  private router = inject(Router);
+  private groupInvites = inject(GroupInviteService);
 
   public leaveConfirmGroup = signal<Group | null>(null);
   public editingGroup = signal<Group | null>(null);
@@ -104,12 +107,13 @@ export class GroupListComponent {
   }
 
   shareGroup(group: { name: string; inviteCode: string }): void {
-    const text = `Unisciti al gruppo "${group.name}" su WanderBite! Codice: ${group.inviteCode}`;
+    const url = this.groupInvites.inviteLink(group.inviteCode);
+    const text = `Unisciti al gruppo "${group.name}" su WanderBite! Apri il link e chiedi l'accesso (codice: ${group.inviteCode})`;
     if (navigator.share) {
-      navigator.share({ title: group.name, text });
+      navigator.share({ title: group.name, text, url }).catch(() => undefined);
     } else {
-      navigator.clipboard.writeText(text);
-      this.toastService.success('Link di condivisione copiato negli appunti!');
+      navigator.clipboard.writeText(`${text}\n${url}`);
+      this.toastService.success('Link di invito copiato negli appunti!');
     }
   }
 
@@ -117,13 +121,12 @@ export class GroupListComponent {
     return icon.startsWith('data:') || icon.startsWith('http') || icon.startsWith('blob:');
   }
 
+  /** Il codice porta alla stessa pagina del link invito: anteprima del gruppo e richiesta di accesso. */
   onJoinGroup(): void {
-    if (!this.inviteCodeInput().trim()) return;
-
-    const success = this.groupService.joinGroupByCode(this.inviteCodeInput());
-    if (success) {
-      this.inviteCodeInput.set('');
-      this.isJoinModalOpen.set(false);
-    }
+    const code = this.inviteCodeInput().trim().toUpperCase();
+    if (!code) return;
+    this.inviteCodeInput.set('');
+    this.isJoinModalOpen.set(false);
+    this.router.navigate(['/join', code]);
   }
 }

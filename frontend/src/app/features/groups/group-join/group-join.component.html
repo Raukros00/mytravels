@@ -1,0 +1,84 @@
+<div class="page-wrapper">
+  <div class="app-container join-container">
+    @switch (state()) {
+      @case ('loading') {
+        <div class="join-card card" aria-busy="true">
+          <p class="join-muted">Caricamento invito…</p>
+        </div>
+      }
+
+      @case ('invalid') {
+        <div class="join-card card">
+          <span class="material-symbols-outlined join-state-icon">link_off</span>
+          <h1 class="join-title">Invito non valido</h1>
+          <p class="join-muted">Il link o il codice <strong>{{ code() }}</strong> non corrisponde a nessun gruppo. Controlla di averlo copiato per intero o chiedi un nuovo invito.</p>
+          <a routerLink="/groups" class="btn btn-secondary">Vai ai tuoi gruppi</a>
+        </div>
+      }
+
+      @case ('error') {
+        <div class="join-card card">
+          <span class="material-symbols-outlined join-state-icon">cloud_off</span>
+          <h1 class="join-title">Qualcosa è andato storto</h1>
+          <p class="join-muted">Non è stato possibile caricare l'invito. Riprova tra poco.</p>
+          <a routerLink="/groups" class="btn btn-secondary">Vai ai tuoi gruppi</a>
+        </div>
+      }
+
+      @case ('ready') {
+        @if (preview(); as g) {
+          <div class="join-card card">
+            <div class="join-group-icon" [style.background-color]="(g.color || '#4f46e5') + '22'" [style.border-color]="g.color || '#4f46e5'">
+              @if (iconIsImage()) {
+                <img [src]="g.icon" alt="">
+              } @else {
+                <span>{{ g.icon || '✈️' }}</span>
+              }
+            </div>
+            <p class="join-eyebrow">Invito a un gruppo</p>
+            <h1 class="join-title">{{ g.name }}</h1>
+            @if (g.description) {
+              <p class="join-desc">{{ g.description }}</p>
+            }
+            <p class="join-members">
+              <span class="material-symbols-outlined">group</span>
+              {{ g.memberCount }} {{ g.memberCount === 1 ? 'membro' : 'membri' }}
+            </p>
+
+            @if (g.isMember) {
+              <div class="join-status join-status--ok">
+                <span class="material-symbols-outlined">check_circle</span>
+                Fai già parte di questo gruppo.
+              </div>
+              <a class="btn btn-primary w-full" [routerLink]="['/groups', g.id]">Apri il gruppo</a>
+            } @else if (g.requestStatus === 'pending') {
+              <div class="join-status join-status--pending" role="status">
+                <span class="material-symbols-outlined">schedule</span>
+                Richiesta inviata: riceverai una notifica quando un admin del gruppo l'avrà valutata.
+              </div>
+              <a routerLink="/groups" class="btn btn-secondary w-full">Torna ai tuoi gruppi</a>
+            } @else {
+              @if (g.requestStatus === 'declined') {
+                <div class="join-status join-status--declined">
+                  <span class="material-symbols-outlined">info</span>
+                  La tua richiesta precedente è stata rifiutata. Puoi inviarne una nuova.
+                </div>
+              }
+              <p class="join-question">Vuoi inviare la richiesta di accesso a <strong>{{ g.name }}</strong>? Un admin del gruppo dovrà approvarla.</p>
+              @if (sendError(); as msg) {
+                <p class="join-error" role="alert">{{ msg }}</p>
+              }
+              <div class="join-actions">
+                <a routerLink="/groups" class="btn btn-secondary">Annulla</a>
+                <button type="button" class="btn btn-primary" [disabled]="sending()" (click)="sendRequest()">
+                  <span class="material-symbols-outlined">send</span>
+                  {{ sending() ? 'Invio…' : 'Invia richiesta' }}
+                </button>
+              </div>
+            }
+          </div>
+        }
+      }
+    }
+  </div>
+</div>

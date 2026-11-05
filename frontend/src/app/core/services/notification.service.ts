@@ -4,14 +4,25 @@ import { GroupService } from './group.service';
 import { ToastService } from './toast.service';
 import { ApiService } from './api.service';
 import { USE_MOCK_DATA } from '../config/mock.config';
+import { Observable, tap } from 'rxjs';
 
-export type NotificationStatus = 'pending' | 'accepted' | 'declined';
+export type NotificationStatus = 'pending' | 'accepted' | 'declined' | 'approved';
+
+/**
+ * - group_invite: un membro ti ha invitato (accetti o rifiuti tu)
+ * - join_request: qualcuno chiede di entrare in un gruppo di cui sei admin
+ * - join_approved / join_declined: esito della tua richiesta di accesso
+ */
+export type NotificationType = 'group_invite' | 'join_request' | 'join_approved' | 'join_declined';
 
 export interface AppNotification {
   id: string;
-  type: 'group_invite';
+  type: NotificationType;
   recipientId: string;
+  senderId?: string;
   senderName: string;
+  /** Per le notifiche sulle richieste di accesso. */
+  requestId?: string;
   groupId: string;
   groupName: string;
   groupIcon: string;
@@ -19,6 +30,17 @@ export interface AppNotification {
   createdAt: string;
   read: boolean;
   status: NotificationStatus;
+}
+
+/** Invito diretto in attesa, come lo vede un membro del gruppo. */
+export interface PendingGroupInvite {
+  notifId: string;
+  recipientId: string;
+  name: string;
+  avatar?: string;
+  color?: string;
+  profileImage?: string | null;
+  invitedBy?: string;
 }
 
 const STORAGE_KEY = 'wb_notifications';
@@ -61,11 +83,13 @@ export class NotificationService {
     if (USE_MOCK_DATA) return;
     const user = this.authService.currentUser();
     if (!user) return;
-    this.apiService.get<AppNotification[]>(`/api/v1/notifications?recipientId=${user.id}`).subscribe({
+    this.apiService.get<AppNotification[]>('/api/v1/notifications').subscribe({
       next: (notifs) => {
         if (!this.authService.currentUser()) return;
         if (notifs) {
           this.persist(notifs);
+          // Richiesta di accesso approvata: il nuovo gruppo deve comparire tra i propri.
+          if (notifs.some(n => n.type === 'join_approved' && !n.read)) this.groupService.loadGroups();
         }
       },
       error: (err) => console.warn('Could not load notifications from backend:', err)
@@ -82,29 +106,21 @@ export class NotificationService {
     this.notificationsSignal.set(notifications);
   }
 
-  public sendGroupInvite(
-    recipientId: string,
-    senderName: string,
-    group: { id: string; name: string; icon: string; color: string }
-  ): void {
-    const notif: AppNotification = {
-      id: 'notif_' + Date.now(),
-      type: 'group_invite',
-      recipientId,
-      senderName,
-      groupId: group.id,
-      groupName: group.name,
-      groupIcon: group.icon,
-      groupColor: group.color,
-      createdAt: new Date().toISOString(),
-      read: false,
-      status: 'pending'
-    };
-    this.persist([...this.notificationsSignal(), notif]);
+  /** Invito diretto: il server ricava mittente e dati del gruppo e controlla che tu ne sia membro. */
+  public sendGroupInvite(recipientId: string, groupId: string): Observable<AppNotification> {
+    return this.apiService.post<AppNotification>('/api/v1/notifications', { recipientId, groupId });
+  }
 
-    this.apiService.post<AppNotification>('/api/v1/notifications', notif).subscribe({
-      error: (err) => console.error('Error sending invite to backend:', err)
-    });
+  /** Inviti diretti ancora in attesa per un gruppo (visibili ai membri), con il profilo dell'invitato. */
+  public groupInvites(groupId: string): Observable<PendingGroupInvite[]> {
+    return this.apiService.get<PendingGroupInvite[]>(`/api/v1/notifications/group/${groupId}/invites`);
+  }
+
+  /** Dopo aver gestito una richiesta di accesso, la relativa notifica non è più da gestire. */
+  public markRequestHandled(requestId: string, status: 'approved' | 'declined'): void {
+    this.persist(this.notificationsSignal().map(n =>
+      n.requestId === requestId ? { ...n, status, read: true } : n
+    ));
   }
 
   /**
@@ -147,12 +163,11 @@ export class NotificationService {
     });
   }
 
-  public revokeInvite(notifId: string): void {
-    this.persist(this.notificationsSignal().filter(n => n.id !== notifId));
-
-    this.apiService.delete(`/api/v1/notifications/${notifId}`).subscribe({
-      error: (err) => console.error('Error revoking invite on backend:', err)
-    });
+  /** Revoca un invito diretto inviato a qualcuno (lo può fare un membro del gruppo). */
+  public revokeInvite(notifId: string): Observable<unknown> {
+    return this.apiService.delete(`/api/v1/notifications/${notifId}`).pipe(
+      tap(() => this.persist(this.notificationsSignal().filter(n => n.id !== notifId)))
+    );
   }
 
   public markAllRead(): void {
@@ -165,9 +180,8 @@ export class NotificationService {
         .map(n => ({ ...n, read: true }))
     );
 
-    const user = this.authService.currentUser();
-    if (user) {
-      this.apiService.put(`/api/v1/notifications/mark-all-read?recipientId=${user.id}`, {}).subscribe({
+    if (this.authService.currentUser()) {
+      this.apiService.put('/api/v1/notifications/mark-all-read', {}).subscribe({
         error: (err) => console.error('Error marking all read on backend:', err)
       });
     }

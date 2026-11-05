@@ -1,0 +1,34 @@
+<div class="cropper">
+  @if (loadError()) {
+    <p class="cropper-error" role="alert">Non è stato possibile leggere l'immagine. Prova con un file JPG, PNG o WebP.</p>
+  } @else {
+    <div class="cropper-stage"
+      [style.width.px]="stageSize" [style.height.px]="stageSize"
+      tabindex="0" role="img" aria-label="Area di ritaglio: trascina per spostare, usa la rotellina o le frecce"
+      (pointerdown)="onPointerDown($event)"
+      (pointermove)="onPointerMove($event)"
+      (pointerup)="onPointerUp($event)"
+      (pointercancel)="onPointerUp($event)"
+      (wheel)="onWheel($event)"
+      (keydown)="onKeydown($event)">
+      @if (src(); as url) {
+        <img #img class="cropper-img" [src]="url" alt="" draggable="false"
+          [style.width]="imageStyle().width" [style.height]="imageStyle().height" [style.transform]="imageStyle().transform"
+          (load)="onLoad($event)" (error)="loadError.set(true)">
+      }
+      <div class="cropper-mask" aria-hidden="true"></div>
+    </div>
+
+    <label class="cropper-zoom">
+      <span class="material-symbols-outlined" aria-hidden="true">zoom_out</span>
+      <input type="range" min="1" [max]="maxZoom" step="0.01" aria-label="Zoom"
+        [value]="zoom()" (input)="setZoom(+$any($event.target).value)">
+      <span class="material-symbols-outlined" aria-hidden="true">zoom_in</span>
+    </label>
+  }
+
+  <div class="cropper-actions">
+    <button type="button" class="btn btn-secondary" (click)="cancelled.emit()">Annulla</button>
+    <button type="button" class="btn btn-primary" [disabled]="loadError()" (click)="confirm()">Usa questa foto</button>
+  </div>
+</div>

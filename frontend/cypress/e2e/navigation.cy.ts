@@ -38,7 +38,9 @@ describe('Navigazione, dashboard e profilo', () => {
 
   it('il menu utente mostra nome, email e il link al profilo', () => {
     cy.visit('/trips');
-    cy.get(`button[title="${USERS.admin.name}"]`).should('contain.text', 'A').click();
+    // Senza foto profilo l'avatar mostra l'emoji scelta (👑 per l'admin demo).
+    cy.get(`button[title="${USERS.admin.name}"]`).find('app-user-avatar').should('contain.text', '👑');
+    cy.get(`button[title="${USERS.admin.name}"]`).click();
     cy.contains(USERS.admin.email).should('be.visible');
     cy.contains('a', 'Profilo').click();
     cy.location('pathname').should('eq', '/profile');

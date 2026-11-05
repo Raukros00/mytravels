@@ -133,3 +133,77 @@
     grid-template-columns: repeat(4, 1fr);
   }
 }
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.optional {
+  font-weight: 400;
+  color: var(--wb-text-tertiary);
+}
+
+.photo-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.photo-preview,
+.photo-placeholder {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.photo-preview {
+  object-fit: cover;
+  box-shadow: 0 0 0 2px var(--wb-primary);
+}
+
+.photo-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--wb-surface-1);
+  border: 1.5px dashed var(--wb-border);
+  color: var(--wb-text-tertiary);
+}
+
+.photo-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.photo-upload {
+  position: relative;
+  cursor: pointer;
+}
+
+/* Input nativo invisibile ma raggiungibile da tastiera e dai test. */
+.photo-upload input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.photo-upload:focus-within {
+  outline: 2px solid var(--wb-primary);
+  outline-offset: 2px;
+}
+
+.link-btn--muted {
+  color: var(--wb-text-secondary);
+  font-weight: 500;
+}
+
+@media (max-width: 380px) {
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}

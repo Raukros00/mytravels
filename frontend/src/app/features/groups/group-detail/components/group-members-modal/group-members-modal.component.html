@@ -20,9 +20,7 @@
         <ul class="modal-members-list">
           @for (invite of pendingInvites(); track invite.notifId) {
             <li class="modal-member-row member-row--pending">
-              <div class="avatar member-avatar member-avatar--pending" [style.background-color]="invite.color">
-                {{ invite.avatar }}
-              </div>
+              <app-user-avatar class="member-avatar--pending" [user]="invite" [size]="36" />
               <div class="member-info">
                 <span class="member-name">{{ invite.name }}</span>
               </div>

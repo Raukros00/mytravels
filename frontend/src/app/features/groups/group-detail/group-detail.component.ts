@@ -15,11 +15,13 @@ import { GroupTripsComponent } from './components/group-trips/group-trips.compon
 import { GroupMembersListComponent } from './components/group-members-list/group-members-list.component';
 import { GroupMembersModalComponent } from './components/group-members-modal/group-members-modal.component';
 import { GroupShareModalComponent } from './components/group-share-modal/group-share-modal.component';
+import { GroupJoinRequestsComponent } from './components/group-join-requests/group-join-requests.component';
 
 @Component({
   selector: 'app-group-detail',
   standalone: true,
   imports: [
+    GroupJoinRequestsComponent,
     RouterLink,
     ModalComponent,
     GroupCreateModalComponent,
