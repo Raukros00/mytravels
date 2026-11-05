@@ -36,12 +36,30 @@ services:
       # Solo per i test locali/CI: non è un segreto reale.
       JWT_SECRET: e2e-only-secret-not-for-real-use-0123456789abcdef
       SEED_DEMO_DATA: "true"
+      # Copertine suggerite: finto Unsplash locale (e2e/unsplash-stub.py), niente rete esterna.
+      UNSPLASH_ACCESS_KEY: e2e-fake-key
+      UNSPLASH_API_URL: http://unsplash-stub:8000
     depends_on:
       postgres:
         condition: service_healthy
+      unsplash-stub:
+        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 30
       start_period: 20s
+
+  unsplash-stub:
+    image: python:3.12-alpine
+    container_name: e2e-unsplash-stub
+    command: ["python", "-u", "/stub/unsplash-stub.py"]
+    environment:
+      PUBLIC_URL: http://127.0.0.1:18090
+      API_URL: http://unsplash-stub:8000
+    volumes:
+      - ./e2e/unsplash-stub.py:/stub/unsplash-stub.py:ro
+      - ./frontend/cypress/fixtures/profile-photo.png:/stub/photo.png:ro
+    ports:
+      - "127.0.0.1:18090:8000"

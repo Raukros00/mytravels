@@ -178,6 +178,62 @@ describe('Viaggi – creazione', () => {
     cy.contains('.trip-title', title).should('not.exist');
   });
 
+  it('suggerisce copertine per la destinazione e salva il credito del fotografo', () => {
+    const title = uniq('E2E Copertina suggerita');
+    cy.intercept('GET', '/api/v1/covers/search*').as('covers');
+    cy.intercept('POST', '/api/v1/trips').as('create');
+
+    cy.get('#title').type(title);
+    cy.get('#destination').type('Lisbona');
+    cy.wait('@covers').its('request.query.q').should('eq', 'Lisbona');
+    cy.contains('.form-label', 'Copertine per Lisbona').should('be.visible');
+    cy.get('.cover-suggestion').should('have.length', 3);
+    cy.contains('.cover-credit', 'Foto da').find('a').should('have.attr', 'href').and('contain', 'unsplash.com');
+
+    cy.get('.cover-suggestion').eq(1).click().should('have.class', 'selected');
+    cy.contains('.cover-credit', 'Foto di').within(() => {
+      cy.contains('a', 'Fotografo 2').should('have.attr', 'href').and('contain', 'utm_source=wanderbite');
+    });
+    cy.get('#coverUrl').invoke('val').should('contain', '/img/stub2').and('contain', 'w=1200');
+    cy.contains('button', 'Crea Viaggio').click();
+
+    cy.wait('@create').then(({ request }) => {
+      expect(request.body.coverUrl).to.contain('/img/stub2');
+      expect(request.body).to.include({ coverCreditName: 'Fotografo 2' });
+      expect(request.body.coverCreditUrl).to.contain('unsplash.com/@fotografo2');
+    });
+    cy.contains('h1', title).should('be.visible');
+    cy.contains('.hero-cover-credit', 'Foto di Fotografo 2 su Unsplash').should('be.visible');
+
+    // Linee guida Unsplash: la scelta della foto viene segnalata come "download".
+    cy.request('http://127.0.0.1:18090/__state').its('body.downloads').should('include', 'stub2');
+  });
+
+  it('scegliendo poi un preset il credito Unsplash non viene salvato', () => {
+    const title = uniq('E2E Preset dopo suggerimento');
+    cy.intercept('POST', '/api/v1/trips').as('create');
+    cy.get('#title').type(title);
+    cy.get('#destination').type('Porto');
+    cy.get('.cover-suggestion').first().click();
+    cy.get('.preset-item:not(.cover-suggestion)').eq(2).click();
+    cy.contains('.cover-credit', 'Foto da').should('be.visible');
+    cy.contains('button', 'Crea Viaggio').click();
+    cy.wait('@create').its('request.body').should(body => {
+      expect(body.coverCreditName).to.be.null;
+      expect(body.coverUrl).not.to.contain('/img/stub');
+    });
+    cy.contains('h1', title).should('be.visible');
+    cy.get('.hero-cover-credit').should('not.exist');
+  });
+
+  it('con meno di 3 caratteri non cerca copertine', () => {
+    cy.intercept('GET', '/api/v1/covers/search*', cy.spy().as('covers'));
+    cy.get('#destination').type('Ro');
+    cy.wait(800);
+    cy.get('@covers').should('not.have.been.called');
+    cy.get('.cover-suggestions').should('not.exist');
+  });
+
   it('valida i campi obbligatori', () => {
     cy.contains('button', 'Crea Viaggio').should('be.disabled');
     cy.get('#title').type('ab').blur();

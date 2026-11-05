@@ -53,6 +53,8 @@ public class TripService {
                 .coverUrl(request.getCoverUrl() != null && !request.getCoverUrl().isBlank()
                         ? request.getCoverUrl()
                         : "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80")
+                .coverCreditName(request.getCoverCreditName())
+                .coverCreditUrl(request.getCoverCreditUrl())
                 .status("planning")
                 .decision(decision)
                 .proposedBy(request.getProposedBy())
@@ -92,7 +94,12 @@ public class TripService {
             if (request.getCountry() != null)     existing.setCountry(request.getCountry().trim());
             if (request.getStartDate() != null)   existing.setStartDate(request.getStartDate());
             if (request.getEndDate() != null)     existing.setEndDate(request.getEndDate());
-            if (request.getCoverUrl() != null)    existing.setCoverUrl(request.getCoverUrl());
+            if (request.getCoverUrl() != null) {
+                existing.setCoverUrl(request.getCoverUrl());
+                // Il credito segue la copertina: una copertina senza credito (es. preset) lo azzera.
+                existing.setCoverCreditName(request.getCoverCreditName());
+                existing.setCoverCreditUrl(request.getCoverCreditUrl());
+            }
             if (request.getStatus() != null)      existing.setStatus(request.getStatus());
             if (request.getDecision() != null)    existing.setDecision(request.getDecision());
             if (request.getProposedBy() != null)  existing.setProposedBy(request.getProposedBy());

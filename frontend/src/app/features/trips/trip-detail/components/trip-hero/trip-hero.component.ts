@@ -1,3 +1,4 @@
+import { UNSPLASH_LINK } from '../../../../../core/services/cover.service';
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { Trip, TripStatus } from '../../../../../core/models/trip.model';
 
@@ -9,6 +10,7 @@ import { Trip, TripStatus } from '../../../../../core/models/trip.model';
   styleUrl: './trip-hero.component.css'
 })
 export class TripHeroComponent {
+  protected readonly unsplashLink = UNSPLASH_LINK;
   readonly trip = input.required<Trip>();
   readonly status = input.required<TripStatus>();
 

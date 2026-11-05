@@ -135,9 +135,44 @@
           </div>
         }
 
+        <!-- Copertine suggerite per la destinazione (Unsplash) -->
+        @if (coverQuery() && (coversLoading() || coverSuggestions().length > 0)) {
+          <div class="form-group mt-3 cover-suggestions">
+            <label class="form-label">Copertine per {{ coverQuery() }}</label>
+            @if (coversLoading()) {
+              <p class="cover-hint" role="status">Cerco foto di {{ coverQuery() }}…</p>
+            } @else {
+              <div class="presets-grid">
+                @for (cover of coverSuggestions(); track cover.id) {
+                  <button type="button"
+                    class="preset-item cover-suggestion"
+                    [class.selected]="selectedSuggestion()?.id === cover.id"
+                    [attr.aria-pressed]="selectedSuggestion()?.id === cover.id"
+                    [attr.aria-label]="'Copertina: ' + cover.alt + ', foto di ' + cover.authorName"
+                    (click)="selectSuggestion(cover)">
+                    <img [src]="cover.thumbUrl" [alt]="cover.alt" class="preset-img" loading="lazy">
+                    <span class="preset-title">{{ cover.authorName }}</span>
+                    @if (selectedSuggestion()?.id === cover.id) {
+                      <div class="preset-check">✓</div>
+                    }
+                  </button>
+                }
+              </div>
+              <p class="cover-credit">
+                @if (selectedSuggestion(); as s) {
+                  Foto di <a [href]="s.authorUrl" target="_blank" rel="noopener">{{ s.authorName }}</a> su
+                } @else {
+                  Foto da
+                }
+                <a [href]="unsplashLink" target="_blank" rel="noopener">Unsplash</a>
+              </p>
+            }
+          </div>
+        }
+
         <!-- Cover Presets Selection -->
         <div class="form-group mt-3">
-          <label class="form-label">Scegli una Copertina Iconica</label>
+          <label class="form-label">{{ coverSuggestions().length > 0 ? 'Oppure scegli una copertina iconica' : 'Scegli una Copertina Iconica' }}</label>
           <div class="presets-grid">
             @for (preset of coverPresets; track preset.url) {
               <div 

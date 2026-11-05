@@ -121,6 +121,8 @@ export class TripService {
       startDate: dto.startDate,
       endDate: dto.endDate,
       coverUrl: dto.coverUrl || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80',
+      coverCreditName: dto.coverCreditName ?? null,
+      coverCreditUrl: dto.coverCreditUrl ?? null,
       status: 'planning',
       decision: dto.asProposal ? 'proposal' : 'confirmed',
       proposedBy: dto.asProposal ? this.authService.currentUser()?.id : undefined,

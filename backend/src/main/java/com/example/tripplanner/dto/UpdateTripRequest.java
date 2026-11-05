@@ -18,6 +18,8 @@ public class UpdateTripRequest {
     private String startDate;
     private String endDate;
     private String coverUrl;
+    private String coverCreditName;
+    private String coverCreditUrl;
     private String status;
     private String decision;
     private String proposedBy;
