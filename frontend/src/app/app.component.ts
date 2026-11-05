@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { ToastComponent } from './shared/components/toast/toast.component';
 import { AuthModalComponent } from './shared/components/auth-modal/auth-modal.component';
+import { AuthModalService } from './core/services/auth-modal.service';
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -12,4 +13,5 @@ import { AuthModalComponent } from './shared/components/auth-modal/auth-modal.co
 })
 export class AppComponent {
   title = 'WanderBite';
+  protected readonly authModal = inject(AuthModalService);
 }

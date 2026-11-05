@@ -55,11 +55,10 @@
         <!-- User Avatar -->
         <button
           type="button"
-          class="w-9 h-9 rounded-full flex items-center justify-center font-label-lg text-label-lg text-white overflow-hidden min-w-[36px] min-h-[36px] active:scale-95 transition-transform"
-          [style.background-color]="authService.currentUser()?.color || '#ab2f0a'"
+          class="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden min-w-[36px] min-h-[36px] active:scale-95 transition-transform"
           (click)="toggleUserMenu($event)"
           [title]="authService.currentUser()?.name || 'Utente'">
-          {{ authService.currentUser()?.name?.charAt(0)?.toUpperCase() || 'U' }}
+          <app-user-avatar [user]="authService.currentUser()" [size]="36" />
         </button>
       } @else {
         <!-- Utente anonimo: apre la modale di accesso / registrazione -->
@@ -137,10 +136,7 @@
   @if (isUserMenuOpen() && authService.isAuthenticated()) {
     <div class="absolute top-16 right-gutter w-64 bg-surface-container-lowest rounded-xl shadow-[0_16px_36px_rgba(45,30,24,0.14)] border border-outline-variant/40 overflow-hidden z-50 animate-fade-in" (click)="$event.stopPropagation()">
       <div class="px-space-md py-space-md flex items-center gap-space-sm border-b border-outline-variant/30">
-        <div class="w-10 h-10 rounded-full flex items-center justify-center font-label-lg text-label-lg text-white"
-          [style.background-color]="authService.currentUser()?.color || '#ab2f0a'">
-          {{ authService.currentUser()?.name?.charAt(0)?.toUpperCase() || 'U' }}
-        </div>
+        <app-user-avatar [user]="authService.currentUser()" [size]="40" />
         <div class="flex flex-col min-w-0">
           <span class="font-label-lg text-label-lg text-on-surface truncate">{{ authService.currentUser()?.name }}</span>
           <span class="font-body-sm text-body-sm text-on-surface-variant truncate">{{ authService.currentUser()?.email }}</span>

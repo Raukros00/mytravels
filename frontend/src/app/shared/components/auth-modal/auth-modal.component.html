@@ -44,13 +44,34 @@
     </form>
   } @else {
     <form [formGroup]="registerForm" (ngSubmit)="submitRegister()" role="tabpanel" aria-labelledby="auth-tab-register">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="auth-register-first-name">Nome</label>
+          <input id="auth-register-first-name" type="text" formControlName="firstName" class="form-input" autocomplete="given-name" placeholder="Mario">
+          @if (registerForm.controls.firstName.touched && registerForm.controls.firstName.invalid) {
+            <span class="form-error">Inserisci il tuo nome.</span>
+          }
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="auth-register-last-name">Cognome</label>
+          <input id="auth-register-last-name" type="text" formControlName="lastName" class="form-input" autocomplete="family-name" placeholder="Rossi">
+          @if (registerForm.controls.lastName.touched && registerForm.controls.lastName.invalid) {
+            <span class="form-error">Inserisci il tuo cognome.</span>
+          }
+        </div>
+      </div>
+
       <div class="form-group">
-        <label class="form-label" for="auth-register-name">Nome e cognome</label>
-        <input id="auth-register-name" type="text" formControlName="name" class="form-input" autocomplete="name" placeholder="Es. Mario Rossi">
-        @if (registerForm.controls.name.touched && registerForm.controls.name.invalid) {
-          <span class="form-error">Inserisci il tuo nome (minimo 2 caratteri).</span>
+        <label class="form-label" for="auth-register-birth-date">Data di nascita</label>
+        <input id="auth-register-birth-date" type="date" formControlName="birthDate" class="form-input" autocomplete="bday" min="1900-01-01" [max]="maxBirthDate">
+        @if (registerForm.controls.birthDate.touched && registerForm.controls.birthDate.hasError('required')) {
+          <span class="form-error">Inserisci la tua data di nascita.</span>
+        }
+        @if (registerForm.controls.birthDate.hasError('minAge')) {
+          <span class="form-error">Per registrarti devi avere almeno {{ minAge }} anni.</span>
         }
       </div>
+
       <div class="form-group">
         <label class="form-label" for="auth-register-email">Email</label>
         <input id="auth-register-email" type="email" formControlName="email" class="form-input" autocomplete="email" placeholder="nome@esempio.com">
@@ -65,16 +86,55 @@
           <span class="form-error">La password deve avere almeno 6 caratteri.</span>
         }
       </div>
+
+      <!-- Foto profilo (opzionale) -->
       <div class="form-group">
-        <span class="form-label">Avatar</span>
-        <div class="avatar-grid">
-          @for (av of avatarList; track av) {
-            <button type="button" class="avatar-select-btn"
-              [class.selected]="registerForm.controls.avatar.value === av"
-              (click)="registerForm.patchValue({ avatar: av })">{{ av }}</button>
+        <span class="form-label">Foto profilo <span class="optional">(facoltativa)</span></span>
+        @if (photoFile(); as file) {
+          <!-- Caricato solo quando serve: tiene leggero il bundle iniziale (la modale è sempre presente). -->
+          @defer (on immediate) {
+            <app-image-cropper [file]="file" (cropped)="onPhotoCropped($event)" (cancelled)="photoFile.set(null)" />
+          } @loading {
+            <p class="optional">Caricamento editor foto…</p>
           }
-        </div>
+        } @else {
+          <div class="photo-row">
+            @if (profileImage(); as photo) {
+              <img class="photo-preview" [src]="photo" alt="Anteprima foto profilo">
+            } @else {
+              <span class="photo-placeholder" aria-hidden="true">
+                <span class="material-symbols-outlined">add_a_photo</span>
+              </span>
+            }
+            <div class="photo-actions">
+              <label class="btn btn-secondary btn-sm photo-upload">
+                <input id="auth-register-photo" type="file" accept="image/jpeg,image/png,image/webp" (change)="onPhotoSelected($event)">
+                {{ profileImage() ? 'Cambia foto' : 'Carica una foto' }}
+              </label>
+              @if (profileImage()) {
+                <button type="button" class="link-btn link-btn--muted" (click)="removePhoto()">Rimuovi</button>
+              }
+            </div>
+          </div>
+          @if (photoError(); as msg) {
+            <span class="form-error">{{ msg }}</span>
+          }
+        }
       </div>
+
+      @if (!profileImage() && !photoFile()) {
+        <div class="form-group">
+          <span class="form-label">Oppure scegli un avatar</span>
+          <div class="avatar-grid">
+            @for (av of avatarList; track av) {
+              <button type="button" class="avatar-select-btn"
+                [class.selected]="registerForm.controls.avatar.value === av"
+                (click)="registerForm.patchValue({ avatar: av })">{{ av }}</button>
+            }
+          </div>
+        </div>
+      }
+
       <div class="form-group">
         <span class="form-label">Colore del profilo</span>
         <div class="color-grid">
@@ -88,7 +148,7 @@
           }
         </div>
       </div>
-      <button type="submit" class="btn btn-primary w-full auth-submit" [disabled]="registerForm.invalid || pending()">
+      <button type="submit" class="btn btn-primary w-full auth-submit" [disabled]="registerForm.invalid || pending() || !!photoFile()">
         {{ pending() ? 'Creazione account…' : 'Crea account' }}
       </button>
       <p class="auth-switch">Hai già un account? <button type="button" class="link-btn" (click)="selectTab('login')">Accedi</button></p>

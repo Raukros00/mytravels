@@ -1,3 +1,4 @@
+import { UserAvatarComponent } from '../../shared/components/user-avatar/user-avatar.component';
 import { Component, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -8,7 +9,7 @@ import { GroupService } from '../../core/services/group.service';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [DatePipe, RouterModule],
+  imports: [DatePipe, RouterModule, UserAvatarComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
