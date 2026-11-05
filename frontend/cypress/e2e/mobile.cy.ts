@@ -23,6 +23,33 @@ describe('Mobile – header e barra in basso', () => {
     });
   });
 
+  it('l\'header su mobile non ha ombra né bordo', () => {
+    cy.visit('/trips');
+    cy.get('header').should($h => {
+      const cs = getComputedStyle($h[0]);
+      expect(cs.boxShadow).to.eq('none');
+      expect(cs.borderBottomWidth).to.eq('0px');
+    });
+  });
+
+  it('le voci ai lati della barra in basso non toccano il bordo dello schermo', () => {
+    cy.visit('/trips');
+    // La barra occupa tutta la larghezza dello schermo: si misura la distanza delle voci dai suoi bordi
+    // (con la viewport del browser di test conterebbe anche la barra di scorrimento, che sui telefoni non c'è).
+    cy.get('nav[aria-label="Navigazione"]').then($nav => {
+      const nav = $nav[0].getBoundingClientRect();
+      const items = $nav[0].querySelectorAll('.wb-nav-item');
+      expect(items[0].getBoundingClientRect().left - nav.left).to.be.gte(10);
+      expect(nav.right - items[items.length - 1].getBoundingClientRect().right).to.be.gte(10);
+    });
+  });
+
+  it('i campi hanno testo di almeno 16px (niente zoom automatico di iOS al tocco)', () => {
+    cy.visit('/trips/new');
+    ['#title', '#destination', '#notes', '#groupId'].forEach(sel =>
+      cy.get(sel).should($el => expect(parseFloat(getComputedStyle($el[0]).fontSize)).to.be.gte(16)));
+  });
+
   it('scorrendo verso il basso l\'header sparisce e torna scorrendo verso l\'alto', () => {
     cy.visit('/trips');
     cy.get('.trip-card').should('have.length.greaterThan', 2);
