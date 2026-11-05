@@ -2,12 +2,18 @@
 <header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl shadow-[0_2px_12px_rgba(78,42,29,0.05)]">
   <div class="h-16 px-gutter md:px-16 flex items-center justify-between gap-space-md">
     <!-- Logo -->
-    <a routerLink="/trips" class="flex items-center gap-space-sm no-underline shrink-0">
+    <a [routerLink]="authService.isAuthenticated() ? '/trips' : '/explore'" class="flex items-center gap-space-sm no-underline shrink-0">
       <span class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Wander<span class="text-primary">Bite</span></span>
     </a>
 
     <!-- Desktop Nav Links -->
-    @if (authService.isAuthenticated()) {
+    @if (!authService.isAuthenticated()) {
+      <nav class="hidden md:flex items-center gap-1">
+        <a routerLink="/explore" routerLinkActive="desktop-nav-active" class="desktop-nav-link no-underline">
+          Esplora
+        </a>
+      </nav>
+    } @else {
       <nav class="hidden md:flex items-center gap-1">
         <a routerLink="/explore" routerLinkActive="desktop-nav-active" class="desktop-nav-link no-underline">
           Esplora
@@ -57,8 +63,8 @@
       </div>
     } @else {
       <div class="flex items-center gap-space-sm">
-        <a routerLink="/login" class="px-3 py-1.5 rounded-full font-label-md text-label-md text-on-surface-variant border border-outline-variant transition-colors hover:text-on-surface no-underline">Accedi</a>
-        <a routerLink="/register" class="px-3 py-1.5 rounded-full font-label-md text-label-md bg-primary text-on-primary no-underline transition-all active:scale-95">Registrati</a>
+        <button type="button" (click)="authModal.open({ tab: 'login' })" class="px-3 py-1.5 rounded-full font-label-md text-label-md text-on-surface-variant border border-outline-variant transition-colors hover:text-on-surface">Accedi</button>
+        <button type="button" (click)="authModal.open({ tab: 'register' })" class="px-3 py-1.5 rounded-full font-label-md text-label-md bg-primary text-on-primary transition-all active:scale-95">Registrati</button>
       </div>
     }
   </div>

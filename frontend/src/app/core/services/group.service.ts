@@ -47,6 +47,10 @@ export class GroupService {
       const user = this.authService.currentUser();
       if (user) {
         this.loadGroups();
+      } else {
+        // Logout: niente gruppi dell'utente precedente in memoria.
+        this.groupsSignal.set([]);
+        this.activeGroupIdSignal.set(null);
       }
     });
   }
@@ -55,6 +59,8 @@ export class GroupService {
     if (USE_MOCK_DATA) return;
     this.apiService.get<Group[]>('/api/v1/groups').subscribe({
       next: (groups) => {
+        // Risposta arrivata dopo il logout: non va rimessa in cache.
+        if (!this.authService.currentUser()) return;
         // Il server è la fonte di verità: anche una lista vuota sostituisce la cache.
         const list = groups ?? [];
         this.groupsSignal.set(list);

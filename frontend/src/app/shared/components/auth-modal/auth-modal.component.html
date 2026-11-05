@@ -1,0 +1,97 @@
+<app-modal
+  [isOpen]="authModal.isOpen()"
+  title="Accedi o registrati"
+  maxWidth="460px"
+  [hasFooter]="false"
+  (close)="authModal.close()">
+
+  <h2 class="auth-welcome">Benvenuto su Wander<span class="brand-highlight">Bite</span></h2>
+
+  <div class="auth-tabs" role="tablist" aria-label="Accesso">
+    <button type="button" role="tab" class="auth-tab" id="auth-tab-login"
+      [class.auth-tab--active]="authModal.tab() === 'login'"
+      [attr.aria-selected]="authModal.tab() === 'login'"
+      (click)="selectTab('login')">Accedi</button>
+    <button type="button" role="tab" class="auth-tab" id="auth-tab-register"
+      [class.auth-tab--active]="authModal.tab() === 'register'"
+      [attr.aria-selected]="authModal.tab() === 'register'"
+      (click)="selectTab('register')">Registrati</button>
+  </div>
+
+  @if (error(); as message) {
+    <p class="auth-error" role="alert">
+      <span class="material-symbols-outlined">error</span>{{ message }}
+    </p>
+  }
+
+  @if (authModal.tab() === 'login') {
+    <form [formGroup]="loginForm" (ngSubmit)="submitLogin()" role="tabpanel" aria-labelledby="auth-tab-login">
+      <div class="form-group">
+        <label class="form-label" for="auth-login-email">Email</label>
+        <input id="auth-login-email" type="email" formControlName="email" class="form-input" autocomplete="email" placeholder="nome@esempio.com">
+        @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) {
+          <span class="form-error">Inserisci un indirizzo email valido.</span>
+        }
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="auth-login-password">Password</label>
+        <input id="auth-login-password" type="password" formControlName="password" class="form-input" autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn-primary w-full auth-submit" [disabled]="loginForm.invalid || pending()">
+        {{ pending() ? 'Accesso in corso…' : 'Continua' }}
+      </button>
+      <p class="auth-switch">Non hai un account? <button type="button" class="link-btn" (click)="selectTab('register')">Registrati</button></p>
+    </form>
+  } @else {
+    <form [formGroup]="registerForm" (ngSubmit)="submitRegister()" role="tabpanel" aria-labelledby="auth-tab-register">
+      <div class="form-group">
+        <label class="form-label" for="auth-register-name">Nome e cognome</label>
+        <input id="auth-register-name" type="text" formControlName="name" class="form-input" autocomplete="name" placeholder="Es. Mario Rossi">
+        @if (registerForm.controls.name.touched && registerForm.controls.name.invalid) {
+          <span class="form-error">Inserisci il tuo nome (minimo 2 caratteri).</span>
+        }
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="auth-register-email">Email</label>
+        <input id="auth-register-email" type="email" formControlName="email" class="form-input" autocomplete="email" placeholder="nome@esempio.com">
+        @if (registerForm.controls.email.touched && registerForm.controls.email.invalid) {
+          <span class="form-error">Inserisci un indirizzo email valido.</span>
+        }
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="auth-register-password">Password</label>
+        <input id="auth-register-password" type="password" formControlName="password" class="form-input" autocomplete="new-password" placeholder="Almeno 6 caratteri">
+        @if (registerForm.controls.password.touched && registerForm.controls.password.invalid) {
+          <span class="form-error">La password deve avere almeno 6 caratteri.</span>
+        }
+      </div>
+      <div class="form-group">
+        <span class="form-label">Avatar</span>
+        <div class="avatar-grid">
+          @for (av of avatarList; track av) {
+            <button type="button" class="avatar-select-btn"
+              [class.selected]="registerForm.controls.avatar.value === av"
+              (click)="registerForm.patchValue({ avatar: av })">{{ av }}</button>
+          }
+        </div>
+      </div>
+      <div class="form-group">
+        <span class="form-label">Colore del profilo</span>
+        <div class="color-grid">
+          @for (col of colorList; track col) {
+            <button type="button" class="color-btn" [style.background-color]="col"
+              [attr.aria-label]="'Colore ' + col"
+              [class.selected]="registerForm.controls.color.value === col"
+              (click)="registerForm.patchValue({ color: col })">
+              @if (registerForm.controls.color.value === col) { <span>✓</span> }
+            </button>
+          }
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary w-full auth-submit" [disabled]="registerForm.invalid || pending()">
+        {{ pending() ? 'Creazione account…' : 'Crea account' }}
+      </button>
+      <p class="auth-switch">Hai già un account? <button type="button" class="link-btn" (click)="selectTab('login')">Accedi</button></p>
+    </form>
+  }
+</app-modal>

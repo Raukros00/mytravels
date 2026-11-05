@@ -86,7 +86,7 @@ describe('Navigazione, dashboard e profilo', () => {
   it('dal profilo si può fare logout', () => {
     cy.visit('/profile');
     cy.get('main, body').contains('button', 'Disconnetti').click();
-    cy.location('pathname').should('eq', '/login');
+    cy.location('pathname').should('eq', '/explore');
   });
 
   describe('su mobile', () => {

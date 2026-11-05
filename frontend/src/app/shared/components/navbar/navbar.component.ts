@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { AuthModalService } from '../../../core/services/auth-modal.service';
 import { GroupService } from '../../../core/services/group.service';
 import { I18nService } from '../../../core/services/i18n.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -16,6 +17,7 @@ import { GroupCreateModalComponent } from '../../../features/groups/group-create
 })
 export class NavbarComponent {
   public authService = inject(AuthService);
+  public authModal = inject(AuthModalService);
   public groupService = inject(GroupService);
   public i18n = inject(I18nService);
   public notifService = inject(NotificationService);
