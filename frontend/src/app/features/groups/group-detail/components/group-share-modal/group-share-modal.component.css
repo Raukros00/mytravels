@@ -92,3 +92,24 @@
   color: var(--wb-primary);
   flex-shrink: 0;
 }
+
+.invite-link {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.75rem;
+  border: 1.5px solid var(--wb-border);
+  border-radius: var(--wb-radius-md);
+  background: var(--wb-surface-1);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  color: var(--wb-text-primary);
+}
+
+.invite-link:focus {
+  outline: none;
+  border-color: var(--wb-primary);
+}
+
+.invite-code {
+  flex: 1;
+}

@@ -70,7 +70,7 @@ export class GroupService {
           this.activeGroupIdSignal.set(null);
           this.storageService.setActiveGroupId(null);
         } else if (!this.activeGroupIdSignal() || !list.find(g => g.id === this.activeGroupIdSignal())) {
-          this.setActiveGroup(list[0].id);
+          this.setActiveGroup(list[0].id, { silent: true });
         }
         onLoaded?.(list);
       },
@@ -80,16 +80,21 @@ export class GroupService {
     });
   }
 
-  public setActiveGroup(groupId: string): void {
+  /** `silent`: scelta automatica (caricamento, creazione), senza il toast "Gruppo attivo". */
+  public setActiveGroup(groupId: string, options: { silent?: boolean } = {}): void {
     this.activeGroupIdSignal.set(groupId);
     this.storageService.setActiveGroupId(groupId);
     const found = this.groupsSignal().find(g => g.id === groupId);
-    if (found) {
+    if (found && !options.silent) {
       this.toastService.info(`Gruppo attivo: ${found.name}`);
     }
   }
 
-  public createGroup(dto: CreateGroupDto): Group {
+  /**
+   * Crea il gruppo (subito in locale, poi sul backend). `onCreated` riceve il gruppo salvato,
+   * con l'id definitivo: serve per le azioni che il backend deve associare al gruppo (es. inviti).
+   */
+  public createGroup(dto: CreateGroupDto, onCreated?: (created: Group) => void): Group {
     const user = this.authService.currentUser();
     const code = 'GRP-' + Math.random().toString(36).substring(2, 7).toUpperCase();
 
@@ -117,7 +122,7 @@ export class GroupService {
     const updated = [...this.groupsSignal(), localGroup];
     this.groupsSignal.set(updated);
     this.storageService.setGroups(updated);
-    this.setActiveGroup(localGroup.id);
+    this.setActiveGroup(localGroup.id, { silent: true });
 
     // Backend sync
     this.apiService.post<Group>('/api/v1/groups', {
@@ -131,7 +136,8 @@ export class GroupService {
         const synced = this.groupsSignal().map(g => g.id === localGroup.id ? created : g);
         this.groupsSignal.set(synced);
         this.storageService.setGroups(synced);
-        this.setActiveGroup(created.id);
+        this.setActiveGroup(created.id, { silent: true });
+        onCreated?.(created);
       },
       error: (err) => {
         console.error('Error creating group on backend:', err);
@@ -270,37 +276,6 @@ export class GroupService {
     if (!isSelf) this.toastService.success('Membro rimosso dal gruppo.');
   }
 
-  public joinGroupByCode(code: string): boolean {
-    const user = this.authService.currentUser();
-    if (!user) return false;
-
-    const trimmed = code.trim().toUpperCase();
-
-    // Backend call
-    this.apiService.post<Group>('/api/v1/groups/join', {
-      inviteCode: trimmed,
-      userId: user.id,
-      userName: user.name,
-      avatar: user.avatar,
-      color: user.color
-    }).subscribe({
-      next: (joinedGroup) => {
-        const exists = this.groupsSignal().some(g => g.id === joinedGroup.id);
-        const updated = exists 
-          ? this.groupsSignal().map(g => g.id === joinedGroup.id ? joinedGroup : g)
-          : [...this.groupsSignal(), joinedGroup];
-        
-        this.groupsSignal.set(updated);
-        this.storageService.setGroups(updated);
-        this.setActiveGroup(joinedGroup.id);
-        this.toastService.success(`Ti sei unito al gruppo "${joinedGroup.name}"! 🎊`);
-      },
-      error: (err) => {
-        const msg = err.error?.message || 'Codice gruppo non valido o inesistente.';
-        this.toastService.error(msg);
-      }
-    });
-
-    return true;
-  }
+  // L'ingresso con codice o link passa da una richiesta di accesso approvata da un admin
+  // (pagina /join/:code, GroupInviteService).
 }
