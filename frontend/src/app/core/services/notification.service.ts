@@ -51,6 +51,8 @@ export class NotificationService {
       const user = this.authService.currentUser();
       if (user) {
         this.loadNotifications();
+      } else {
+        this.notificationsSignal.set([]);
       }
     });
   }
@@ -61,6 +63,7 @@ export class NotificationService {
     if (!user) return;
     this.apiService.get<AppNotification[]>(`/api/v1/notifications?recipientId=${user.id}`).subscribe({
       next: (notifs) => {
+        if (!this.authService.currentUser()) return;
         if (notifs) {
           this.persist(notifs);
         }

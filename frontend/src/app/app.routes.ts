@@ -1,23 +1,21 @@
+import { inject } from '@angular/core';
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
-import { guestGuard } from './core/guards/guest.guard';
+import { authEntryGuard } from './core/guards/auth-entry.guard';
+import { AuthService } from './core/services/auth.service';
+
+/** Home: i viaggi per chi è loggato, Esplora (l'unica sezione pubblica) per i visitatori. */
+const homeRedirect = () => (inject(AuthService).isAuthenticated() ? '/trips' : '/explore');
 
 export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'trips'
+    redirectTo: homeRedirect
   },
-  {
-    path: 'login',
-    canActivate: [guestGuard],
-    loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent)
-  },
-  {
-    path: 'register',
-    canActivate: [guestGuard],
-    loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent)
-  },
+  // Accesso e registrazione sono una modale: queste rotte la aprono sopra Esplora.
+  { path: 'login', canActivate: [authEntryGuard], data: { tab: 'login' }, children: [] },
+  { path: 'register', canActivate: [authEntryGuard], data: { tab: 'register' }, children: [] },
   {
     path: 'dashboard',
     canActivate: [authGuard],
@@ -61,7 +59,7 @@ export const routes: Routes = [
   },
   {
     path: 'explore',
-    canActivate: [authGuard],
+    // Pubblica: visibile anche senza login.
     children: [
       {
         path: '',
@@ -80,6 +78,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'trips'
+    redirectTo: homeRedirect
   }
 ];

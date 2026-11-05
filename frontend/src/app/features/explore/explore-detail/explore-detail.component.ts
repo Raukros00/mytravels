@@ -3,6 +3,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { ExploreService } from '../../../core/services/explore.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { AuthModalService } from '../../../core/services/auth-modal.service';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { InteractiveMapComponent, MapStopPoint } from '../../../shared/components/map/interactive-map.component';
 import { ExploreAssignModalComponent } from '../explore-assign-modal/explore-assign-modal.component';
@@ -27,6 +29,8 @@ export class ExploreDetailComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private exploreService = inject(ExploreService);
+  private authService = inject(AuthService);
+  private authModal = inject(AuthModalService);
 
   private readonly id = toSignal(this.route.paramMap.pipe(map(p => p.get('id') ?? '')), { initialValue: '' });
 
@@ -93,7 +97,12 @@ export class ExploreDetailComponent {
     this.router.navigate(['/explore']);
   }
 
+  /** Per assegnare serve un account: il visitatore accede e poi l'assegnazione si apre da sola. */
   protected openAssign(): void {
-    this.isAssignOpen.set(true);
+    if (this.authService.isAuthenticated()) {
+      this.isAssignOpen.set(true);
+      return;
+    }
+    this.authModal.open({ tab: 'login', onSuccess: () => this.isAssignOpen.set(true) });
   }
 }

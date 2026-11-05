@@ -3,6 +3,30 @@ import { uniq } from '../support/e2e';
 /** Itinerario del catalogo statico (src/app/core/data/explore-catalog.ts). */
 const TEMPLATE = { id: 'tpl_barcellona', title: 'Barcellona tra Gaudí e tapas', destination: 'Barcellona' };
 
+describe('Esplora – visitatore non loggato', () => {
+  it('può consultare catalogo e dettaglio senza accedere', () => {
+    cy.visit('/explore');
+    cy.get('.ex-card').should('have.length.greaterThan', 0);
+    cy.get('input[aria-label="Cerca viaggi"]').type(TEMPLATE.destination);
+    cy.contains('.ex-card', TEMPLATE.title).click();
+    cy.location('pathname').should('eq', `/explore/${TEMPLATE.id}`);
+    cy.contains('h1.ed-title', TEMPLATE.title).should('be.visible');
+    cy.get('[role="dialog"]').should('not.exist');
+  });
+
+  it('"Assegna a un gruppo" chiede l\'accesso e poi apre l\'assegnazione', () => {
+    cy.visit(`/explore/${TEMPLATE.id}`);
+    cy.contains('button', 'Assegna a un gruppo').click();
+    cy.dialog('Accedi o registrati').within(() => {
+      cy.get('#auth-login-email').type('admin@example.com');
+      cy.get('#auth-login-password').type('admin123', { log: false });
+      cy.contains('button', 'Continua').click();
+    });
+    cy.dialog('Assegna a un gruppo').should('be.visible');
+    cy.location('pathname').should('eq', `/explore/${TEMPLATE.id}`);
+  });
+});
+
 describe('Esplora', () => {
   beforeEach(() => cy.login('admin'));
 
