@@ -1,0 +1,84 @@
+@if (notifications.userNotifications().length === 0) {
+  <div class="px-4 py-8 flex flex-col items-center gap-2 text-center">
+    <span class="material-symbols-outlined text-[32px] text-on-surface-variant/40">notifications_none</span>
+    <p class="font-body-sm text-body-sm text-on-surface-variant">Nessuna notifica</p>
+  </div>
+} @else {
+  <div [class]="scroll() ? 'max-h-96 overflow-y-auto' : ''">
+    @for (notif of notifications.userNotifications(); track notif.id) {
+      <div class="px-4 py-3 border-b border-outline-variant/20 last:border-0" [class.bg-surface-container]="!notif.read">
+        <div class="flex items-start gap-3">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center text-base shrink-0 border-2 overflow-hidden"
+            [style.background-color]="notif.groupColor + '22'"
+            [style.border-color]="notif.groupColor">
+            @if (isImageIcon(notif.groupIcon)) {
+              <img [src]="notif.groupIcon" alt="" class="w-full h-full object-cover">
+            } @else {
+              {{ notif.groupIcon }}
+            }
+          </div>
+          <div class="flex-1 min-w-0">
+            @switch (notif.type) {
+              @case ('join_request') {
+                <p class="font-body-sm text-body-sm text-on-surface leading-snug">
+                  <strong>{{ notif.senderName }}</strong> chiede di entrare nel gruppo <strong>{{ notif.groupName }}</strong>
+                </p>
+                @if (notif.status === 'pending') {
+                  <a class="inline-block mt-2 px-3 py-1 rounded-full font-label-sm text-label-sm bg-primary text-on-primary no-underline"
+                    [routerLink]="['/groups', notif.groupId]" (click)="navigated.emit()">
+                    Gestisci richiesta
+                  </a>
+                } @else {
+                  <p class="font-body-sm text-body-sm mt-1"
+                    [class.text-primary]="notif.status === 'approved'"
+                    [class.text-on-surface-variant]="notif.status !== 'approved'">
+                    {{ notif.status === 'approved' ? '✓ Accettata' : '✕ Rifiutata' }}
+                  </p>
+                }
+              }
+              @case ('join_approved') {
+                <p class="font-body-sm text-body-sm text-on-surface leading-snug">
+                  La tua richiesta per <strong>{{ notif.groupName }}</strong> è stata accettata 🎉
+                </p>
+                <a class="inline-block mt-2 font-label-sm text-label-sm text-primary no-underline"
+                  [routerLink]="['/groups', notif.groupId]" (click)="navigated.emit()">
+                  Apri il gruppo →
+                </a>
+              }
+              @case ('join_declined') {
+                <p class="font-body-sm text-body-sm text-on-surface leading-snug">
+                  La tua richiesta per <strong>{{ notif.groupName }}</strong> non è stata accettata.
+                </p>
+              }
+              @default {
+                <p class="font-body-sm text-body-sm text-on-surface leading-snug">
+                  <strong>{{ notif.senderName }}</strong> ti ha invitato nel gruppo <strong>{{ notif.groupName }}</strong>
+                </p>
+                @if (notif.status === 'pending') {
+                  <div class="flex gap-2 mt-2">
+                    <button type="button"
+                      class="px-3 py-1 rounded-full font-label-sm text-label-sm bg-primary text-on-primary transition-all active:scale-95"
+                      (click)="notifications.acceptInvite(notif.id)">
+                      Accetta
+                    </button>
+                    <button type="button"
+                      class="px-3 py-1 rounded-full font-label-sm text-label-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors"
+                      (click)="notifications.declineInvite(notif.id)">
+                      Rifiuta
+                    </button>
+                  </div>
+                } @else {
+                  <p class="font-body-sm text-body-sm mt-1"
+                    [class.text-primary]="notif.status === 'accepted'"
+                    [class.text-on-surface-variant]="notif.status === 'declined'">
+                    {{ notif.status === 'accepted' ? '✓ Accettato' : '✕ Rifiutato' }}
+                  </p>
+                }
+              }
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+}

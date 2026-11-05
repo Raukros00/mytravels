@@ -1,4 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
+import { ModalComponent } from '../modal/modal.component';
+import { NotificationListComponent } from '../notification-list/notification-list.component';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthModalService } from '../../../core/services/auth-modal.service';
@@ -11,8 +13,8 @@ import { GroupCreateModalComponent } from '../../../features/groups/group-create
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterModule, GroupCreateModalComponent, UserAvatarComponent],
-  host: { '(document:click)': 'clickOutside()' },
+  imports: [RouterModule, GroupCreateModalComponent, UserAvatarComponent, ModalComponent, NotificationListComponent],
+  host: { '(document:click)': 'clickOutside()', '(window:scroll)': 'onScroll()' },
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
@@ -28,6 +30,11 @@ export class NavbarComponent {
   public isUserMenuOpen = signal(false);
   public isNotifPanelOpen = signal(false);
   public isCreateGroupModalOpen = signal(false);
+  /** Pannello account su mobile (dalla barra in basso). */
+  public isAccountSheetOpen = signal(false);
+  /** Header nascosto mentre si scorre verso il basso (solo mobile: su desktop resta sempre visibile). */
+  public headerHidden = signal(false);
+  private lastScrollY = 0;
 
   clickOutside(): void {
     this.isGroupMenuOpen.set(false);
@@ -71,6 +78,31 @@ export class NavbarComponent {
   openCreateGroupModal(): void {
     this.isGroupMenuOpen.set(false);
     this.isCreateGroupModalOpen.set(true);
+  }
+
+  onScroll(): void {
+    const y = Math.max(0, window.scrollY);
+    const delta = y - this.lastScrollY;
+    // Soglia per non far "tremare" l'header a ogni pixel; vicino all'inizio pagina resta visibile.
+    if (y < 64) this.headerHidden.set(false);
+    else if (delta > 6) this.headerHidden.set(true);
+    else if (delta < -6) this.headerHidden.set(false);
+    if (Math.abs(delta) > 6 || y < 64) this.lastScrollY = y;
+  }
+
+  openAccountSheet(): void {
+    this.isAccountSheetOpen.set(true);
+    if (this.authService.isAuthenticated()) this.notifService.markAllRead();
+  }
+
+  loginFromSheet(): void {
+    this.isAccountSheetOpen.set(false);
+    this.authModal.open({ tab: 'login' });
+  }
+
+  logoutFromSheet(): void {
+    this.isAccountSheetOpen.set(false);
+    this.authService.logout();
   }
 
   logout(): void {

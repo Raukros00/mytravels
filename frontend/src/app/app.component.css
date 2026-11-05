@@ -44,3 +44,10 @@
     align-items: flex-start;
   }
 }
+
+/* Su mobile la barra di navigazione in basso copre gli ultimi 64px: spazio per non nascondere il footer. */
+@media (max-width: 767px) {
+  .app-footer {
+    padding-bottom: calc(2.5rem + 64px + env(safe-area-inset-bottom, 0px));
+  }
+}
