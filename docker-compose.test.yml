@@ -36,6 +36,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-tripplanner}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD non impostata nel .env}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET non impostata nel .env}
+      # Copertine suggerite (Unsplash, "Access Key"): vuota = funzione disattivata.
+      UNSPLASH_ACCESS_KEY: ${UNSPLASH_ACCESS_KEY:-}
       JPA_SHOW_SQL: ${JPA_SHOW_SQL:-false}
       SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
     depends_on:

@@ -37,6 +37,11 @@ app:
   # Dati demo (utenti/gruppi/viaggi di esempio). Disattivato di default; true solo in locale/test.
   seed-demo-data: ${SEED_DEMO_DATA:false}
 
+unsplash:
+  # Copertine suggerite in base alla destinazione. Senza chiave la funzione è disattivata.
+  access-key: ${UNSPLASH_ACCESS_KEY:}
+  api-url: ${UNSPLASH_API_URL:https://api.unsplash.com}
+
 jwt:
   # Obbligatorio: almeno 32 caratteri, diverso per ogni ambiente (es. `openssl rand -hex 32`).
   secret: ${JWT_SECRET}
