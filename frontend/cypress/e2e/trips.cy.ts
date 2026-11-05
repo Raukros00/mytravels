@@ -189,6 +189,23 @@ describe('Viaggi – creazione', () => {
     cy.contains('button', 'Crea Viaggio').should('be.enabled');
   });
 
+  it('da un gruppo con icona foto: il gruppo è preselezionato e si vede il nome, non l\'URL dell\'immagine', () => {
+    const name = uniq('E2E Icona foto');
+    cy.fixture('profile-photo.png', 'base64').then(png => {
+      cy.createGroup('admin', name, { icon: `data:image/png;base64,${png}` }).then(group => {
+        cy.visit(`/groups/${group.id}`);
+        cy.contains('button', 'Nuovo viaggio').click();
+        cy.location('search').should('contain', `groupId=${group.id}`);
+
+        cy.get('#groupId').should('have.value', group.id);
+        cy.get('#groupId option:selected').should('have.text', name);
+        cy.get('#groupId option').each($o => expect($o.text()).not.to.contain('data:image'));
+        // Le icone emoji restano davanti al nome.
+        cy.get('#groupId option').contains(GROUPS.esploratori).invoke('text').should('match', /^\S+ Gli Esploratori/);
+      });
+    });
+  });
+
   it('"Annulla" e "Torna ai Viaggi" non creano nulla', () => {
     cy.intercept('POST', '/api/v1/trips', cy.spy().as('create'));
     cy.get('#title').type('Non salvare');

@@ -18,7 +18,7 @@
           <label class="form-label" for="groupId">Gruppo di Viaggio *</label>
           <select id="groupId" formControlName="groupId" class="form-select">
             @for (group of groupService.userGroups(); track group.id) {
-              <option [value]="group.id">{{ group.icon }} {{ group.name }}</option>
+              <option [value]="group.id">{{ groupOptionLabel(group) }}</option>
             }
           </select>
         </div>

@@ -6,6 +6,7 @@ export interface ExpenseMember {
   name: string;
   avatar: string;
   color: string;
+  profileImage?: string | null;
   former?: boolean;
 }
 
@@ -174,10 +175,10 @@ export function groupExpensesByDate(expenses: TripExpense[]): ExpenseDayGroup[] 
 
 /** Group members plus, as "former" members, anyone still referenced by expenses but no longer in the group. */
 export function buildExpenseMembers(
-  groupMembers: { id: string; name: string; avatar: string; color: string }[],
+  groupMembers: { id: string; name: string; avatar: string; color: string; profileImage?: string | null }[],
   expenses: TripExpense[]
 ): ExpenseMember[] {
-  const members: ExpenseMember[] = groupMembers.map(m => ({ id: m.id, name: m.name, avatar: m.avatar, color: m.color }));
+  const members: ExpenseMember[] = groupMembers.map(m => ({ id: m.id, name: m.name, avatar: m.avatar, color: m.color, profileImage: m.profileImage }));
   const known = new Set(members.map(m => m.id));
   const refs = new Set<string>();
   for (const e of expenses) {

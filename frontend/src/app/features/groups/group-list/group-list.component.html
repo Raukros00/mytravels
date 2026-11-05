@@ -108,7 +108,11 @@
                       class="avatar avatar-sm"
                       [style.background-color]="member.color"
                       [title]="member.name">
-                      {{ member.avatar }}
+                      @if (member.profileImage) {
+                        <img class="avatar-photo" [src]="member.profileImage" [alt]="member.name">
+                      } @else {
+                        {{ member.avatar }}
+                      }
                     </div>
                   }
                   @if (group.members.length > MAX_AVATARS) {

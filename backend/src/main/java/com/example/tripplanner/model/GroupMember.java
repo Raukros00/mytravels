@@ -49,4 +49,8 @@ public class GroupMember {
     private String role;
 
     private String color;
+
+    /** Foto profilo dell'utente (data URL), se ne ha una. */
+    @Column(name = "profile_image", columnDefinition = "text")
+    private String profileImage;
 }

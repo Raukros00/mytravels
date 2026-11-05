@@ -123,6 +123,7 @@ public class JoinRequestService {
             join.setUserName(request.getUserName());
             join.setAvatar(request.getAvatar());
             join.setColor(request.getColor());
+            join.setProfileImage(request.getProfileImage());
             groupService.joinGroupByInvite(join);
         }
         request.setStatus(approve ? GroupJoinRequest.APPROVED : GroupJoinRequest.DECLINED);

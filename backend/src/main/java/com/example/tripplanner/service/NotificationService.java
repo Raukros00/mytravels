@@ -83,6 +83,7 @@ public class NotificationService {
                                 .id(notif.getRecipientId())
                                 .name(userOpt.map(User::getName).orElse("Traveler"))
                                 .avatar(userOpt.map(User::getAvatar).orElse("🎒"))
+                                .profileImage(userOpt.map(User::getProfileImage).orElse(null))
                                 .role("member")
                                 .color(userOpt.map(User::getColor).orElse("#10b981"))
                                 .build();
