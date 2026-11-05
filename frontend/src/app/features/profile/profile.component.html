@@ -4,10 +4,7 @@
   <!-- Header -->
   <section class="px-gutter pt-space-lg pb-space-md">
     <div class="flex items-center gap-space-md">
-      <div class="w-20 h-20 rounded-full flex items-center justify-center text-4xl font-bold text-white shrink-0"
-        [style.background-color]="user.color">
-        {{ user.name.charAt(0).toUpperCase() }}
-      </div>
+      <app-user-avatar class="profile-avatar" [user]="user" [size]="80" />
       <div class="flex flex-col gap-1 min-w-0">
         <h1 class="font-headline-md text-headline-md text-on-surface truncate">{{ user.name }}</h1>
         <span class="font-body-md text-body-md text-on-surface-variant truncate">{{ user.email }}</span>
@@ -52,6 +49,15 @@
           <span class="font-body-md text-body-md text-on-surface truncate">{{ user.name }}</span>
         </div>
       </div>
+      @if (user.birthDate) {
+        <div class="flex items-center gap-space-md px-space-md py-3">
+          <span class="material-symbols-outlined text-[22px] text-on-surface-variant">cake</span>
+          <div class="flex flex-col min-w-0">
+            <span class="font-label-md text-label-md text-on-surface-variant">Data di nascita</span>
+            <span class="font-body-md text-body-md text-on-surface">{{ user.birthDate | date:'d MMMM y' : '' : 'it' }}</span>
+          </div>
+        </div>
+      }
       <div class="flex items-center gap-space-md px-space-md py-3">
         <span class="material-symbols-outlined text-[22px] text-on-surface-variant">mail</span>
         <div class="flex flex-col min-w-0">

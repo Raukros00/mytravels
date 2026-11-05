@@ -5,12 +5,13 @@ import { AuthModalService } from '../../../core/services/auth-modal.service';
 import { GroupService } from '../../../core/services/group.service';
 import { I18nService } from '../../../core/services/i18n.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { UserAvatarComponent } from '../user-avatar/user-avatar.component';
 import { GroupCreateModalComponent } from '../../../features/groups/group-create-modal/group-create-modal.component';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterModule, GroupCreateModalComponent],
+  imports: [RouterModule, GroupCreateModalComponent, UserAvatarComponent],
   host: { '(document:click)': 'clickOutside()' },
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
