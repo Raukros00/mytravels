@@ -29,6 +29,12 @@ export class TripService {
   private groupService = inject(GroupService);
   private apiService = inject(ApiService);
   private authService = inject(AuthService);
+  /**
+   * Viaggi eliminati in questa sessione: una lista caricata prima dell'eliminazione ma arrivata
+   * dopo li conterrebbe ancora e li farebbe ricomparire.
+   */
+  private readonly deletedIds = new Set<string>();
+
   /** Optimistic local ids (trip_<timestamp>) → ids assigned by the backend. */
   private readonly idAliases = signal<Record<string, string>>({});
 
@@ -100,7 +106,7 @@ export class TripService {
         if (!this.authService.currentUser()) return;
         if (trips) {
           const otherTrips = this.tripsSignal().filter(t => t.groupId !== groupId);
-          const merged = [...trips, ...otherTrips];
+          const merged = [...trips.filter(t => !this.deletedIds.has(t.id)), ...otherTrips];
           this.tripsSignal.set(merged);
           this.storageService.setTrips(merged);
         }
@@ -302,6 +308,7 @@ export class TripService {
   }
 
   public deleteTrip(id: string): void {
+    this.deletedIds.add(id);
     const found = this.tripsSignal().find(t => t.id === id);
     const updated = this.tripsSignal().filter(t => t.id !== id);
     this.tripsSignal.set(updated);
@@ -313,7 +320,11 @@ export class TripService {
 
     // Sync to backend
     this.apiService.delete(`/api/v1/trips/${id}`).subscribe({
-      error: (err) => console.error('Error deleting trip on backend:', err)
+      error: (err) => {
+        // Non eliminato sul server: le prossime liste lo devono mostrare di nuovo.
+        this.deletedIds.delete(id);
+        console.error('Error deleting trip on backend:', err);
+      }
     });
   }
 
