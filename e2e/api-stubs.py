@@ -21,7 +21,7 @@ API = os.environ.get("API_URL", "http://api-stubs:8000")
 IMAGE = open(os.environ.get("STUB_IMAGE", "/stub/photo.png"), "rb").read()
 GEONAMES_USER = os.environ.get("STUB_GEONAMES_USER", "e2e")
 CITIES = [
-    # (geonameId, nome italiano, nome locale/internazionale, regione, nazione, codice, lat, lng, abitanti)
+    # (geonameId, nome italiano, nome locale/internazionale, regione, nazione, codice, lat, lng, abitanti[, fcode])
     (2657896, "Zurigo", "Zürich", "Zurigo", "Svizzera", "CH", 47.36667, 8.55, 341730),
     (2562305, "Żurrieq", "Żurrieq", "Malta", "Malta", "MT", 35.83, 14.47, 11000),
     (3169070, "Roma", "Rome", "Lazio", "Italia", "IT", 41.89193, 12.51133, 2318895),
@@ -29,6 +29,11 @@ CITIES = [
     (2993458, "Monaco", "Monaco", "Monaco", "Principato di Monaco", "MC", 43.73333, 7.41667, 32965),
     (2267057, "Lisbona", "Lisbon", "Lisbona", "Portogallo", "PT", 38.71667, -9.13333, 517802),
     (2660646, "Ginevra", "Geneva", "Ginevra", "Svizzera", "CH", 46.20222, 6.14569, 183981),
+    # Casi reali che il backend deve scartare:
+    # traslitterazione minuscola trovata per "zur" (Zliten, Libia)...
+    (2208425, "zuriten", "Zliten", "Misurata", "Libia", "LY", 32.46738, 14.56685, 109972),
+    # ...e un quartiere (PPLX) di Zurigo.
+    (6295515, "Zürich (Kreis 11)", "Zürich (Kreis 11)", "Zurigo", "Svizzera", "CH", 47.42, 8.53, 75000, "PPLX"),
 ]
 state = {"searches": [], "downloads": [], "places": []}
 
@@ -60,12 +65,16 @@ class Handler(BaseHTTPRequestHandler):
                 # Come GeoNames: errore con HTTP 200 e oggetto "status".
                 return self._json(200, {"status": {"message": "user account not enabled to use the free webservice.", "value": 10}})
             q = params.get("name_startsWith", [""])[0].lower()
-            state["places"].append(q)
-            hits = [c for c in CITIES if c[1].lower().startswith(q) or c[2].lower().startswith(q)]
+            italian_only = params.get("searchlang", [""])[0] == "it"
+            state["places"].append(q + (" [it]" if italian_only else ""))
+            # searchlang=it: solo i nomi italiani (le traslitterazioni non sono "nomi italiani").
+            hits = [c for c in CITIES if c[1].lower().startswith(q) and (not italian_only or c[1] != c[1].lower())
+                    or (not italian_only and c[2].lower().startswith(q))]
             hits.sort(key=lambda c: -c[8])
             return self._json(200, {"totalResultsCount": len(hits), "geonames": [{
                 "geonameId": c[0], "name": c[1], "toponymName": c[2], "adminName1": c[3],
                 "countryName": c[4], "countryCode": c[5], "lat": str(c[6]), "lng": str(c[7]), "population": c[8],
+                "fcode": c[9] if len(c) > 9 else "PPLA",
             } for c in hits]})
         if self.headers.get("Authorization") != f"Client-ID {KEY}":
             return self._json(401, {"errors": ["OAuth error: The access token is invalid"]})
