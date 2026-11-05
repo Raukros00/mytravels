@@ -197,3 +197,18 @@
 .hero-share-btn .material-symbols-outlined {
   font-size: 18px;
 }
+.hero-cover-credit {
+  position: absolute;
+  right: 0.85rem;
+  bottom: 0.6rem;
+  z-index: 2;
+  margin: 0;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.hero-cover-credit a {
+  color: inherit;
+  text-decoration: underline;
+}

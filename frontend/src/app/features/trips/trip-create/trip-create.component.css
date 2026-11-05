@@ -197,3 +197,30 @@
 }
 .proposal-check input { margin-top: 0.25rem; }
 .proposal-check small { color: var(--wb-text-secondary); }
+
+/* Copertine suggerite: stesse card dei preset, ma come pulsanti (accessibili da tastiera). */
+.cover-suggestion {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cover-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--wb-text-tertiary);
+}
+
+.cover-credit {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  color: var(--wb-text-tertiary);
+}
+
+.cover-credit a {
+  color: var(--wb-text-secondary);
+  text-decoration: underline;
+}
