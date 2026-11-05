@@ -4,7 +4,25 @@ Test di regressione che girano sull'app completa: frontend Angular (`ng serve`) 
 con i dati demo del `DataInitializer` (`SEED_DEMO_DATA=true`). Nessuna API è mockata: ogni modifica fatta
 dall'interfaccia viene anche verificata leggendo il backend.
 
-## Avvio in locale
+## Avvio rapido (macOS)
+
+Dalla root del repo, un solo comando avvia tutto e apre Cypress con l'interfaccia grafica:
+
+```bash
+./scripts/e2e-ui.sh            # oppure, da frontend/: npm run e2e:ui
+```
+
+Avvia Docker Desktop se serve, installa le dipendenze se mancano, avvia lo stack e2e e l'app
+Angular e apre Cypress. Chiudendo Cypress (o con Ctrl+C) spegne tutto. Opzioni:
+
+| Opzione | Effetto |
+| :--- | :--- |
+| `--keep` | alla chiusura lascia acceso lo stack Docker (il riavvio successivo è più veloce) |
+| `--fresh` | riparte da un database pulito con i soli dati demo |
+| `--browser chrome` | apre direttamente quel browser (`chrome`, `electron`, `firefox`, `edge`) |
+| `--run` | niente interfaccia: esegue tutta la suite headless |
+
+## Avvio in locale (passo per passo)
 
 Serve Docker attivo. Dalla cartella `frontend/`:
 
