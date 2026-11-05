@@ -603,3 +603,17 @@ a:hover {
 .font-mono { font-family: var(--wb-font-mono); }
 
 .d-flex { display: flex; gap: 0.5rem; }
+
+
+/* Foto profilo dentro i cerchi avatar (.avatar, .member-avatar, ...): riempie il cerchio. */
+.avatar:has(> .avatar-photo) {
+  overflow: hidden;
+  padding: 0;
+}
+.avatar-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}

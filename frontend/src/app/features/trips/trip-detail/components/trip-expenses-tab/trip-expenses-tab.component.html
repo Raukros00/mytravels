@@ -62,7 +62,7 @@
         <ul class="exp-list">
           @for (row of balanceRows(); track row.member.id) {
             <li class="exp-row">
-              <div class="avatar avatar-sm" [style.background-color]="row.member.color">{{ row.member.avatar }}</div>
+              <div class="avatar avatar-sm" [style.background-color]="row.member.color">@if (row.member.profileImage) {<img class="avatar-photo" [src]="row.member.profileImage" alt="">} @else {{{ row.member.avatar }}}</div>
               <span class="exp-row-name">{{ memberLabel(row.member.id) }}</span>
               @if (row.balance > 0.005) {
                 <span class="exp-balance exp-positive">deve ricevere {{ row.balance | currency:currency():'symbol':'1.2-2' }}</span>
@@ -86,7 +86,7 @@
           <ul class="exp-list">
             @for (t of transfers(); track t.from + t.to) {
               <li class="exp-row exp-row--transfer">
-                <div class="avatar avatar-sm" [style.background-color]="member(t.from).color">{{ member(t.from).avatar }}</div>
+                <div class="avatar avatar-sm" [style.background-color]="member(t.from).color">@if (member(t.from).profileImage) {<img class="avatar-photo" [src]="member(t.from).profileImage" alt="">} @else {{{ member(t.from).avatar }}}</div>
                 <div class="exp-transfer-text">
                   <span><strong>{{ memberLabel(t.from) }}</strong> deve dare</span>
                   <span class="exp-transfer-amount">{{ t.amount | currency:currency():'symbol':'1.2-2' }}</span>

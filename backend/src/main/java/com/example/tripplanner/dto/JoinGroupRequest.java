@@ -11,4 +11,5 @@ public class JoinGroupRequest {
     private String userName;
     private String avatar;
     private String color;
+    private String profileImage;
 }
