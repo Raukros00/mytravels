@@ -59,6 +59,11 @@ export class TripService {
   });
 
   constructor() {
+    // Logout: niente viaggi dell'utente precedente in memoria.
+    effect(() => {
+      if (!this.authService.currentUser()) this.tripsSignal.set([]);
+    });
+
     // When active group changes, fetch trips for that group from backend
     effect(() => {
       const activeGroup = this.groupService.activeGroup();
@@ -72,6 +77,8 @@ export class TripService {
     if (USE_MOCK_DATA) return;
     this.apiService.get<Trip[]>(`/api/v1/trips/group/${groupId}`).subscribe({
       next: (trips) => {
+        // Risposta arrivata dopo il logout: non va rimessa in cache.
+        if (!this.authService.currentUser()) return;
         if (trips) {
           const otherTrips = this.tripsSignal().filter(t => t.groupId !== groupId);
           const merged = [...trips, ...otherTrips];
