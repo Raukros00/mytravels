@@ -90,3 +90,40 @@
   font-weight: 400;
 }
 .btn-icon-only { padding: 0.5rem; }
+
+/* Mobile: icona e nome in alto, descrizione e data sotto, pulsanti su una riga dedicata
+   (prima l'icona si allungava per tutta l'altezza e i pulsanti si sovrapponevano al testo). */
+@media (max-width: 640px) {
+  .group-hero {
+    padding: 1.1rem;
+  }
+  .group-hero-top {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-areas:
+      "icon info"
+      "actions actions";
+    gap: 0.9rem;
+  }
+  .group-hero-icon {
+    grid-area: icon;
+    align-self: start;
+    width: 64px;
+    height: 64px;
+    font-size: 1.8rem;
+  }
+  .group-hero-info {
+    grid-area: info;
+  }
+  .group-hero-name {
+    font-size: 1.25rem;
+  }
+  .hero-actions {
+    grid-area: actions;
+    align-self: stretch;
+  }
+  .hero-actions .btn:not(.btn-icon-only) {
+    flex: 1;
+    justify-content: center;
+  }
+}
