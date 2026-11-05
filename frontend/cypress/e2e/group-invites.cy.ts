@@ -269,3 +269,35 @@ describe('Creazione gruppo – foto ritagliata', () => {
     });
   });
 });
+
+describe('Membri con foto profilo', () => {
+  it('la card dei membri e la lista gruppi mostrano la foto, non l\'emoji', () => {
+    const stamp = Date.now();
+    const owner = { email: `e2e.foto.owner.${stamp}@example.com`, password: 'Segreta123!' };
+    const guest = { email: `e2e.foto.guest.${stamp}@example.com`, password: 'Segreta123!' };
+    const name = uniq('E2E Gruppo foto');
+
+    cy.fixture('profile-photo.png', 'base64').then(png => {
+      const photo = `data:image/png;base64,${png}`;
+      const register = (u: typeof owner, first: string) => cy.request('POST', '/auth/register', {
+        firstName: first, lastName: 'Foto', birthDate: '1990-01-01', ...u, avatar: '🎒', color: '#10b981', profileImage: photo,
+      });
+      register(owner, 'Olga');
+      register(guest, 'Gino');
+
+      cy.createGroup(owner, name).then(group => {
+        // Chi entra tramite richiesta approvata porta con sé la foto.
+        cy.joinGroup(guest, group.inviteCode, owner);
+
+        cy.login(owner);
+        cy.visit(`/groups/${group.id}`);
+        cy.contains('.member-row', 'Olga Foto').find('img.avatar-photo').should('have.attr', 'src', photo);
+        cy.contains('.member-row', 'Gino Foto').find('img.avatar-photo').should('have.attr', 'src', photo);
+        cy.contains('.member-row', 'Olga Foto').should('not.contain.text', '🎒');
+
+        cy.visit('/groups');
+        cy.contains('.group-card', name).find('img.avatar-photo').should('have.length', 2);
+      });
+    });
+  });
+});

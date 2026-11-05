@@ -46,7 +46,7 @@
         @for (m of visibleMembers(); track m.id) {
           <label class="split-member" [class.split-member--on]="isSelected(m.id)">
             <input type="checkbox" [checked]="isSelected(m.id)" (change)="toggleMember(m.id)">
-            <span class="avatar avatar-sm" [style.background-color]="m.color">{{ m.avatar }}</span>
+            <span class="avatar avatar-sm" [style.background-color]="m.color">@if (m.profileImage) {<img class="avatar-photo" [src]="m.profileImage" alt="">} @else {{{ m.avatar }}}</span>
             <span class="split-member-name">{{ m.name }}{{ m.id === currentUserId() ? ' (tu)' : '' }}</span>
             @if (isSelected(m.id)) {
               @if (mode() === 'equal') {

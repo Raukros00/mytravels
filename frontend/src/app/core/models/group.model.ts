@@ -6,6 +6,8 @@ export interface GroupMember {
   avatar: string;
   role: 'admin' | 'member';
   color: string;
+  /** Foto profilo dell'utente (data URL), se ne ha una. */
+  profileImage?: string | null;
 }
 
 export interface Group {

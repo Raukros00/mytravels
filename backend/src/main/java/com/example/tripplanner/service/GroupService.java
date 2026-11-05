@@ -66,6 +66,7 @@ public class GroupService {
                         .id(u.getId())
                         .name(u.getName())
                         .avatar(u.getAvatar())
+                        .profileImage(u.getProfileImage())
                         .role("admin")
                         .color(u.getColor())
                         .build();
@@ -154,6 +155,7 @@ public class GroupService {
                     .id(request.getUserId())
                     .name(request.getUserName() != null ? request.getUserName() : "Traveler")
                     .avatar(request.getAvatar() != null ? request.getAvatar() : "🎒")
+                    .profileImage(request.getProfileImage())
                     .role("member")
                     .color(request.getColor() != null ? request.getColor() : "#10b981")
                     .build();
