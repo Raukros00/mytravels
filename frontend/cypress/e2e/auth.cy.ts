@@ -50,13 +50,22 @@ describe('Autenticazione (modale)', () => {
     describe('su mobile', () => {
       beforeEach(() => cy.viewport('iphone-x'));
 
-      it('l\'header resta visibile con Esplora, lingua e utente anonimo', () => {
+      it('l\'header mostra solo il logo; Esplora e Accedi sono nella barra in basso', () => {
         cy.visit('/explore');
         cy.get('header').within(() => {
           cy.contains('a', 'WanderBite').should('be.visible');
-          cy.contains('nav a', 'Esplora').should('be.visible');
-          cy.contains('button', 'EN').should('be.visible');
-          cy.get('button[aria-label="Accedi o registrati"]').should('be.visible').click();
+          cy.contains('a', 'Esplora').should('not.be.visible');
+          cy.get('button[aria-label="Accedi o registrati"]').should('not.be.visible');
+        });
+        cy.get('nav[aria-label="Navigazione"]').within(() => {
+          cy.contains('a', 'Esplora').should('be.visible');
+          cy.contains('a', 'Viaggi').should('not.exist');
+          cy.contains('button', 'Accedi').click();
+        });
+        cy.dialog('Benvenuto su WanderBite').within(() => {
+          cy.contains('button', 'Switch to English').click();
+          cy.contains('button', 'Passa all\'italiano').should('be.visible');
+          cy.contains('button', 'Accedi o registrati').click();
         });
         cy.dialog('Accedi o registrati').should('be.visible');
       });

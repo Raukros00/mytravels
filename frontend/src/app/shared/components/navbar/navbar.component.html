@@ -1,14 +1,17 @@
 <!-- WanderBite Top Header -->
-<header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl shadow-[0_2px_12px_rgba(78,42,29,0.05)]">
-  <div class="h-16 px-gutter md:px-16 flex items-center justify-between gap-space-md">
+<!-- Su mobile resta solo il logo al centro e l'header si nasconde scorrendo verso il basso:
+     navigazione e account sono nella barra in basso. -->
+<header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl shadow-[0_2px_12px_rgba(78,42,29,0.05)] transition-transform duration-300 md:translate-y-0"
+  [class.-translate-y-full]="headerHidden()">
+  <div class="h-16 px-gutter md:px-16 flex items-center justify-center md:justify-between gap-space-md">
     <!-- Logo -->
     <a [routerLink]="authService.isAuthenticated() ? '/trips' : '/explore'" class="flex items-center gap-space-sm no-underline shrink-0">
       <span class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Wander<span class="text-primary">Bite</span></span>
     </a>
 
-    <!-- Nav Links: per i visitatori solo Esplora, visibile anche su mobile (non hanno la barra in basso) -->
+    <!-- Nav Links (desktop): per i visitatori solo Esplora -->
     @if (!authService.isAuthenticated()) {
-      <nav class="flex items-center gap-1" aria-label="Navigazione principale">
+      <nav class="hidden md:flex items-center gap-1" aria-label="Navigazione principale">
         <a routerLink="/explore" routerLinkActive="desktop-nav-active" class="desktop-nav-link no-underline">
           Esplora
         </a>
@@ -27,8 +30,8 @@
       </nav>
     }
 
-    <!-- Right: lingua (sempre) + notifiche e avatar, oppure l'utente anonimo che apre l'accesso -->
-    <div class="flex items-center gap-space-sm">
+    <!-- Right (desktop): lingua + notifiche e avatar, oppure l'utente anonimo che apre l'accesso -->
+    <div class="hidden md:flex items-center gap-space-sm">
       <!-- Language switcher -->
       <button
         type="button"
@@ -84,90 +87,7 @@
         }
       </div>
 
-      @if (notifService.userNotifications().length === 0) {
-        <div class="px-4 py-8 flex flex-col items-center gap-2 text-center">
-          <span class="material-symbols-outlined text-[32px] text-on-surface-variant/40">notifications_none</span>
-          <p class="font-body-sm text-body-sm text-on-surface-variant">Nessuna notifica</p>
-        </div>
-      } @else {
-        <div class="max-h-96 overflow-y-auto">
-          @for (notif of notifService.userNotifications(); track notif.id) {
-            <div class="px-4 py-3 border-b border-outline-variant/20 last:border-0" [class.bg-surface-container]="!notif.read">
-              <div class="flex items-start gap-3">
-                <div class="w-9 h-9 rounded-full flex items-center justify-center text-base shrink-0 border-2 overflow-hidden"
-                  [style.background-color]="notif.groupColor + '22'"
-                  [style.border-color]="notif.groupColor">
-                  @if (isImageIcon(notif.groupIcon)) {
-                    <img [src]="notif.groupIcon" alt="" class="w-full h-full object-cover">
-                  } @else {
-                    {{ notif.groupIcon }}
-                  }
-                </div>
-                <div class="flex-1 min-w-0">
-                  @switch (notif.type) {
-                    @case ('join_request') {
-                      <p class="font-body-sm text-body-sm text-on-surface leading-snug">
-                        <strong>{{ notif.senderName }}</strong> chiede di entrare nel gruppo <strong>{{ notif.groupName }}</strong>
-                      </p>
-                      @if (notif.status === 'pending') {
-                        <a class="inline-block mt-2 px-3 py-1 rounded-full font-label-sm text-label-sm bg-primary text-on-primary no-underline"
-                          [routerLink]="['/groups', notif.groupId]" (click)="isNotifPanelOpen.set(false)">
-                          Gestisci richiesta
-                        </a>
-                      } @else {
-                        <p class="font-body-sm text-body-sm mt-1"
-                          [class.text-primary]="notif.status === 'approved'"
-                          [class.text-on-surface-variant]="notif.status !== 'approved'">
-                          {{ notif.status === 'approved' ? '✓ Accettata' : '✕ Rifiutata' }}
-                        </p>
-                      }
-                    }
-                    @case ('join_approved') {
-                      <p class="font-body-sm text-body-sm text-on-surface leading-snug">
-                        La tua richiesta per <strong>{{ notif.groupName }}</strong> è stata accettata 🎉
-                      </p>
-                      <a class="inline-block mt-2 font-label-sm text-label-sm text-primary no-underline"
-                        [routerLink]="['/groups', notif.groupId]" (click)="isNotifPanelOpen.set(false)">
-                        Apri il gruppo →
-                      </a>
-                    }
-                    @case ('join_declined') {
-                      <p class="font-body-sm text-body-sm text-on-surface leading-snug">
-                        La tua richiesta per <strong>{{ notif.groupName }}</strong> non è stata accettata.
-                      </p>
-                    }
-                    @default {
-                      <p class="font-body-sm text-body-sm text-on-surface leading-snug">
-                        <strong>{{ notif.senderName }}</strong> ti ha invitato nel gruppo <strong>{{ notif.groupName }}</strong>
-                      </p>
-                      @if (notif.status === 'pending') {
-                        <div class="flex gap-2 mt-2">
-                          <button type="button"
-                            class="px-3 py-1 rounded-full font-label-sm text-label-sm bg-primary text-on-primary transition-all active:scale-95"
-                            (click)="notifService.acceptInvite(notif.id)">
-                            Accetta
-                          </button>
-                          <button type="button"
-                            class="px-3 py-1 rounded-full font-label-sm text-label-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors"
-                            (click)="notifService.declineInvite(notif.id)">
-                            Rifiuta
-                          </button>
-                        </div>
-                      } @else {
-                        <p class="font-body-sm text-body-sm mt-1"
-                          [class.text-primary]="notif.status === 'accepted'"
-                          [class.text-on-surface-variant]="notif.status === 'declined'">
-                          {{ notif.status === 'accepted' ? '✓ Accettato' : '✕ Rifiutato' }}
-                        </p>
-                      }
-                    }
-                  }
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-      }
+      <app-notification-list (navigated)="isNotifPanelOpen.set(false)" />
     </div>
   }
 
@@ -198,21 +118,22 @@
 </header>
 
 <!-- Mobile Bottom Navigation (hidden on desktop) -->
-@if (authService.isAuthenticated()) {
-  <nav class="md:hidden fixed bottom-0 inset-x-0 z-50 bg-surface/95 backdrop-blur-xl border-t border-outline-variant/30 pb-safe shadow-[0_-4px_20px_rgba(78,42,29,0.06)]">
-    <div class="flex items-stretch h-16">
-      <a routerLink="/explore" routerLinkActive="active-nav" class="wb-nav-item" #exploreLink="routerLinkActive">
-        <span class="material-symbols-outlined text-[24px]" [style.font-variation-settings]="exploreLink.isActive ? '\'FILL\' 1' : '\'FILL\' 0'">travel_explore</span>
-        <span>Esplora</span>
-      </a>
+<nav class="md:hidden fixed bottom-0 inset-x-0 z-50 bg-surface/95 backdrop-blur-xl border-t border-outline-variant/30 pb-safe shadow-[0_-4px_20px_rgba(78,42,29,0.06)]"
+  aria-label="Navigazione">
+  <div class="flex items-stretch h-16">
+    <a routerLink="/explore" routerLinkActive="active-nav" class="wb-nav-item" #exploreLink="routerLinkActive">
+      <span class="material-symbols-outlined text-[24px]" [style.font-variation-settings]="exploreLink.isActive ? '\'FILL\' 1' : '\'FILL\' 0'">travel_explore</span>
+      <span>Esplora</span>
+    </a>
 
+    @if (authService.isAuthenticated()) {
       <a routerLink="/trips" routerLinkActive="active-nav" [routerLinkActiveOptions]="{exact: false}" class="wb-nav-item" #tripsLink="routerLinkActive">
         <span class="material-symbols-outlined text-[24px]" [style.font-variation-settings]="tripsLink.isActive ? '\'FILL\' 1' : '\'FILL\' 0'">luggage</span>
         <span>Viaggi</span>
       </a>
 
       <!-- FAB: Nuovo Viaggio -->
-      <a routerLink="/trips/new" class="flex-1 flex items-center justify-center">
+      <a routerLink="/trips/new" class="flex-1 flex items-center justify-center" aria-label="Nuovo viaggio">
         <div class="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md shadow-primary/30 active:scale-95 transition-transform">
           <span class="material-symbols-outlined text-[22px]">add</span>
         </div>
@@ -222,8 +143,78 @@
         <span class="material-symbols-outlined text-[24px]" [style.font-variation-settings]="groupsLink.isActive ? '\'FILL\' 1' : '\'FILL\' 0'">group</span>
         <span>Gruppi</span>
       </a>
-    </div>
-  </nav>
+
+      <!-- Profilo: apre il pannello account (notifiche, profilo, lingua, logout) -->
+      <button type="button" class="wb-nav-item" [class.active-nav]="isAccountSheetOpen()"
+        aria-label="Account e notifiche" (click)="openAccountSheet()">
+        <span class="relative">
+          <app-user-avatar [user]="authService.currentUser()" [size]="26" />
+          @if (notifService.unreadCount() > 0) {
+            <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-error border-2 border-surface" aria-label="Notifiche non lette"></span>
+          }
+        </span>
+        <span>Profilo</span>
+      </button>
+    } @else {
+      <!-- Visitatore: l'utente anonimo apre accesso / registrazione e lingua -->
+      <button type="button" class="wb-nav-item" [class.active-nav]="isAccountSheetOpen()"
+        aria-label="Accedi o registrati" (click)="openAccountSheet()">
+        <span class="material-symbols-outlined text-[24px]">account_circle</span>
+        <span>Accedi</span>
+      </button>
+    }
+  </div>
+</nav>
+
+<!-- Pannello account (mobile), scaricato alla prima apertura -->
+@defer (when isAccountSheetOpen()) {
+<app-modal
+  [isOpen]="isAccountSheetOpen()"
+  [title]="authService.isAuthenticated() ? 'Il tuo account' : 'Benvenuto su WanderBite'"
+  icon="account_circle"
+  [hasFooter]="false"
+  (close)="isAccountSheetOpen.set(false)">
+  <div class="account-sheet">
+    @if (authService.currentUser(); as user) {
+      <div class="account-user">
+        <app-user-avatar [user]="user" [size]="48" />
+        <div class="account-user-text">
+          <strong>{{ user.name }}</strong>
+          <span>{{ user.email }}</span>
+        </div>
+      </div>
+
+      <section class="account-section" aria-label="Notifiche">
+        <h4 class="account-section-title">Notifiche</h4>
+        <div class="account-notifications">
+          <app-notification-list [scroll]="false" (navigated)="isAccountSheetOpen.set(false)" />
+        </div>
+      </section>
+
+      <div class="account-links">
+        <a routerLink="/profile" class="account-link" (click)="isAccountSheetOpen.set(false)">
+          <span class="material-symbols-outlined">person</span> Profilo
+        </a>
+        <button type="button" class="account-link" (click)="i18n.toggle()">
+          <span class="material-symbols-outlined">language</span>
+          {{ i18n.currentLang() === 'it' ? 'Switch to English' : 'Passa all\'italiano' }}
+        </button>
+        <button type="button" class="account-link account-link--danger" (click)="logoutFromSheet()">
+          <span class="material-symbols-outlined">logout</span> Disconnetti
+        </button>
+      </div>
+    } @else {
+      <p class="account-guest-text">Accedi per creare viaggi, unirti ai gruppi e assegnare gli itinerari di Esplora.</p>
+      <button type="button" class="btn btn-primary w-full" (click)="loginFromSheet()">Accedi o registrati</button>
+      <div class="account-links">
+        <button type="button" class="account-link" (click)="i18n.toggle()">
+          <span class="material-symbols-outlined">language</span>
+          {{ i18n.currentLang() === 'it' ? 'Switch to English' : 'Passa all\'italiano' }}
+        </button>
+      </div>
+    }
+  </div>
+</app-modal>
 }
 
 <!-- Create Group Modal -->

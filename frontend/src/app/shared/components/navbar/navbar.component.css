@@ -424,3 +424,82 @@
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
+/* Le voci-pulsante (Profilo / Accedi) devono apparire identiche ai link della barra. */
+button.wb-nav-item {
+  font-family: inherit;
+  padding: 0;
+}
+
+/* Pannello account (mobile) */
+.account-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.account-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.account-user-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.account-user-text strong {
+  font-size: 1rem;
+  color: var(--wb-text-primary);
+}
+.account-user-text span {
+  font-size: 0.82rem;
+  color: var(--wb-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.account-section-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wb-text-tertiary);
+}
+.account-notifications {
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius-md);
+  overflow: hidden;
+}
+.account-links {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--wb-border);
+  padding-top: 0.5rem;
+}
+.account-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.25rem;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--wb-text-primary);
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+}
+.account-link .material-symbols-outlined {
+  font-size: 22px;
+  color: var(--wb-text-secondary);
+}
+.account-link--danger,
+.account-link--danger .material-symbols-outlined {
+  color: #b91c1c;
+}
+.account-guest-text {
+  margin: 0;
+  color: var(--wb-text-secondary);
+  line-height: 1.5;
+}
