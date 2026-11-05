@@ -1,7 +1,6 @@
 package com.example.tripplanner.controller;
 
 import com.example.tripplanner.dto.CreateGroupRequest;
-import com.example.tripplanner.dto.JoinGroupRequest;
 import com.example.tripplanner.dto.UpdateGroupRequest;
 import com.example.tripplanner.model.Group;
 import com.example.tripplanner.model.User;
@@ -88,23 +87,7 @@ public class GroupController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
-    /** Entra con il codice invito: il nuovo membro è sempre l'utente autenticato. */
-    @PostMapping("/join")
-    public ResponseEntity<?> joinGroup(@Valid @RequestBody JoinGroupRequest request, Authentication authentication) {
-        Optional<User> me = currentUser(authentication);
-        if (me.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        User user = me.get();
-        request.setUserId(user.getId());
-        if (request.getUserName() == null || request.getUserName().isBlank()) request.setUserName(user.getName());
-        if (request.getAvatar() == null || request.getAvatar().isBlank()) request.setAvatar(user.getAvatar());
-        if (request.getColor() == null || request.getColor().isBlank()) request.setColor(user.getColor());
-
-        Optional<Group> groupOpt = groupService.joinGroupByInvite(request);
-        if (groupOpt.isPresent()) {
-            return ResponseEntity.ok(groupOpt.get());
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Invalid invite code or group not found"));
-    }
+    // L'ingresso con codice/link passa da una richiesta approvata da un admin: vedi JoinRequestController.
 
     /** Un admin può rimuovere chiunque; un membro può rimuovere solo sé stesso (lasciare il gruppo). */
     @DeleteMapping("/{groupId}/members/{memberId}")

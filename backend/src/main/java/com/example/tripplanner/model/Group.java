@@ -29,6 +29,8 @@ public class Group implements Persistable<String> {
     @Column(columnDefinition = "text")
     private String description;
 
+    /** Emoji oppure immagine ritagliata (data URL). */
+    @Column(columnDefinition = "text")
     private String icon;
     private String color;
 
