@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, model, signal, viewChild } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ImageCropperComponent } from '../../../../../shared/components/image-cropper/image-cropper.component';
 
 const isImageIcon = (icon: string): boolean =>
   icon.startsWith('data:') || icon.startsWith('http') || icon.startsWith('blob:');
@@ -7,7 +8,7 @@ const isImageIcon = (icon: string): boolean =>
 @Component({
   selector: 'app-group-icon-picker',
   standalone: true,
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, ImageCropperComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:click)': 'showThumbMenu.set(false)' },
   templateUrl: './group-icon-picker.component.html',
@@ -22,6 +23,9 @@ export class GroupIconPickerComponent {
   readonly emojiPresets = ['✈️', '🍕', '🍜', '🍷', '🏖️', '🎒', '🏰', '🍣', '🍦', '☕', '🏕️', '🌮', '🍸', '🏔️', '🚂', '🥐'];
 
   readonly showEmojiPicker = signal(false);
+  /** Immagine scelta, in fase di ritaglio da parte dell'utente. */
+  readonly cropFile = signal<File | null>(null);
+  readonly imageError = signal<string | null>(null);
   readonly showThumbMenu = signal(false);
 
   readonly imagePreview = computed(() => (isImageIcon(this.icon()) ? this.icon() : null));
@@ -31,6 +35,8 @@ export class GroupIconPickerComponent {
   reset(): void {
     this.showEmojiPicker.set(false);
     this.showThumbMenu.set(false);
+    this.cropFile.set(null);
+    this.imageError.set(null);
   }
 
   toggleThumbMenu(event: MouseEvent): void {
@@ -61,27 +67,26 @@ export class GroupIconPickerComponent {
     if (input) input.value = '';
   }
 
+  /** Apre l'editor di ritaglio sull'immagine scelta. */
   onImageChange(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = ''; // permette di riscegliere lo stesso file
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const raw = new Image();
-      raw.onload = () => {
-        const canvas = document.createElement('canvas');
-        const size = 240;
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext('2d')!;
-        const aspect = raw.width / raw.height;
-        let sx = 0, sy = 0, sw = raw.width, sh = raw.height;
-        if (aspect > 1) { sx = (raw.width - raw.height) / 2; sw = raw.height; }
-        else { sy = (raw.height - raw.width) / 2; sh = raw.width; }
-        ctx.drawImage(raw, sx, sy, sw, sh, 0, 0, size, size);
-        this.icon.set(canvas.toDataURL('image/jpeg', 0.82));
-      };
-      raw.src = reader.result as string;
-    };
-    reader.readAsDataURL(file);
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      this.imageError.set('Formato non supportato: usa un\'immagine JPG, PNG o WebP.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      this.imageError.set('L\'immagine è troppo grande (massimo 10 MB).');
+      return;
+    }
+    this.imageError.set(null);
+    this.cropFile.set(file);
+  }
+
+  onCropped(dataUrl: string): void {
+    this.icon.set(dataUrl);
+    this.cropFile.set(null);
   }
 }

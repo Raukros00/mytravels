@@ -143,6 +143,14 @@
     "form_save": "Save changes",
     "form_create": "Create group",
     "form_pick_image": "Upload image",
-    "form_pick_emoji": "Choose emoji"
+    "form_pick_emoji": "Choose emoji",
+    "share_link_label": "Invite link",
+    "share_link_hint": "Anyone opening the link sees the group and can ask to join: an admin must approve the request.",
+    "share_copy_link": "Copy link",
+    "share_copy_code": "Copy code",
+    "share_native": "Share",
+    "join_requests_title": "Join requests",
+    "join_requests_approve": "Accept",
+    "join_requests_decline": "Decline"
   }
 }

@@ -18,7 +18,7 @@ public class Notification implements Persistable<String> {
     @EqualsAndHashCode.Include
     private String id;
 
-    /** 'group_invite' */
+    /** 'group_invite' | 'join_request' | 'join_approved' | 'join_declined' */
     private String type;
 
     @Column(name = "recipient_id", nullable = false)
@@ -27,13 +27,21 @@ public class Notification implements Persistable<String> {
     @Column(name = "sender_name")
     private String senderName;
 
+    /** Utente che ha generato la notifica (chi invita o chi chiede di entrare). */
+    @Column(name = "sender_id")
+    private String senderId;
+
+    /** Per le notifiche sulle richieste di accesso: id della GroupJoinRequest. */
+    @Column(name = "request_id")
+    private String requestId;
+
     @Column(name = "group_id")
     private String groupId;
 
     @Column(name = "group_name")
     private String groupName;
 
-    @Column(name = "group_icon")
+    @Column(name = "group_icon", columnDefinition = "text")
     private String groupIcon;
 
     @Column(name = "group_color")

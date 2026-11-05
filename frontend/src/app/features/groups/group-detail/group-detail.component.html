@@ -27,8 +27,9 @@
             [proposals]="groupProposals()" />
         </div>
 
-        <!-- Colonna destra: Membri -->
+        <!-- Colonna destra: richieste di accesso (admin) + Membri -->
         <div class="right-col">
+          <app-group-join-requests [groupId]="g.id" [isAdmin]="isCurrentUserAdmin()" />
 
           <div class="section-card card">
             <div class="section-header">

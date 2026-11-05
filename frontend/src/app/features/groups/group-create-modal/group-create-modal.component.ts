@@ -4,8 +4,9 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { GroupService } from '../../../core/services/group.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { AuthService } from '../../../core/services/auth.service';
 import { Group } from '../../../core/models/group.model';
+import { PublicUser } from '../../../core/models/invite.model';
+import { ToastService } from '../../../core/services/toast.service';
 import { GroupIconPickerComponent } from './components/group-icon-picker/group-icon-picker.component';
 import { GroupInvitePickerComponent } from './components/group-invite-picker/group-invite-picker.component';
 
@@ -27,13 +28,12 @@ export class GroupCreateModalComponent {
   private readonly fb = inject(FormBuilder);
   private readonly groupService = inject(GroupService);
   private readonly notificationService = inject(NotificationService);
-  private readonly authService = inject(AuthService);
+  private readonly toastService = inject(ToastService);
 
   readonly isEditMode = computed(() => !!this.group());
 
   readonly icon = signal('');
-  readonly inviteSearch = signal('');
-  readonly invitedUsers = signal<string[]>([]);
+  readonly invitedUsers = signal<PublicUser[]>([]);
 
   readonly groupForm = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(3)]],
@@ -53,20 +53,15 @@ export class GroupCreateModalComponent {
           this.groupForm.reset({ name: '', description: '' });
         }
         this.iconPicker()?.reset();
-        this.inviteSearch.set('');
         this.invitedUsers.set([]);
       });
     });
   }
 
-  private isImageIcon(icon: string): boolean {
-    return icon.startsWith('data:') || icon.startsWith('http') || icon.startsWith('blob:');
-  }
 
   onClose(): void {
     this.icon.set('');
     this.iconPicker()?.reset();
-    this.inviteSearch.set('');
     this.invitedUsers.set([]);
     this.groupForm.reset({ name: '', description: '' });
     this.closeModal.emit();
@@ -75,14 +70,9 @@ export class GroupCreateModalComponent {
   onSubmit(): void {
     if (this.groupForm.invalid) return;
     const val = this.groupForm.value;
-    const me = this.authService.currentUser();
     const icon = this.icon() || '✈️';
-    const safeIcon = this.isImageIcon(icon) ? '🌍' : icon;
     const group = this.group();
-
-    let groupId: string;
-    let groupName: string;
-    let groupColor: string;
+    const invited = this.invitedUsers();
 
     if (group) {
       this.groupService.updateGroup(group.id, {
@@ -91,29 +81,26 @@ export class GroupCreateModalComponent {
         icon,
         color: group.color
       });
-      groupId = group.id;
-      groupName = val.name!;
-      groupColor = group.color;
+      this.sendInvites(group.id, invited);
     } else {
-      const newGroup = this.groupService.createGroup({
-        name: val.name!,
-        description: val.description || '',
-        icon,
-        color: '#4f46e5'
-      });
-      groupId = newGroup.id;
-      groupName = newGroup.name;
-      groupColor = newGroup.color;
-    }
-
-    const invitedIds = this.invitedUsers();
-    if (invitedIds.length > 0 && me) {
-      const notifGroup = { id: groupId, name: groupName, icon: safeIcon, color: groupColor };
-      invitedIds.forEach(userId =>
-        this.notificationService.sendGroupInvite(userId, me.name, notifGroup)
+      // Gli inviti partono quando il backend ha salvato il gruppo: serve il suo id definitivo.
+      this.groupService.createGroup(
+        { name: val.name!, description: val.description || '', icon, color: '#4f46e5' },
+        created => this.sendInvites(created.id, invited)
       );
     }
 
     this.onClose();
+  }
+
+  private sendInvites(groupId: string, users: PublicUser[]): void {
+    users.forEach(user =>
+      this.notificationService.sendGroupInvite(user.id, groupId).subscribe({
+        error: err => this.toastService.error(err.error?.message || `Non è stato possibile invitare ${user.name}.`)
+      })
+    );
+    if (users.length > 0) {
+      this.toastService.success(users.length === 1 ? `Invito inviato a ${users[0].name}.` : `${users.length} inviti inviati.`);
+    }
   }
 }

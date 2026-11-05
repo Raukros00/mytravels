@@ -143,6 +143,14 @@
     "form_save": "Salva modifiche",
     "form_create": "Crea gruppo",
     "form_pick_image": "Carica immagine",
-    "form_pick_emoji": "Scegli emoji"
+    "form_pick_emoji": "Scegli emoji",
+    "share_link_label": "Link di invito",
+    "share_link_hint": "Chi apre il link vede il gruppo e può chiedere di entrare: un admin dovrà approvare la richiesta.",
+    "share_copy_link": "Copia link",
+    "share_copy_code": "Copia codice",
+    "share_native": "Condividi",
+    "join_requests_title": "Richieste di accesso",
+    "join_requests_approve": "Accetta",
+    "join_requests_decline": "Rifiuta"
   }
 }

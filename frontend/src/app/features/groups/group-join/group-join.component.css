@@ -1,0 +1,131 @@
+.join-container {
+  display: flex;
+  justify-content: center;
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+}
+
+.join-card {
+  width: 100%;
+  max-width: 480px;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.join-group-icon {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 3px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 2.6rem;
+}
+
+.join-group-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.join-eyebrow {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--wb-text-tertiary);
+}
+
+.join-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--wb-text-primary);
+}
+
+.join-desc,
+.join-muted,
+.join-question {
+  margin: 0;
+  color: var(--wb-text-secondary);
+  line-height: 1.5;
+}
+
+.join-members {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--wb-text-secondary);
+}
+
+.join-members .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.join-question {
+  margin-top: 0.75rem;
+}
+
+.join-actions {
+  display: flex;
+  gap: 0.6rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.join-actions > * {
+  flex: 1;
+  justify-content: center;
+}
+
+.join-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--wb-radius-md);
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.join-status .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.join-status--ok {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.join-status--pending {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.join-status--declined {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.join-error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 0.875rem;
+}
+
+.join-state-icon {
+  font-size: 48px;
+  color: var(--wb-text-tertiary);
+}

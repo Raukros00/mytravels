@@ -49,6 +49,10 @@ export class NavbarComponent {
     this.isNotifPanelOpen.set(false);
   }
 
+  isImageIcon(icon?: string): boolean {
+    return !!icon && (icon.startsWith('data:') || icon.startsWith('http'));
+  }
+
   toggleNotifPanel(event: MouseEvent): void {
     event.stopPropagation();
     this.isNotifPanelOpen.update(v => !v);
