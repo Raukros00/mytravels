@@ -253,6 +253,9 @@ export class TripDetailComponent {
     if (t?.accommodation?.coordinates) {
       return [t.accommodation.coordinates.lat, t.accommodation.coordinates.lng];
     }
+    if (t?.destinationLat != null && t?.destinationLng != null) {
+      return [t.destinationLat, t.destinationLng];
+    }
     const dest = t?.destination.toLowerCase() ?? '';
     if (dest.includes('roma')) return [41.9028, 12.4964];
     if (dest.includes('tokyo')) return [35.6762, 139.6503];

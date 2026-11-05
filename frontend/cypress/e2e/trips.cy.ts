@@ -184,9 +184,10 @@ describe('Viaggi – creazione', () => {
     cy.intercept('POST', '/api/v1/trips').as('create');
 
     cy.get('#title').type(title);
-    cy.get('#destination').type('Lisbona');
-    cy.wait('@covers').its('request.query.q').should('eq', 'Lisbona');
-    cy.contains('.form-label', 'Copertine per Lisbona').should('be.visible');
+    // Testo libero (senza scegliere dai suggerimenti): le copertine si cercano uscendo dal campo.
+    cy.get('#destination').type('Siviglia').blur();
+    cy.wait('@covers').its('request.query.q').should('eq', 'Siviglia');
+    cy.contains('.form-label', 'Copertine per Siviglia').should('be.visible');
     cy.get('.cover-suggestion').should('have.length', 3);
     cy.contains('.cover-credit', 'Foto da').find('a').should('have.attr', 'href').and('contain', 'unsplash.com');
 
@@ -213,7 +214,7 @@ describe('Viaggi – creazione', () => {
     const title = uniq('E2E Preset dopo suggerimento');
     cy.intercept('POST', '/api/v1/trips').as('create');
     cy.get('#title').type(title);
-    cy.get('#destination').type('Porto');
+    cy.get('#destination').type('Porto').blur();
     cy.get('.cover-suggestion').first().click();
     cy.get('.preset-item:not(.cover-suggestion)').eq(2).click();
     cy.contains('.cover-credit', 'Foto da').should('be.visible');
@@ -224,6 +225,95 @@ describe('Viaggi – creazione', () => {
     });
     cy.contains('h1', title).should('be.visible');
     cy.get('.hero-cover-credit').should('not.exist');
+  });
+
+  it('suggerisce le città mentre si scrive: "Zurigo" compila la nazione e cerca le copertine come "Zürich"', () => {
+    const title = uniq('E2E Zurigo');
+    cy.intercept('GET', '/api/v1/places/search*').as('places');
+    cy.intercept('GET', '/api/v1/covers/search*').as('covers');
+    cy.intercept('POST', '/api/v1/trips').as('create');
+
+    cy.get('#title').type(title);
+    cy.get('#country').clear();
+    cy.get('#destination').type('Zur');
+    cy.wait('@places').its('request.query.q').should('eq', 'Zur');
+    cy.get('#destination').should('have.attr', 'aria-expanded', 'true');
+    cy.get('[role="listbox"] [role="option"]').should('have.length', 1).first()
+      .should('contain.text', 'Zurigo').and('contain.text', 'Svizzera').click();
+
+    cy.get('#destination').should('have.value', 'Zurigo').and('have.attr', 'aria-expanded', 'false');
+    cy.get('#country').should('have.value', 'Svizzera');
+    cy.contains('.place-picked', 'Zurigo · Svizzera').should('be.visible');
+    // Le copertine si cercano con il nome internazionale: in italiano Unsplash non trovava nulla.
+    cy.wait('@covers').its('request.query.q').should('eq', 'Zürich');
+    cy.contains('.form-label', 'Copertine per Zurigo').should('be.visible');
+
+    cy.contains('button', 'Crea Viaggio').click();
+    cy.wait('@create').its('request.body').should(body => {
+      expect(body).to.include({ destination: 'Zurigo', country: 'Svizzera', destinationPlaceId: '2657896', destinationIntlName: 'Zürich' });
+      expect(body.destinationLat).to.be.closeTo(47.37, 0.01);
+      expect(body.destinationLng).to.be.closeTo(8.55, 0.01);
+    });
+    cy.contains('h1', title).should('be.visible');
+    cy.location('pathname').then(path => {
+      cy.apiUntil('admin', `/api/v1/trips/${path.split('/').pop()}`, t =>
+        expect(t).to.include({ destination: 'Zurigo', destinationIntlName: 'Zürich', destinationLat: 47.36667 }));
+    });
+  });
+
+  it('le città si scelgono anche da tastiera', () => {
+    cy.get('#destination').type('Mon');
+    cy.get('[role="option"]').should('have.length', 2);
+    cy.get('#destination').type('{downarrow}');
+    cy.get('#destination').should('have.attr', 'aria-activedescendant', 'destination-option-1');
+    cy.get('#destination-option-1').should('have.attr', 'aria-selected', 'true').and('contain.text', 'Principato di Monaco');
+    cy.get('#destination').type('{uparrow}{enter}');
+    cy.get('#destination').should('have.value', 'Monaco di Baviera');
+    cy.get('#country').should('have.value', 'Germania');
+    // Invio ha scelto la città, non ha inviato il form.
+    cy.location('pathname').should('eq', '/trips/new');
+
+    cy.get('#destination').clear().type('Lis');
+    cy.get('[role="option"]').should('have.length', 1);
+    cy.get('#destination').type('{esc}');
+    cy.get('[role="listbox"]').should('not.exist');
+  });
+
+  it('modificando la città scelta si torna al testo libero', () => {
+    cy.intercept('POST', '/api/v1/trips').as('create');
+    cy.get('#title').type(uniq('E2E Testo libero'));
+    cy.get('#destination').type('Ginev');
+    cy.contains('[role="option"]', 'Ginevra').click();
+    cy.contains('.place-picked', 'Ginevra').should('be.visible');
+    cy.get('#destination').type(' e dintorni');
+    cy.get('.place-picked').should('not.exist');
+    cy.contains('button', 'Crea Viaggio').click();
+    cy.wait('@create').its('request.body').should(body => {
+      expect(body.destination).to.eq('Ginevra e dintorni');
+      expect(body.destinationPlaceId).to.be.null;
+      expect(body.destinationLat).to.be.null;
+    });
+  });
+
+  it('una città che non è tra i suggerimenti si può comunque scrivere', () => {
+    cy.intercept('POST', '/api/v1/trips').as('create');
+    cy.get('#title').type(uniq('E2E Paesino'));
+    cy.get('#destination').type('Borgo Sconosciuto');
+    cy.wait(500);
+    cy.get('[role="listbox"]').should('not.exist');
+    cy.contains('button', 'Crea Viaggio').click();
+    cy.wait('@create').its('request.body.destination').should('eq', 'Borgo Sconosciuto');
+  });
+
+  it('non cerca copertine per il testo a metà mentre si sceglie la città', () => {
+    cy.intercept('GET', '/api/v1/covers/search*', cy.spy().as('covers'));
+    cy.intercept('GET', '/api/v1/places/search*').as('places');
+    cy.get('#destination').type('Monac');
+    cy.wait('@places');
+    cy.wait(800);
+    cy.get('@covers').should('not.have.been.called');
+    cy.contains('[role="option"]', 'Monaco di Baviera').click();
+    cy.get('@covers').should('have.been.calledOnce');
   });
 
   it('con meno di 3 caratteri non cerca copertine', () => {

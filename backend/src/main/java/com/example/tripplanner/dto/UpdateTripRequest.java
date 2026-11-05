@@ -20,6 +20,10 @@ public class UpdateTripRequest {
     private String coverUrl;
     private String coverCreditName;
     private String coverCreditUrl;
+    private String destinationPlaceId;
+    private String destinationIntlName;
+    private Double destinationLat;
+    private Double destinationLng;
     private String status;
     private String decision;
     private String proposedBy;

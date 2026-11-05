@@ -52,12 +52,45 @@
         <div class="form-grid-2">
           <div class="form-group">
             <label class="form-label" for="destination">Città / Destinazione *</label>
-            <input 
-              type="text" 
-              id="destination" 
-              formControlName="destination" 
-              class="form-input" 
-              placeholder="Es. Napoli, Barcellona, Tokyo...">
+            <div class="place-field">
+              <input
+                type="text"
+                id="destination"
+                formControlName="destination"
+                class="form-input"
+                autocomplete="off"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-controls="destination-options"
+                [attr.aria-expanded]="placeListOpen()"
+                [attr.aria-activedescendant]="placeListOpen() && placeActive() >= 0 ? 'destination-option-' + placeActive() : null"
+                placeholder="Es. Napoli, Barcellona, Zurigo..."
+                (keydown)="onDestinationKeydown($event)"
+                (focus)="onDestinationFocus()"
+                (blur)="onDestinationBlur()">
+              @if (placeListOpen()) {
+                <ul class="place-list" id="destination-options" role="listbox" aria-label="Città suggerite">
+                  @for (p of placeResults(); track p.id; let i = $index) {
+                    <li class="place-option" role="option"
+                      [id]="'destination-option-' + i"
+                      [class.place-option--active]="i === placeActive()"
+                      [attr.aria-selected]="i === placeActive()"
+                      (mousedown)="$event.preventDefault(); selectPlace(p)"
+                      (mouseenter)="placeActive.set(i)">
+                      <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+                      <span class="place-option-text">
+                        <strong>{{ p.name }}</strong>
+                        <small>{{ p.region && p.region !== p.name ? p.region + ' · ' : '' }}{{ p.country }}</small>
+                      </span>
+                    </li>
+                  }
+                  <li class="place-attribution" aria-hidden="true">Città da <a [href]="geonamesLink" target="_blank" rel="noopener" tabindex="-1">GeoNames</a></li>
+                </ul>
+              }
+            </div>
+            @if (selectedPlace(); as p) {
+              <span class="place-picked"><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>{{ p.name }} · {{ p.country }}</span>
+            }
             @if (tripForm.get('destination')?.touched && tripForm.get('destination')?.invalid) {
               <span class="form-error">La destinazione è obbligatoria.</span>
             }

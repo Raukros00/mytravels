@@ -42,6 +42,12 @@ unsplash:
   access-key: ${UNSPLASH_ACCESS_KEY:}
   api-url: ${UNSPLASH_API_URL:https://api.unsplash.com}
 
+geonames:
+  # Suggerimenti di città (account gratuito su geonames.org con i "free web services" attivi).
+  # Senza username la destinazione resta un campo di testo libero.
+  username: ${GEONAMES_USERNAME:}
+  api-url: ${GEONAMES_API_URL:https://secure.geonames.org}
+
 jwt:
   # Obbligatorio: almeno 32 caratteri, diverso per ogni ambiente (es. `openssl rand -hex 32`).
   secret: ${JWT_SECRET}
