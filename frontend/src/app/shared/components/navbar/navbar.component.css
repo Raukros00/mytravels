@@ -411,6 +411,10 @@
   font-size: 0.7rem;
   font-weight: 600;
   transition: color 150ms;
+  /* Voci sempre larghe uguali: senza, finché il font delle icone non è caricato il nome
+     dell'icona ("travel_explore") allarga la voce e spinge le ultime contro il bordo. */
+  min-width: 0;
+  overflow: hidden;
 }
 
 .wb-nav-item.active-nav {
@@ -502,4 +506,11 @@ button.wb-nav-item {
   margin: 0;
   color: var(--wb-text-secondary);
   line-height: 1.5;
+}
+
+/* Margini laterali (anche per le aree sicure dell'iPhone in orizzontale): le voci ai lati
+   non toccano più il bordo dello schermo. */
+.wb-nav-bar {
+  padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+  padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
 }

@@ -1,7 +1,7 @@
 <!-- WanderBite Top Header -->
 <!-- Su mobile resta solo il logo al centro e l'header si nasconde scorrendo verso il basso:
      navigazione e account sono nella barra in basso. -->
-<header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl shadow-[0_2px_12px_rgba(78,42,29,0.05)] transition-transform duration-300 md:translate-y-0"
+<header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl md:shadow-[0_2px_12px_rgba(78,42,29,0.05)] transition-transform duration-300 md:translate-y-0"
   [class.-translate-y-full]="headerHidden()">
   <div class="h-16 px-gutter md:px-16 flex items-center justify-center md:justify-between gap-space-md">
     <!-- Logo -->
@@ -120,7 +120,7 @@
 <!-- Mobile Bottom Navigation (hidden on desktop) -->
 <nav class="md:hidden fixed bottom-0 inset-x-0 z-50 bg-surface/95 backdrop-blur-xl border-t border-outline-variant/30 pb-safe shadow-[0_-4px_20px_rgba(78,42,29,0.06)]"
   aria-label="Navigazione">
-  <div class="flex items-stretch h-16">
+  <div class="wb-nav-bar flex items-stretch h-16">
     <a routerLink="/explore" routerLinkActive="active-nav" class="wb-nav-item" #exploreLink="routerLinkActive">
       <span class="material-symbols-outlined text-[24px]" [style.font-variation-settings]="exploreLink.isActive ? '\'FILL\' 1' : '\'FILL\' 0'">travel_explore</span>
       <span>Esplora</span>
