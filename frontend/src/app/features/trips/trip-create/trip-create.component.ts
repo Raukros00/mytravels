@@ -1,12 +1,13 @@
 import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, debounceTime, distinctUntilChanged, map, of, switchMap, tap } from 'rxjs';
+import { Subject, catchError, debounceTime, distinctUntilChanged, map, of, switchMap, tap } from 'rxjs';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TripService } from '../../../core/services/trip.service';
 import { GroupService } from '../../../core/services/group.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { CoverService, CoverSuggestion, UNSPLASH_LINK } from '../../../core/services/cover.service';
+import { GEONAMES_LINK, Place, PlaceService } from '../../../core/services/place.service';
 
 interface CoverPreset {
   title: string;
@@ -35,6 +36,19 @@ export class TripCreateComponent {
   protected readonly coverQuery = signal('');
   protected readonly coversLoading = signal(false);
   protected readonly unsplashLink = UNSPLASH_LINK;
+
+  /** Suggerimenti di città per la destinazione (GeoNames, tramite backend). */
+  private places = inject(PlaceService);
+  protected readonly geonamesLink = GEONAMES_LINK;
+  protected readonly placeResults = signal<Place[]>([]);
+  protected readonly placeListOpen = signal(false);
+  protected readonly placeActive = signal(-1);
+  /** null finché non si sa se il backend ha i suggerimenti di città (GeoNames) attivi. */
+  private readonly placesEnabled = signal<boolean | null>(null);
+  /** Città scelta dall'elenco; null se la destinazione è testo libero. */
+  protected readonly selectedPlace = signal<Place | null>(null);
+  /** Testo con cui cercare le copertine: il nome internazionale se la città è stata scelta. */
+  private readonly coverTerm$ = new Subject<{ label: string; term: string }>();
   /** Gruppo da cui si arriva ("Nuovo viaggio" dal dettaglio gruppo: /trips/new?groupId=...). */
   private requestedGroupId = this.route.snapshot.queryParamMap.get('groupId');
   private toastService = inject(ToastService);
@@ -98,18 +112,47 @@ export class TripCreateComponent {
   );
 
   constructor() {
-    // Suggerimenti di copertina mentre si scrive la destinazione (dopo una breve pausa).
-    this.tripForm.controls.destination.valueChanges.pipe(
-      map(v => (v ?? '').trim()),
-      debounceTime(500),
+    const destination$ = this.tripForm.controls.destination.valueChanges.pipe(map(v => (v ?? '').trim()));
+
+    // Modificare il testo dopo aver scelto una città torna al testo libero.
+    destination$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(text => {
+      const picked = this.selectedPlace();
+      if (picked && text !== picked.name) this.selectedPlace.set(null);
+      // Con i suggerimenti di città attivi le copertine aspettano la scelta (o l'uscita dal campo):
+      // cercare "Mon" mentre si scrive "Monaco" sprecherebbe la quota Unsplash.
+      if (!this.selectedPlace() && this.placesEnabled() === false) this.coverTerm$.next({ label: text, term: text });
+    });
+
+    // Suggerimenti di città mentre si scrive.
+    destination$.pipe(
+      debounceTime(300),
       distinctUntilChanged(),
-      tap(q => {
-        this.coverQuery.set(q.length >= 3 ? q : '');
-        this.coversLoading.set(q.length >= 3);
-      }),
-      switchMap(q => q.length < 3
+      switchMap(q => q.length < 2 || this.selectedPlace()?.name === q
         ? of(null)
-        : this.covers.search(q).pipe(catchError(() => of(null)))),
+        : this.places.search(q).pipe(catchError(() => of(null)))),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(res => {
+      if (res && this.placesEnabled() === null) {
+        this.placesEnabled.set(res.enabled);
+        if (!res.enabled) this.searchCoversForText();
+      }
+      const list = res?.enabled ? res.results : [];
+      this.placeResults.set(list);
+      this.placeActive.set(list.length ? 0 : -1);
+      this.placeListOpen.set(list.length > 0 && document.activeElement?.id === 'destination');
+    });
+
+    // Copertine suggerite (dopo una breve pausa), con il nome internazionale se c'è.
+    this.coverTerm$.pipe(
+      debounceTime(500),
+      distinctUntilChanged((a, b) => a.term === b.term),
+      tap(({ label, term }) => {
+        this.coverQuery.set(term.length >= 3 ? label : '');
+        this.coversLoading.set(term.length >= 3);
+      }),
+      switchMap(({ term }) => term.length < 3
+        ? of(null)
+        : this.covers.search(term).pipe(catchError(() => of(null)))),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(res => {
       this.coversLoading.set(false);
@@ -150,6 +193,55 @@ export class TripCreateComponent {
     return isImage || !icon ? group.name : `${icon} ${group.name}`;
   }
 
+  /** Sceglie una città dall'elenco: compila destinazione e nazione e cerca le copertine. */
+  selectPlace(place: Place): void {
+    this.selectedPlace.set(place);
+    this.tripForm.patchValue({ destination: place.name, country: place.country });
+    this.placeListOpen.set(false);
+    this.coverTerm$.next({ label: place.name, term: place.intlName || place.name });
+  }
+
+  /** Tastiera del combobox: frecce per muoversi, Invio per scegliere, Esc per chiudere. */
+  onDestinationKeydown(event: KeyboardEvent): void {
+    const list = this.placeResults();
+    if (!list.length) return;
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.placeListOpen.set(true);
+        this.placeActive.update(i => Math.min(list.length - 1, i + 1));
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.placeActive.update(i => Math.max(0, i - 1));
+        break;
+      case 'Enter':
+        if (this.placeListOpen() && this.placeActive() >= 0) {
+          event.preventDefault(); // non inviare il form
+          this.selectPlace(list[this.placeActive()]);
+        }
+        break;
+      case 'Escape':
+        this.placeListOpen.set(false);
+        break;
+    }
+  }
+
+  /** Uscendo dal campo con una destinazione a testo libero, si cercano le copertine per quel testo. */
+  onDestinationBlur(): void {
+    this.placeListOpen.set(false);
+    if (!this.selectedPlace()) this.searchCoversForText();
+  }
+
+  private searchCoversForText(): void {
+    const text = (this.tripForm.controls.destination.value ?? '').trim();
+    this.coverTerm$.next({ label: text, term: text });
+  }
+
+  onDestinationFocus(): void {
+    if (this.placeResults().length && !this.selectedPlace()) this.placeListOpen.set(true);
+  }
+
   selectSuggestion(cover: CoverSuggestion): void {
     this.tripForm.patchValue({ coverUrl: cover.url });
   }
@@ -175,6 +267,7 @@ export class TripCreateComponent {
 
     const val = this.tripForm.value;
     const suggestion = this.selectedSuggestion();
+    const place = this.selectedPlace();
     if (suggestion) this.covers.trackDownload(suggestion.downloadLocation);
     const created = this.tripService.createTrip({
       groupId: val.groupId!,
@@ -186,6 +279,10 @@ export class TripCreateComponent {
       coverUrl: val.coverUrl || this.coverPresets[0].url,
       coverCreditName: suggestion?.authorName ?? null,
       coverCreditUrl: suggestion?.authorUrl ?? null,
+      destinationPlaceId: place?.id ?? null,
+      destinationIntlName: place?.intlName ?? null,
+      destinationLat: place?.lat ?? null,
+      destinationLng: place?.lng ?? null,
       budgetEstimate: Number(val.budgetEstimate) || 0,
       currency: val.currency || 'EUR',
       tags: this.tagsList(),

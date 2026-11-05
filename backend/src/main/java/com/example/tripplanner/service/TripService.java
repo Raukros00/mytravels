@@ -55,6 +55,10 @@ public class TripService {
                         : "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80")
                 .coverCreditName(request.getCoverCreditName())
                 .coverCreditUrl(request.getCoverCreditUrl())
+                .destinationPlaceId(request.getDestinationPlaceId())
+                .destinationIntlName(request.getDestinationIntlName())
+                .destinationLat(request.getDestinationLat())
+                .destinationLng(request.getDestinationLng())
                 .status("planning")
                 .decision(decision)
                 .proposedBy(request.getProposedBy())
@@ -90,7 +94,14 @@ public class TripService {
     public Optional<Trip> updateTrip(String id, UpdateTripRequest request) {
         return tripRepository.findById(id).map(existing -> {
             if (request.getTitle() != null)       existing.setTitle(request.getTitle().trim());
-            if (request.getDestination() != null) existing.setDestination(request.getDestination().trim());
+            if (request.getDestination() != null) {
+                existing.setDestination(request.getDestination().trim());
+                // Il luogo (id, nome internazionale, coordinate) segue la destinazione: testo libero = nessun luogo.
+                existing.setDestinationPlaceId(request.getDestinationPlaceId());
+                existing.setDestinationIntlName(request.getDestinationIntlName());
+                existing.setDestinationLat(request.getDestinationLat());
+                existing.setDestinationLng(request.getDestinationLng());
+            }
             if (request.getCountry() != null)     existing.setCountry(request.getCountry().trim());
             if (request.getStartDate() != null)   existing.setStartDate(request.getStartDate());
             if (request.getEndDate() != null)     existing.setEndDate(request.getEndDate());
