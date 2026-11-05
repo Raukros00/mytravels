@@ -1,6 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal, untracked } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TripService } from '../../../core/services/trip.service';
 import { GroupService } from '../../../core/services/group.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -23,6 +23,9 @@ export class TripCreateComponent {
   private router = inject(Router);
   public tripService = inject(TripService);
   public groupService = inject(GroupService);
+  private route = inject(ActivatedRoute);
+  /** Gruppo da cui si arriva ("Nuovo viaggio" dal dettaglio gruppo: /trips/new?groupId=...). */
+  private requestedGroupId = this.route.snapshot.queryParamMap.get('groupId');
   private toastService = inject(ToastService);
 
   public currentTag = signal('');
@@ -62,24 +65,52 @@ export class TripCreateComponent {
   ];
 
   public tripForm = this.fb.group({
-    groupId: [this.groupService.activeGroupId() || this.groupService.userGroups()[0]?.id || '', Validators.required],
+    groupId: [this.defaultGroupId(), Validators.required],
     title: ['', [Validators.required, Validators.minLength(3)]],
     destination: ['', Validators.required],
     country: ['Italia', Validators.required],
     startDate: [new Date().toISOString().split('T')[0], Validators.required],
     endDate: [new Date(Date.now() + 4 * 86400000).toISOString().split('T')[0], Validators.required],
     budgetEstimate: [500],
-    currency: [this.groupService.getGroupById(this.groupService.activeGroupId() || this.groupService.userGroups()[0]?.id || '')?.currency || 'EUR'],
+    currency: [this.groupService.getGroupById(this.defaultGroupId())?.currency || 'EUR'],
     coverUrl: [this.coverPresets[0].url, Validators.required],
     notes: [''],
     asProposal: [false]
   });
 
   constructor() {
+    // I gruppi possono arrivare dopo l'apertura della pagina: appena ci sono, se il gruppo
+    // selezionato non è valido scelgo quello richiesto (o l'attivo, o il primo).
+    effect(() => {
+      const ids = this.groupService.userGroups().map(g => g.id);
+      untracked(() => {
+        const current = this.tripForm.controls.groupId.value;
+        if (ids.length && (!current || !ids.includes(current))) {
+          this.tripForm.controls.groupId.setValue(this.defaultGroupId());
+        }
+      });
+    });
+
     this.tripForm.controls.groupId.valueChanges.subscribe(id => {
       const currency = this.groupService.getGroupById(id ?? '')?.currency;
       if (currency) this.tripForm.patchValue({ currency });
     });
+  }
+
+  /** Gruppo da preselezionare: quello da cui si arriva, se è tra i propri; altrimenti l'attivo o il primo. */
+  private defaultGroupId(): string {
+    const ids = this.groupService.userGroups().map(g => g.id);
+    if (this.requestedGroupId && ids.includes(this.requestedGroupId)) return this.requestedGroupId;
+    const active = this.groupService.activeGroupId();
+    if (active && ids.includes(active)) return active;
+    return ids[0] ?? '';
+  }
+
+  /** Le icone foto (data URL) non si possono mostrare in un <option>: lì resta solo il nome. */
+  groupOptionLabel(group: { icon?: string; name: string }): string {
+    const icon = group.icon ?? '';
+    const isImage = icon.startsWith('data:') || icon.startsWith('http') || icon.startsWith('blob:');
+    return isImage || !icon ? group.name : `${icon} ${group.name}`;
   }
 
   addTag(event?: Event): void {
