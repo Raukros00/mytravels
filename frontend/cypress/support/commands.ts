@@ -33,8 +33,11 @@ declare global {
       me(user: UserRef): Chainable<any>;
       /** Crea un gruppo via API (l'utente ne è creatore e admin). */
       createGroup(user: UserRef, name: string, extra?: Record<string, unknown>): Chainable<any>;
-      /** L'utente entra nel gruppo usando il codice invito, via API. */
-      joinGroup(user: UserRef, inviteCode: string): Chainable<any>;
+      /**
+       * L'utente entra nel gruppo con il codice invito, via API: invia la richiesta di accesso
+       * e `approver` (un admin del gruppo, di solito chi l'ha creato) la approva.
+       */
+      joinGroup(user: UserRef, inviteCode: string, approver?: UserRef): Chainable<any>;
       /** Toast visibile con il testo indicato. */
       toast(text: string | RegExp): Chainable<JQuery<HTMLElement>>;
       /** Modale aperta (role=dialog) con il titolo indicato. */
@@ -141,15 +144,9 @@ Cypress.Commands.add('createGroup', (user: UserRef, name: string, extra: Record<
   );
 });
 
-Cypress.Commands.add('joinGroup', (user: UserRef, inviteCode: string) => {
-  return cy.me(user).then(me =>
-    cy.api(user, 'POST', '/api/v1/groups/join', {
-      inviteCode,
-      userId: me.id,
-      userName: me.name,
-      avatar: me.avatar,
-      color: me.color,
-    }),
+Cypress.Commands.add('joinGroup', (user: UserRef, inviteCode: string, approver: UserRef = 'admin') => {
+  return cy.api<any>(user, 'POST', `/api/v1/groups/invite/${inviteCode}/request`).then(request =>
+    cy.api(approver, 'POST', `/api/v1/groups/${request.groupId}/join-requests/${request.id}/approve`),
   );
 });
 
