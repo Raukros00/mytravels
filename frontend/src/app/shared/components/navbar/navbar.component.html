@@ -1,8 +1,7 @@
 <!-- WanderBite Top Header -->
-<!-- Su mobile resta solo il logo al centro e l'header si nasconde scorrendo verso il basso:
+<!-- Su mobile resta solo il logo al centro (header sempre fisso):
      navigazione e account sono nella barra in basso. -->
-<header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl md:shadow-[0_2px_12px_rgba(78,42,29,0.05)] transition-transform duration-300 md:translate-y-0"
-  [class.-translate-y-full]="headerHidden()">
+<header class="wb-header fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl md:shadow-[0_2px_12px_rgba(78,42,29,0.05)]">
   <div class="h-16 px-gutter md:px-16 flex items-center justify-center md:justify-between gap-space-md">
     <!-- Logo -->
     <a [routerLink]="authService.isAuthenticated() ? '/trips' : '/explore'" class="flex items-center gap-space-sm no-underline shrink-0">

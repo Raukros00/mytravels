@@ -2,7 +2,7 @@
   flex: 1;
   min-height: calc(100vh - 160px);
   min-height: calc(100dvh - 160px);
-  padding-top: 64px;
+  padding-top: calc(64px + env(safe-area-inset-top, 0px));
 }
 
 .app-footer {
@@ -45,9 +45,10 @@
   }
 }
 
-/* Su mobile la barra di navigazione in basso copre gli ultimi 64px: spazio per non nascondere il footer. */
+/* Su mobile la barra di navigazione in basso (64px + spazio inferiore) copre il fondo pagina:
+   spazio per non nascondere il footer. */
 @media (max-width: 767px) {
   .app-footer {
-    padding-bottom: calc(2.5rem + 64px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(2.5rem + 64px + max(0.75rem, env(safe-area-inset-bottom, 0px)));
   }
 }

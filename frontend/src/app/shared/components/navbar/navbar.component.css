@@ -425,8 +425,10 @@
   text-decoration: none;
 }
 
+/* Spazio sotto le icone: almeno 0.75rem, di più sugli iPhone con la barra Home
+   (env() funziona grazie a viewport-fit=cover in index.html). */
 .pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
 }
 
 /* Le voci-pulsante (Profilo / Accedi) devono apparire identiche ai link della barra. */
@@ -513,4 +515,9 @@ button.wb-nav-item {
 .wb-nav-bar {
   padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
   padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
+}
+
+/* Con viewport-fit=cover l'header scende sotto la tacca/barra di stato quando serve. */
+.wb-header {
+  padding-top: env(safe-area-inset-top, 0px);
 }
