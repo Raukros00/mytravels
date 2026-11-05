@@ -6,9 +6,9 @@
       <span class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Wander<span class="text-primary">Bite</span></span>
     </a>
 
-    <!-- Desktop Nav Links -->
+    <!-- Nav Links: per i visitatori solo Esplora, visibile anche su mobile (non hanno la barra in basso) -->
     @if (!authService.isAuthenticated()) {
-      <nav class="hidden md:flex items-center gap-1">
+      <nav class="flex items-center gap-1" aria-label="Navigazione principale">
         <a routerLink="/explore" routerLinkActive="desktop-nav-active" class="desktop-nav-link no-underline">
           Esplora
         </a>
@@ -27,17 +27,18 @@
       </nav>
     }
 
-    <!-- Right: Lang switcher + User Avatar -->
-    @if (authService.isAuthenticated()) {
-      <div class="flex items-center gap-space-sm">
-        <!-- Language switcher -->
-        <button
-          type="button"
-          class="px-2 py-1 rounded-md font-mono text-xs font-bold tracking-widest text-on-surface-variant border border-outline-variant/50 hover:border-outline-variant transition-colors"
-          (click)="i18n.toggle(); $event.stopPropagation()"
-          [title]="i18n.currentLang() === 'it' ? 'Switch to English' : 'Passa all\'italiano'">
-          {{ i18n.currentLang() === 'it' ? 'EN' : 'IT' }}
-        </button>
+    <!-- Right: lingua (sempre) + notifiche e avatar, oppure l'utente anonimo che apre l'accesso -->
+    <div class="flex items-center gap-space-sm">
+      <!-- Language switcher -->
+      <button
+        type="button"
+        class="px-2 py-1 rounded-md font-mono text-xs font-bold tracking-widest text-on-surface-variant border border-outline-variant/50 hover:border-outline-variant transition-colors"
+        (click)="i18n.toggle(); $event.stopPropagation()"
+        [title]="i18n.currentLang() === 'it' ? 'Switch to English' : 'Passa all\'italiano'">
+        {{ i18n.currentLang() === 'it' ? 'EN' : 'IT' }}
+      </button>
+
+      @if (authService.isAuthenticated()) {
         <!-- Bell -->
         <div class="relative">
           <button
@@ -60,13 +61,18 @@
           [title]="authService.currentUser()?.name || 'Utente'">
           {{ authService.currentUser()?.name?.charAt(0)?.toUpperCase() || 'U' }}
         </button>
-      </div>
-    } @else {
-      <div class="flex items-center gap-space-sm">
-        <button type="button" (click)="authModal.open({ tab: 'login' })" class="px-3 py-1.5 rounded-full font-label-md text-label-md text-on-surface-variant border border-outline-variant transition-colors hover:text-on-surface">Accedi</button>
-        <button type="button" (click)="authModal.open({ tab: 'register' })" class="px-3 py-1.5 rounded-full font-label-md text-label-md bg-primary text-on-primary transition-all active:scale-95">Registrati</button>
-      </div>
-    }
+      } @else {
+        <!-- Utente anonimo: apre la modale di accesso / registrazione -->
+        <button
+          type="button"
+          class="w-9 h-9 rounded-full flex items-center justify-center min-w-[36px] min-h-[36px] bg-surface-container text-on-surface-variant border border-outline-variant/60 hover:border-outline-variant hover:text-on-surface active:scale-95 transition-all"
+          title="Accedi o registrati"
+          aria-label="Accedi o registrati"
+          (click)="authModal.open({ tab: 'login' })">
+          <span class="material-symbols-outlined text-[22px]">person</span>
+        </button>
+      }
+    </div>
   </div>
 
   <!-- Notification Panel -->
