@@ -60,16 +60,15 @@ describe('Mobile – header e barra in basso', () => {
       cy.get(sel).should($el => expect(parseFloat(getComputedStyle($el[0]).fontSize)).to.be.gte(16)));
   });
 
-  it('scorrendo l\'header resta fisso in alto', () => {
+  it('l\'header sta a inizio pagina: scorrendo non segue la pagina', () => {
     cy.visit('/trips');
     cy.get('.trip-card').should('have.length.greaterThan', 2);
     // Lo scroll della pagina è animato (scroll-behavior: smooth): si aspetta che arrivi a destinazione.
     cy.scrollTo(0, 900);
     cy.window().its('scrollY').should('be.gte', 600);
-    cy.wait(400); // eventuali transizioni
-    cy.get('header').should('be.visible').then($h => expect($h[0].getBoundingClientRect().top).to.eq(0));
-    cy.scrollTo(0, 300);
-    cy.window().its('scrollY').should('be.lte', 320);
+    cy.get('header').then($h => expect($h[0].getBoundingClientRect().bottom).to.be.lte(0));
+    cy.scrollTo(0, 0);
+    cy.window().its('scrollY').should('eq', 0);
     cy.get('header').then($h => expect($h[0].getBoundingClientRect().top).to.eq(0));
   });
 
