@@ -9,6 +9,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { CoverService, CoverSuggestion, UNSPLASH_LINK } from '../../../core/services/cover.service';
 import { GEONAMES_LINK, Place, PlaceService } from '../../../core/services/place.service';
 import { addDaysIso, todayIso } from '../../../core/utils/date.utils';
+import { dateRangeValidator } from '../../../core/utils/date-range.validator';
 
 interface CoverPreset {
   title: string;
@@ -102,7 +103,7 @@ export class TripCreateComponent {
     coverUrl: [this.coverPresets[0].url, Validators.required],
     notes: [''],
     asProposal: [false]
-  });
+  }, { validators: dateRangeValidator() });
 
   /** Copertina scelta tra i suggerimenti (null se è un preset o un URL personalizzato). */
   private readonly coverUrlValue = toSignal(this.tripForm.controls.coverUrl.valueChanges, {
@@ -261,6 +262,10 @@ export class TripCreateComponent {
   }
 
   onSubmit(): void {
+    if (this.tripForm.hasError('dateRange')) {
+      this.toastService.error('La data di fine non può precedere la data di inizio.');
+      return;
+    }
     if (this.tripForm.invalid) {
       this.toastService.error('Compila tutti i campi obbligatori.');
       return;

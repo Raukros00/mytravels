@@ -182,7 +182,18 @@ export class GroupService {
     const group = this.groupsSignal().find(g => g.id === groupId);
     if (!user || !group) return;
     const others = (group.mutedBy ?? []).filter(id => id !== user.id);
-    this.patchGroup(groupId, { mutedBy: muted ? [...others, user.id] : others });
+    this.setLocalMutedBy(groupId, muted ? [...others, user.id] : others);
+    // Endpoint dedicato: tocca solo l'utente autenticato, mai le preferenze degli altri membri.
+    this.apiService.post<Group>(`/api/v1/groups/${groupId}/mute`, { muted }).subscribe({
+      next: (saved) => this.setLocalMutedBy(groupId, saved?.mutedBy ?? []),
+      error: (err) => console.error('Error updating group mute:', err)
+    });
+  }
+
+  private setLocalMutedBy(groupId: string, mutedBy: string[]): void {
+    const updated = this.groupsSignal().map(g => g.id === groupId ? { ...g, mutedBy } : g);
+    this.groupsSignal.set(updated);
+    this.storageService.setGroups(updated);
   }
 
   public setCurrency(groupId: string, currency: string): void {

@@ -67,10 +67,12 @@ public class GroupController {
         return ResponseEntity.ok(groupService.getGroupsByUser(userId).stream().filter(g -> isMember(g, userId)).toList());
     }
 
+    /** Solo gli admin: nome, descrizione, icona, colore, valuta e archiviazione. */
     @PutMapping("/{id}")
-    public ResponseEntity<Group> updateGroup(@PathVariable String id, @RequestBody UpdateGroupRequest request,
-                                             Authentication authentication) {
-        if (memberGroup(id, authentication).isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    public ResponseEntity<?> updateGroup(@PathVariable String id, @RequestBody UpdateGroupRequest request,
+                                         Authentication authentication) {
+        ResponseEntity<?> denied = requireAdmin(id, authentication);
+        if (denied != null) return denied;
         Optional<Group> updated = groupService.updateGroup(id, request);
         return updated.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
@@ -120,13 +122,22 @@ public class GroupController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    /** Silenzia/riattiva il gruppo per l'utente autenticato. */
+    /**
+     * Silenzia/riattiva il gruppo solo per l'utente autenticato.
+     * Body opzionale {@code {"muted": true|false}}; senza body inverte lo stato attuale.
+     */
     @PostMapping("/{groupId}/mute")
-    public ResponseEntity<?> toggleMuteGroup(@PathVariable String groupId, Authentication authentication) {
+    public ResponseEntity<?> toggleMuteGroup(@PathVariable String groupId,
+                                             @RequestBody(required = false) Map<String, Object> body,
+                                             Authentication authentication) {
         Optional<User> me = currentUser(authentication);
         if (me.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         if (memberGroup(groupId, authentication).isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        Optional<Group> groupOpt = groupService.toggleMuteGroup(groupId, me.get().getId());
+        Object muted = body != null ? body.get("muted") : null;
+        if (muted != null && !(muted instanceof Boolean)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "muted deve essere true o false"));
+        }
+        Optional<Group> groupOpt = groupService.setGroupMuted(groupId, me.get().getId(), (Boolean) muted);
         return groupOpt.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
@@ -157,7 +168,7 @@ public class GroupController {
         String userId = me.get().getId();
         boolean admin = group.get().getMembers().stream()
                 .anyMatch(m -> userId.equals(m.getId()) && "admin".equalsIgnoreCase(m.getRole()));
-        return admin ? null : ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Only group admins can do this"));
+        return admin ? null : ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Solo gli amministratori del gruppo possono farlo"));
     }
 
     /** Membro = presente nella lista membri (il creatore che ha lasciato il gruppo non lo è più). */

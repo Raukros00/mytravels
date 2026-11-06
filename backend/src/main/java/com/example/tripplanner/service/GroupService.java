@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Service
 public class GroupService {
@@ -31,8 +32,36 @@ public class GroupService {
         this.tripRepository = tripRepository;
     }
 
+    /** Immagine del gruppo: data URL JPEG/PNG/WebP, come la foto profilo (il client invia un JPEG ritagliato). */
+    private static final Pattern IMAGE_ICON = Pattern.compile("^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$");
+    /** Limite ~300 KB di immagine, come per la foto profilo. */
+    static final int MAX_IMAGE_ICON_LENGTH = 400_000;
+    /** Un'emoji (anche composta, es. famiglie o bandiere) sta comodamente in 16 caratteri UTF-16. */
+    static final int MAX_EMOJI_ICON_LENGTH = 16;
+
+    /**
+     * L'icona è un'emoji (testo breve, mai un URL) oppure un'immagine data URL di dimensione limitata.
+     * Vuota/null = nessuna modifica (o icona di default alla creazione).
+     */
+    static void validateIcon(String icon) {
+        if (icon == null || icon.isBlank()) return;
+        if (icon.startsWith("data:")) {
+            if (icon.length() > MAX_IMAGE_ICON_LENGTH) {
+                throw new IllegalArgumentException("Immagine del gruppo troppo grande (massimo 300 KB)");
+            }
+            if (!IMAGE_ICON.matcher(icon).matches()) {
+                throw new IllegalArgumentException("Formato immagine del gruppo non valido: usa JPG, PNG o WebP");
+            }
+            return;
+        }
+        if (icon.length() > MAX_EMOJI_ICON_LENGTH || icon.contains(":") || icon.contains("/")) {
+            throw new IllegalArgumentException("Icona del gruppo non valida: usa un'emoji o un'immagine");
+        }
+    }
+
     @Transactional
     public Group createGroup(CreateGroupRequest request, String defaultUserId) {
+        validateIcon(request.getIcon());
         String creatorId = request.getCreatorId() != null && !request.getCreatorId().isBlank()
                 ? request.getCreatorId()
                 : defaultUserId;
@@ -100,6 +129,7 @@ public class GroupService {
 
     @Transactional
     public Optional<Group> updateGroup(String id, UpdateGroupRequest request) {
+        validateIcon(request.getIcon());
         return groupRepository.findById(id).map(existing -> {
             if (request.getName() != null && !request.getName().isBlank()) {
                 existing.setName(request.getName().trim());
@@ -118,10 +148,6 @@ public class GroupService {
             }
             if (request.getArchived() != null) {
                 existing.setArchived(request.getArchived());
-            }
-            if (request.getMutedBy() != null) {
-                existing.getMutedBy().clear();
-                existing.getMutedBy().addAll(request.getMutedBy());
             }
             return groupRepository.save(existing);
         });
@@ -186,12 +212,16 @@ public class GroupService {
         });
     }
 
+    /**
+     * Silenzia/riattiva il gruppo per un solo utente. {@code muted} null = inverte lo stato attuale,
+     * altrimenti imposta lo stato richiesto (idempotente).
+     */
     @Transactional
-    public Optional<Group> toggleMuteGroup(String groupId, String userId) {
+    public Optional<Group> setGroupMuted(String groupId, String userId, Boolean muted) {
         return groupRepository.findById(groupId).map(group -> {
-            if (group.getMutedBy().contains(userId)) {
-                group.getMutedBy().remove(userId);
-            } else {
+            boolean target = muted != null ? muted : !group.getMutedBy().contains(userId);
+            group.getMutedBy().remove(userId);
+            if (target) {
                 group.getMutedBy().add(userId);
             }
             return groupRepository.save(group);

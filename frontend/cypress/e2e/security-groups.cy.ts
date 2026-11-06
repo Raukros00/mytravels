@@ -56,6 +56,71 @@ describe('Sicurezza – accesso ai gruppi', () => {
     });
   });
 
+  it('solo un admin può modificare il gruppo: un membro riceve 403 e il gruppo non cambia', () => {
+    const name = uniq('E2E Modifica');
+    cy.createGroup('admin', name).then(group => {
+      cy.joinGroup('luca', group.inviteCode);
+      rawApi('luca', 'PUT', `/api/v1/groups/${group.id}`, { name: 'Rubato' }).its('status').should('eq', 403);
+      rawApi('luca', 'PUT', `/api/v1/groups/${group.id}`, { archived: true }).its('status').should('eq', 403);
+      rawApi('luca', 'PUT', `/api/v1/groups/${group.id}`, { currency: 'USD' }).its('status').should('eq', 403);
+      cy.api<any>('admin', 'GET', `/api/v1/groups/${group.id}`).then(g => {
+        expect(g.name).to.eq(name);
+        expect(g.archived).to.eq(false);
+        expect(g.currency).to.eq('EUR');
+      });
+      // L'admin invece può.
+      rawApi('admin', 'PUT', `/api/v1/groups/${group.id}`, { description: 'Aggiornata' }).then(res => {
+        expect(res.status).to.eq(200);
+        expect(res.body.description).to.eq('Aggiornata');
+      });
+    });
+  });
+
+  it('le notifiche silenziate degli altri non si cambiano: PUT ignora mutedBy, /mute tocca solo sé stessi', () => {
+    const name = uniq('E2E Muted');
+    cy.createGroup('admin', name).then(group => {
+      cy.joinGroup('luca', group.inviteCode);
+      cy.me('luca').then(luca => {
+        cy.me('admin').then(admin => {
+          // luca silenzia il gruppo per sé.
+          cy.api<any>('luca', 'POST', `/api/v1/groups/${group.id}/mute`, { muted: true })
+            .its('mutedBy').should('deep.eq', [luca.id]);
+          // L'admin prova a sovrascrivere mutedBy via PUT: il campo viene ignorato.
+          rawApi('admin', 'PUT', `/api/v1/groups/${group.id}`, { mutedBy: [admin.id] }).its('status').should('eq', 200);
+          cy.api<any>('admin', 'GET', `/api/v1/groups/${group.id}`).its('mutedBy').should('deep.eq', [luca.id]);
+          // /mute dell'admin non tocca lo stato di luca; muted esplicito è idempotente.
+          cy.api<any>('admin', 'POST', `/api/v1/groups/${group.id}/mute`, { muted: true })
+            .its('mutedBy').should('have.members', [luca.id, admin.id]);
+          cy.api<any>('admin', 'POST', `/api/v1/groups/${group.id}/mute`, { muted: true })
+            .its('mutedBy').should('have.length', 2);
+          cy.api<any>('admin', 'POST', `/api/v1/groups/${group.id}/mute`, { muted: false })
+            .its('mutedBy').should('deep.eq', [luca.id]);
+          rawApi('admin', 'POST', `/api/v1/groups/${group.id}/mute`, { muted: 'si' }).its('status').should('eq', 400);
+        });
+      });
+    });
+  });
+
+  it('icona del gruppo: emoji e immagini piccole sì; URL, formati non validi e immagini enormi no (400)', () => {
+    const name = uniq('E2E Icona');
+    const smallPng =
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+    cy.createGroup('admin', name).then(group => {
+      const put = (icon: string) => rawApi('admin', 'PUT', `/api/v1/groups/${group.id}`, { icon });
+      put('🏖️').its('status').should('eq', 200);
+      put(smallPng).its('status').should('eq', 200);
+      put('https://evil.example/pixel.gif').its('status').should('eq', 400);
+      put('data:text/html;base64,PHNjcmlwdD4=').its('status').should('eq', 400);
+      put('data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=').its('status').should('eq', 400);
+      put('data:image/jpeg;base64,' + 'A'.repeat(500_000)).its('status').should('eq', 400);
+      put('questa non è una emoji').its('status').should('eq', 400);
+      cy.api<any>('admin', 'GET', `/api/v1/groups/${group.id}`).its('icon').should('eq', smallPng);
+    });
+    // Anche in creazione.
+    rawApi('admin', 'POST', '/api/v1/groups', { name: uniq('E2E Icona URL'), icon: 'http://x.y/z.png' })
+      .its('status').should('eq', 400);
+  });
+
   it('la richiesta di accesso è sempre dell\'utente autenticato e il join diretto non esiste più', () => {
     const name = uniq('E2E Join forzato');
     cy.createGroup('marco', name).then(group => {
