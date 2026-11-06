@@ -2,8 +2,10 @@ package com.example.tripplanner.dto;
 
 import lombok.Data;
 
-import java.util.List;
-
+/**
+ * Modifica del gruppo (solo admin). Le notifiche silenziate non si cambiano da qui:
+ * ognuno gestisce le proprie con {@code POST /api/v1/groups/{id}/mute}.
+ */
 @Data
 public class UpdateGroupRequest {
     private String name;
@@ -12,5 +14,4 @@ public class UpdateGroupRequest {
     private String color;
     private String currency;
     private Boolean archived;
-    private List<String> mutedBy;
 }
