@@ -5,6 +5,7 @@ import { TripService } from '../../../core/services/trip.service';
 import { GroupService } from '../../../core/services/group.service';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { Trip, TripStatus, deriveTripStatus, isProposal } from '../../../core/models/trip.model';
+import { todayIso } from '../../../core/utils/date.utils';
 
 interface StatusMeta { label: string; icon: string; cls: string; }
 
@@ -141,7 +142,7 @@ export class TripListComponent {
 
   private progressLabel(trip: Trip): string {
     const dayMs = 1000 * 60 * 60 * 24;
-    const today = new Date(new Date().toISOString().split('T')[0]).getTime();
+    const today = new Date(todayIso()).getTime();
     const start = new Date(trip.startDate).getTime();
     const end = new Date(trip.endDate).getTime();
     if (trip.status === 'ongoing') {

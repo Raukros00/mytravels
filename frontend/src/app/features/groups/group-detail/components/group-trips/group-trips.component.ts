@@ -6,6 +6,7 @@ import { Trip, TripStatus, deriveTripStatus } from '../../../../../core/models/t
 import { GroupMember } from '../../../../../core/models/group.model';
 import { AuthService } from '../../../../../core/services/auth.service';
 import { TripService } from '../../../../../core/services/trip.service';
+import { todayIso } from '../../../../../core/utils/date.utils';
 
 const DAY_MS = 86400000;
 const STATUS_ICONS: Record<TripStatus, string> = {
@@ -42,7 +43,7 @@ export class GroupTripsComponent {
   private readonly loaded = signal(this.previewCount);
 
   readonly visibleTrips = computed(() => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = todayIso();
     return this.trips()
       .slice(0, this.expanded() ? this.loaded() : this.previewCount)
       .map(trip => {

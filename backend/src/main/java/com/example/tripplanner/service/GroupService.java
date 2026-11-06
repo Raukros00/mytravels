@@ -1,5 +1,6 @@
 package com.example.tripplanner.service;
 
+import com.example.tripplanner.util.AppDates;
 import com.example.tripplanner.dto.CreateGroupRequest;
 import com.example.tripplanner.dto.JoinGroupRequest;
 import com.example.tripplanner.dto.UpdateGroupRequest;
@@ -12,7 +13,6 @@ import com.example.tripplanner.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,7 +47,7 @@ public class GroupService {
                 .color(request.getColor() != null && !request.getColor().isBlank() ? request.getColor() : "#4f46e5")
                 .creatorId(creatorId)
                 .inviteCode(inviteCode)
-                .createdAt(Instant.now().toString().split("T")[0])
+                .createdAt(AppDates.todayIso())
                 .currency(request.getCurrency() != null && !request.getCurrency().isBlank() ? request.getCurrency() : "EUR")
                 .archived(false)
                 .mutedBy(new ArrayList<>())

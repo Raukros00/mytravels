@@ -7,13 +7,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { AuthModalService, AuthTab } from '../../../core/services/auth-modal.service';
 import { ModalComponent } from '../modal/modal.component';
 import { ImageCropperComponent } from '../image-cropper/image-cropper.component';
-
-/** Data ISO (yyyy-mm-dd) di `years` anni fa: l'ultima data di nascita ammessa. */
-function isoYearsAgo(years: number): string {
-  const d = new Date();
-  d.setFullYear(d.getFullYear() - years);
-  return d.toISOString().split('T')[0];
-}
+import { isoYearsAgo } from '../../../core/utils/date.utils';
 
 /** Almeno `years` anni compiuti oggi (stessa regola del backend). */
 function minAgeValidator(years: number) {

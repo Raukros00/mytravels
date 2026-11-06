@@ -42,6 +42,7 @@ import {
   AccommodationFormValue,
   TripAccommodationModalComponent
 } from './components/trip-accommodation-modal/trip-accommodation-modal.component';
+import { todayIso } from '../../../core/utils/date.utils';
 
 @Component({
   selector: 'app-trip-detail',
@@ -409,7 +410,7 @@ export class TripDetailComponent {
       title: 'Pagamento',
       amount: transfer.amount,
       category: 'other',
-      date: new Date().toISOString().split('T')[0],
+      date: todayIso(),
       paidBy: transfer.from,
       splitAmong: [transfer.to],
       shares: { [transfer.to]: transfer.amount },
