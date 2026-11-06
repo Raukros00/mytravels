@@ -193,23 +193,79 @@ public class GroupService {
         return Optional.of(group);
     }
 
-    @Transactional
-    public Optional<Group> removeMember(String groupId, String memberId) {
-        return groupRepository.findById(groupId).map(group -> {
-            group.getMembers().removeIf(m -> m.getId() != null && m.getId().equals(memberId));
-            return groupRepository.save(group);
-        });
+    /** Errore di una regola sui membri del gruppo, con lo status HTTP da restituire. */
+    public static class GroupRuleException extends RuntimeException {
+        private final int status;
+        public GroupRuleException(int status, String message) {
+            super(message);
+            this.status = status;
+        }
+        public int getStatus() { return status; }
     }
 
+    public static final String ROLE_ADMIN = "admin";
+    public static final String ROLE_MEMBER = "member";
+    public static final String LAST_ADMIN_MESSAGE =
+            "Sei l'unico amministratore del gruppo: nomina prima un altro amministratore";
+
+    /** Esito dell'uscita/rimozione: il gruppo aggiornato, oppure {@code groupDeleted} se era l'ultimo membro. */
+    public record RemoveMemberResult(Group group, boolean groupDeleted) {}
+
+    private static boolean isAdminRole(GroupMember m) {
+        return ROLE_ADMIN.equalsIgnoreCase(m.getRole());
+    }
+
+    private static GroupMember findMember(Group group, String memberId) {
+        return group.getMembers().stream()
+                .filter(m -> m.getId() != null && m.getId().equals(memberId))
+                .findFirst()
+                .orElseThrow(() -> new GroupRuleException(404, "Membro non trovato nel gruppo"));
+    }
+
+    /**
+     * Rimuove un membro (o l'utente esce). Regole:
+     * - se esce l'ultimo membro il gruppo viene eliminato (con i suoi viaggi);
+     * - l'ultimo admin non può uscire finché restano altri membri (409): un gruppo con membri ha sempre un admin.
+     */
+    @Transactional
+    public Optional<RemoveMemberResult> removeMember(String groupId, String memberId) {
+        Optional<Group> opt = groupRepository.findById(groupId);
+        if (opt.isEmpty()) return Optional.empty();
+        Group group = opt.get();
+        GroupMember target = findMember(group, memberId);
+        List<GroupMember> others = group.getMembers().stream().filter(m -> m != target).toList();
+        if (others.isEmpty()) {
+            deleteGroup(groupId);
+            return Optional.of(new RemoveMemberResult(null, true));
+        }
+        if (isAdminRole(target) && others.stream().noneMatch(GroupService::isAdminRole)) {
+            throw new GroupRuleException(409, LAST_ADMIN_MESSAGE);
+        }
+        group.getMembers().remove(target);
+        group.getMutedBy().remove(memberId);
+        return Optional.of(new RemoveMemberResult(groupRepository.save(group), false));
+    }
+
+    /**
+     * Cambia il ruolo di un membro. Ruoli ammessi: {@code admin} e {@code member} (400 altrimenti).
+     * L'ultimo admin non può declassarsi (409).
+     */
     @Transactional
     public Optional<Group> updateMemberRole(String groupId, String memberId, String role) {
-        return groupRepository.findById(groupId).map(group -> {
-            group.getMembers().stream()
-                    .filter(m -> m.getId() != null && m.getId().equals(memberId))
-                    .findFirst()
-                    .ifPresent(m -> m.setRole(role));
-            return groupRepository.save(group);
-        });
+        String normalized = role == null ? "" : role.trim().toLowerCase();
+        if (!ROLE_ADMIN.equals(normalized) && !ROLE_MEMBER.equals(normalized)) {
+            throw new GroupRuleException(400, "Ruolo non valido: usa \"admin\" o \"member\"");
+        }
+        Optional<Group> opt = groupRepository.findById(groupId);
+        if (opt.isEmpty()) return Optional.empty();
+        Group group = opt.get();
+        GroupMember target = findMember(group, memberId);
+        if (ROLE_MEMBER.equals(normalized) && isAdminRole(target)
+                && group.getMembers().stream().filter(m -> m != target).noneMatch(GroupService::isAdminRole)) {
+            throw new GroupRuleException(409, LAST_ADMIN_MESSAGE);
+        }
+        target.setRole(normalized);
+        return Optional.of(groupRepository.save(group));
     }
 
     /**

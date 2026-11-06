@@ -121,6 +121,77 @@ describe('Sicurezza – accesso ai gruppi', () => {
       .its('status').should('eq', 400);
   });
 
+  it('l\'ultimo admin non può uscire né declassarsi finché ci sono altri membri (409)', () => {
+    const name = uniq('E2E Ultimo admin');
+    cy.createGroup('admin', name).then(group => {
+      cy.joinGroup('luca', group.inviteCode);
+      cy.me('admin').then(admin => {
+        rawApi('admin', 'DELETE', `/api/v1/groups/${group.id}/members/${admin.id}`).then(res => {
+          expect(res.status).to.eq(409);
+          expect(res.body.message).to.contain('nomina prima un altro amministratore');
+        });
+        rawApi('admin', 'PUT', `/api/v1/groups/${group.id}/members/${admin.id}/role`, { role: 'member' }).then(res => {
+          expect(res.status).to.eq(409);
+          expect(res.body.message).to.contain('nomina prima un altro amministratore');
+        });
+        cy.api<any>('admin', 'GET', `/api/v1/groups/${group.id}`).then(g => {
+          expect(g.members.find((m: any) => m.id === admin.id).role).to.eq('admin');
+        });
+
+        // Dopo aver nominato un altro admin può declassarsi e uscire.
+        cy.me('luca').then(luca => {
+          cy.api('admin', 'PUT', `/api/v1/groups/${group.id}/members/${luca.id}/role`, { role: 'admin' });
+          rawApi('admin', 'PUT', `/api/v1/groups/${group.id}/members/${admin.id}/role`, { role: 'member' })
+            .its('status').should('eq', 200);
+          // Ora l'unico admin è luca: l'ex admin (membro) può uscire.
+          rawApi('admin', 'DELETE', `/api/v1/groups/${group.id}/members/${admin.id}`).its('status').should('eq', 200);
+          cy.api<any>('luca', 'GET', `/api/v1/groups/${group.id}`).its('members').then((members: any[]) => {
+            expect(members.map(m => m.id)).to.deep.eq([luca.id]);
+            expect(members[0].role).to.eq('admin');
+          });
+        });
+      });
+    });
+  });
+
+  it('sono ammessi solo i ruoli admin e member (400 negli altri casi)', () => {
+    const name = uniq('E2E Ruoli');
+    cy.createGroup('admin', name).then(group => {
+      cy.joinGroup('luca', group.inviteCode);
+      cy.me('luca').then(luca => {
+        const setRole = (role: unknown) =>
+          rawApi('admin', 'PUT', `/api/v1/groups/${group.id}/members/${luca.id}/role`, { role });
+        setRole('pippo').its('status').should('eq', 400);
+        setRole('owner').its('status').should('eq', 400);
+        setRole('').its('status').should('eq', 400);
+        cy.api<any>('admin', 'GET', `/api/v1/groups/${group.id}`).then(g => {
+          expect(g.members.find((m: any) => m.id === luca.id).role).to.eq('member');
+        });
+        setRole('admin').its('status').should('eq', 200);
+        setRole('member').its('status').should('eq', 200);
+        // Membro inesistente: 404.
+        rawApi('admin', 'PUT', `/api/v1/groups/${group.id}/members/non-esiste/role`, { role: 'admin' })
+          .its('status').should('eq', 404);
+      });
+    });
+  });
+
+  it('se esce l\'ultimo membro il gruppo viene eliminato', () => {
+    const name = uniq('E2E Ultimo membro API');
+    cy.createGroup('admin', name).then(group => {
+      cy.me('admin').then(admin => {
+        rawApi('admin', 'DELETE', `/api/v1/groups/${group.id}/members/${admin.id}`).then(res => {
+          expect(res.status).to.eq(200);
+          expect(res.body.groupDeleted).to.eq(true);
+        });
+        rawApi('admin', 'GET', `/api/v1/groups/${group.id}`).its('status').should('eq', 404);
+        cy.api<any[]>('admin', 'GET', '/api/v1/groups').then(groups => {
+          expect(groups.map(g => g.id)).not.to.include(group.id);
+        });
+      });
+    });
+  });
+
   it('la richiesta di accesso è sempre dell\'utente autenticato e il join diretto non esiste più', () => {
     const name = uniq('E2E Join forzato');
     cy.createGroup('marco', name).then(group => {

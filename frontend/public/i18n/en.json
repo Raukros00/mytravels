@@ -35,6 +35,7 @@
     "leave_title": "Leave group",
     "leave_text_1": "You are about to leave",
     "leave_text_2": "Don't worry: you can be re-invited by an admin or rejoin using the group invite code.",
+    "leave_last_member_text": "You are the last member: if you leave, the group and all its trips will be permanently deleted.",
     "leave_stay": "Stay in group",
     "leave_btn": "Leave group",
     "delete_title": "Delete group",

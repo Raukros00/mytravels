@@ -6,6 +6,9 @@ import { ApiService } from './api.service';
 import { CreateGroupDto, Group } from '../models/group.model';
 import { USE_MOCK_DATA } from '../config/mock.config';
 
+/** Toast quando l'unico admin prova a uscire da un gruppo con altri membri. */
+export const LAST_ADMIN_LEAVE_MESSAGE = 'Nomina prima un altro amministratore: sei l\'unico admin del gruppo.';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -250,7 +253,7 @@ export class GroupService {
     this.groupsSignal.set(updated);
     this.storageService.setGroups(updated);
     this.apiService.put<Group>(`/api/v1/groups/${groupId}/members/${memberId}/role`, { role }).subscribe({
-      error: (err) => console.error('Error updating member role on backend:', err)
+      error: (err) => this.handleMemberRuleError(err, 'Error updating member role on backend:')
     });
     this.toastService.success(role === 'admin' ? 'Membro promosso ad admin.' : 'Ruolo rimosso.');
   }
@@ -281,10 +284,57 @@ export class GroupService {
     );
     this.groupsSignal.set(updated);
     this.storageService.setGroups(updated);
-    this.apiService.delete(`/api/v1/groups/${groupId}/members/${memberId}`).subscribe({
-      error: (err) => console.error('Error removing member:', err)
+    this.apiService.delete<{ groupDeleted?: boolean }>(`/api/v1/groups/${groupId}/members/${memberId}`).subscribe({
+      next: (res) => {
+        if (res?.groupDeleted) this.dropGroup(groupId);
+      },
+      error: (err) => this.handleMemberRuleError(err, 'Error removing member:')
     });
     if (!isSelf) this.toastService.success('Membro rimosso dal gruppo.');
+  }
+
+  /**
+   * L'utente è l'unico admin e nel gruppo ci sono altri membri: non può uscire
+   * (il backend risponde 409) finché non nomina un altro amministratore.
+   */
+  public isLastAdmin(group: Group, userId: string): boolean {
+    const me = group.members.find(m => m.id === userId);
+    if (me?.role !== 'admin') return false;
+    const others = group.members.filter(m => m.id !== userId);
+    return others.length > 0 && !others.some(m => m.role === 'admin');
+  }
+
+  /** L'utente è l'unico membro rimasto: uscendo, il gruppo viene eliminato. */
+  public isLastMember(group: Group | null | undefined, userId: string | undefined): boolean {
+    return !!group && !!userId && group.members.length === 1 && group.members[0].id === userId;
+  }
+
+  /** Il gruppo non esiste più sul server (es. è uscito l'ultimo membro): lo toglie dalla cache. */
+  private dropGroup(groupId: string): void {
+    const updated = this.groupsSignal().filter(g => g.id !== groupId);
+    this.groupsSignal.set(updated);
+    this.storageService.setGroups(updated);
+    if (this.activeGroupIdSignal() === groupId) {
+      const next = updated[0];
+      if (next) this.setActiveGroup(next.id, { silent: true });
+      else {
+        this.activeGroupIdSignal.set(null);
+        this.storageService.setActiveGroupId(null);
+      }
+    }
+  }
+
+  /**
+   * Regole sui membri violate (400/409, es. ultimo admin): messaggio del server
+   * e ricarico dei gruppi per annullare l'aggiornamento ottimistico.
+   */
+  private handleMemberRuleError(err: { status?: number; error?: { message?: string } }, logPrefix: string): void {
+    if (err?.status === 400 || err?.status === 409) {
+      this.toastService.error(err.error?.message || 'Operazione non consentita.');
+      this.loadGroups();
+      return;
+    }
+    console.error(logPrefix, err);
   }
 
   // L'ingresso con codice o link passa da una richiesta di accesso approvata da un admin
