@@ -13,6 +13,7 @@ import com.example.tripplanner.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -59,6 +60,44 @@ public class GroupService {
         }
     }
 
+    /** Prefisso dei codici invito (anche nei link {@code /join/GRP-...}). */
+    static final String INVITE_CODE_PREFIX = "GRP-";
+    /** Alfabeto senza caratteri ambigui (niente 0/O, 1/I): 32 simboli = 5 bit ciascuno. */
+    static final String INVITE_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    /** 12 caratteri casuali = 60 bit. I codici esistenti (più corti) restano validi. */
+    static final int INVITE_CODE_LENGTH = 12;
+    private static final int INVITE_CODE_MAX_ATTEMPTS = 10;
+    private static final SecureRandom RANDOM = new SecureRandom();
+
+    static String randomInviteCode() {
+        StringBuilder sb = new StringBuilder(INVITE_CODE_PREFIX);
+        for (int i = 0; i < INVITE_CODE_LENGTH; i++) {
+            sb.append(INVITE_CODE_ALPHABET.charAt(RANDOM.nextInt(INVITE_CODE_ALPHABET.length())));
+        }
+        return sb.toString();
+    }
+
+    /** Un codice nuovo non ancora usato da nessun gruppo (in caso di collisione si rigenera). */
+    private String newInviteCode() {
+        for (int attempt = 0; attempt < INVITE_CODE_MAX_ATTEMPTS; attempt++) {
+            String code = randomInviteCode();
+            if (groupRepository.findByInviteCode(code).isEmpty()) return code;
+        }
+        throw new IllegalStateException("Impossibile generare un codice invito univoco");
+    }
+
+    /**
+     * Sostituisce il codice invito: il vecchio smette subito di funzionare (anteprima e richiesta
+     * rispondono "link non valido"). Le richieste di accesso già inviate restano valide.
+     */
+    @Transactional
+    public Optional<Group> regenerateInviteCode(String groupId) {
+        return groupRepository.findById(groupId).map(group -> {
+            group.setInviteCode(newInviteCode());
+            return groupRepository.save(group);
+        });
+    }
+
     @Transactional
     public Group createGroup(CreateGroupRequest request, String defaultUserId) {
         validateIcon(request.getIcon());
@@ -66,7 +105,7 @@ public class GroupService {
                 ? request.getCreatorId()
                 : defaultUserId;
 
-        String inviteCode = "GRP-" + UUID.randomUUID().toString().replace("-", "").substring(0, 5).toUpperCase();
+        String inviteCode = newInviteCode();
 
         Group group = Group.builder()
                 .id(UUID.randomUUID().toString())

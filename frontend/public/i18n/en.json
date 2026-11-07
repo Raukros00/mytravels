@@ -150,6 +150,10 @@
     "share_copy_link": "Copy link",
     "share_copy_code": "Copy code",
     "share_native": "Share",
+    "share_regenerate": "Regenerate link",
+    "share_regenerate_warning": "The current link will stop working: anyone who already has it will need the new one. Join requests already sent stay valid.",
+    "share_regenerate_confirm": "Regenerate",
+    "share_regenerate_cancel": "Cancel",
     "join_requests_title": "Join requests",
     "join_requests_approve": "Accept",
     "join_requests_decline": "Decline"

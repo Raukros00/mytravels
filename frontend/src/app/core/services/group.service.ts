@@ -1,4 +1,5 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { Observable, tap } from 'rxjs';
 import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
 import { AuthService } from './auth.service';
@@ -150,6 +151,20 @@ export class GroupService {
 
     this.toastService.success(`Gruppo "${dto.name}" creato con successo! 🎉`);
     return localGroup;
+  }
+
+  /**
+   * Solo admin: nuovo codice invito (e nuovo link). Il vecchio smette subito di funzionare.
+   * Il gruppo in cache viene aggiornato con la risposta del server.
+   */
+  public regenerateInviteCode(groupId: string): Observable<Group> {
+    return this.apiService.post<Group>(`/api/v1/groups/${encodeURIComponent(groupId)}/invite-code`, {}).pipe(
+      tap(saved => {
+        const updated = this.groupsSignal().map(g => g.id === groupId ? { ...g, inviteCode: saved.inviteCode } : g);
+        this.groupsSignal.set(updated);
+        this.storageService.setGroups(updated);
+      })
+    );
   }
 
   public getGroupById(id: string): Group | undefined {
