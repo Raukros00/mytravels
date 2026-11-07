@@ -148,6 +148,109 @@ describe('Inviti ai gruppi – link e codice', () => {
   });
 });
 
+describe('Inviti ai gruppi – codici lunghi e rigenerabili (#83)', () => {
+  const CODE_FORMAT = /^GRP-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{12}$/;
+
+  it('i nuovi codici sono lunghi, casuali e senza caratteri ambigui', () => {
+    cy.createGroup('marco', uniq('E2E Codice A')).then(a => {
+      cy.createGroup('marco', uniq('E2E Codice B')).then(b => {
+        expect(a.inviteCode).to.match(CODE_FORMAT);
+        expect(b.inviteCode).to.match(CODE_FORMAT);
+        expect(a.inviteCode).not.to.eq(b.inviteCode);
+      });
+    });
+  });
+
+  it('solo l\'admin rigenera il codice: il vecchio non vale più, le richieste in attesa sì', () => {
+    cy.createGroup('marco', uniq('E2E Rigenera API')).then(group => {
+      const oldCode = group.inviteCode;
+      cy.joinGroup('sofia', oldCode, 'marco');
+      // Richiesta di Luca inviata con il vecchio codice, ancora in attesa.
+      cy.api<any>('luca', 'POST', `/api/v1/groups/invite/${oldCode}/request`).then(pending => {
+        rawApi('giulia', 'POST', `/api/v1/groups/${group.id}/invite-code`).its('status').should('eq', 404);
+        rawApi('sofia', 'POST', `/api/v1/groups/${group.id}/invite-code`).its('status').should('eq', 403);
+        cy.api<any>('marco', 'GET', `/api/v1/groups/${group.id}`).its('inviteCode').should('eq', oldCode);
+
+        rawApi('marco', 'POST', `/api/v1/groups/${group.id}/invite-code`).then(res => {
+          expect(res.status).to.eq(200);
+          const newCode = res.body.inviteCode;
+          expect(newCode).to.match(CODE_FORMAT);
+          expect(newCode).not.to.eq(oldCode);
+
+          rawApi('giulia', 'GET', `/api/v1/groups/invite/${oldCode}`).its('status').should('eq', 404);
+          rawApi('giulia', 'POST', `/api/v1/groups/invite/${oldCode}/request`).its('status').should('eq', 404);
+          rawApi('giulia', 'GET', `/api/v1/groups/invite/${newCode}`).its('status').should('eq', 200);
+          cy.api<any>('marco', 'GET', `/api/v1/groups/${group.id}`).its('inviteCode').should('eq', newCode);
+
+          // La richiesta già in attesa resta valida e si può approvare.
+          cy.api('marco', 'POST', `/api/v1/groups/${group.id}/join-requests/${pending.id}/approve`);
+          cy.api<any>('marco', 'GET', `/api/v1/groups/${group.id}`).its('members').should('have.length', 3);
+        });
+      });
+    });
+  });
+
+  it('l\'admin rigenera il link dalla modale; il vecchio link mostra "Invito non valido"', () => {
+    const name = uniq('E2E Rigenera UI');
+    cy.createGroup('marco', name).then(group => {
+      const oldLink = `${Cypress.config('baseUrl')}/join/${group.inviteCode}`;
+      cy.login('marco');
+      cy.visit(`/groups/${group.id}`);
+      cy.contains('button', t.invite_btn).click();
+
+      cy.dialog(t.share_title).within(() => {
+        cy.get('input[aria-label="Link di invito"]').should('have.value', oldLink);
+        cy.contains('button', t.share_regenerate).click();
+        cy.contains(t.share_regenerate_warning).should('be.visible');
+        // Annullando non cambia nulla.
+        cy.contains('button', t.share_regenerate_cancel).click();
+        cy.contains(t.share_regenerate_warning).should('not.exist');
+        cy.get('input[aria-label="Link di invito"]').should('have.value', oldLink);
+      });
+
+      cy.intercept('POST', `/api/v1/groups/${group.id}/invite-code`).as('regenerate');
+      cy.dialog(t.share_title).within(() => {
+        cy.contains('button', t.share_regenerate).click();
+        cy.contains('button', t.share_regenerate_confirm).click();
+      });
+      cy.wait('@regenerate').its('response.statusCode').should('eq', 200);
+      cy.toast('Nuovo link di invito generato').should('be.visible');
+
+      cy.api<any>('marco', 'GET', `/api/v1/groups/${group.id}`).then(fresh => {
+        expect(fresh.inviteCode).not.to.eq(group.inviteCode);
+        const newLink = `${Cypress.config('baseUrl')}/join/${fresh.inviteCode}`;
+        cy.dialog(t.share_title).within(() => {
+          cy.get('input[aria-label="Link di invito"]').should('have.value', newLink);
+          cy.get(`button[title="${t.share_show}"]`).click();
+          cy.get('.invite-code').should('have.text', fresh.inviteCode);
+          cy.get('textarea').should('contain.value', newLink).and('not.contain.value', oldLink);
+        });
+
+        cy.login('luca');
+        cy.visit(`/join/${group.inviteCode}`);
+        cy.contains('h1', 'Invito non valido').should('be.visible');
+        cy.visit(`/join/${fresh.inviteCode}`);
+        cy.contains('h1', name).should('be.visible');
+        cy.contains('button', 'Invia richiesta').should('be.visible');
+      });
+    });
+  });
+
+  it('un membro non admin non vede "Rigenera link"', () => {
+    const name = uniq('E2E Rigenera membro');
+    cy.createGroup('marco', name).then(group => {
+      cy.joinGroup('sofia', group.inviteCode, 'marco');
+      cy.login('sofia');
+      cy.visit(`/groups/${group.id}`);
+      cy.contains('button', t.invite_btn).click();
+      cy.dialog(t.share_title).within(() => {
+        cy.get('input[aria-label="Link di invito"]').should('be.visible');
+        cy.contains('button', t.share_regenerate).should('not.exist');
+      });
+    });
+  });
+});
+
 describe('Inviti ai gruppi – ricerca utenti', () => {
   it('dalla modale "Invita" si cerca un utente e lo si invita; l\'invitato accetta', () => {
     const name = uniq('E2E Ricerca');

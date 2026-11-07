@@ -150,6 +150,10 @@
     "share_copy_link": "Copia link",
     "share_copy_code": "Copia codice",
     "share_native": "Condividi",
+    "share_regenerate": "Rigenera link",
+    "share_regenerate_warning": "Il link attuale smetterà di funzionare: chi lo ha già ricevuto dovrà usare quello nuovo. Le richieste di accesso già inviate restano valide.",
+    "share_regenerate_confirm": "Rigenera",
+    "share_regenerate_cancel": "Annulla",
     "join_requests_title": "Richieste di accesso",
     "join_requests_approve": "Accetta",
     "join_requests_decline": "Rifiuta"

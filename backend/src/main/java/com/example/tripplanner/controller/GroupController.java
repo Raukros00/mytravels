@@ -89,6 +89,19 @@ public class GroupController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
+    /**
+     * Solo admin: genera un nuovo codice invito (e quindi un nuovo link). Il vecchio smette subito
+     * di funzionare; le richieste di accesso già in attesa restano valide. 403 ai membri, 404 ai non membri.
+     */
+    @PostMapping("/{id}/invite-code")
+    public ResponseEntity<?> regenerateInviteCode(@PathVariable String id, Authentication authentication) {
+        ResponseEntity<?> denied = requireAdmin(id, authentication);
+        if (denied != null) return denied;
+        return groupService.regenerateInviteCode(id)
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
     // L'ingresso con codice/link passa da una richiesta approvata da un admin: vedi JoinRequestController.
 
     /**

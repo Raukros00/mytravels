@@ -113,3 +113,41 @@
 .invite-code {
   flex: 1;
 }
+
+/* ── Rigenera link (solo admin) ──────────────────── */
+.regenerate-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  padding: 0.2rem 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--wb-text-secondary);
+  cursor: pointer;
+}
+.regenerate-btn:hover { color: var(--wb-primary); }
+.regenerate-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.7rem 0.875rem;
+  border: 1px solid #fca5a5;
+  border-radius: var(--wb-radius-md);
+  background: rgba(220, 38, 38, 0.06);
+}
+.regenerate-warning {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #dc2626;
+}
+.regenerate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.btn-danger-solid { background: #dc2626; border-color: #dc2626; }

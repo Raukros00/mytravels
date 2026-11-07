@@ -3,6 +3,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { Group } from '../../../../../core/models/group.model';
 import { PublicUser } from '../../../../../core/models/invite.model';
 import { GroupInviteService } from '../../../../../core/services/group-invite.service';
+import { GroupService } from '../../../../../core/services/group.service';
 import { NotificationService } from '../../../../../core/services/notification.service';
 import { ToastService } from '../../../../../core/services/toast.service';
 import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
@@ -24,15 +25,21 @@ export class GroupShareModalComponent {
   private readonly invites = inject(GroupInviteService);
   private readonly notificationService = inject(NotificationService);
   private readonly toastService = inject(ToastService);
+  private readonly groupService = inject(GroupService);
 
   readonly isOpen = input(false);
   readonly group = input<Group | null>(null);
+  /** Solo gli admin possono rigenerare il link. */
+  readonly isAdmin = input(false);
   readonly closeModal = output<void>();
 
   readonly codeVisible = signal(false);
   readonly customMessage = signal('');
   /** Utenti con un invito diretto in attesa (dal server) o invitati ora. */
   readonly invitedIds = signal<string[]>([]);
+  /** Conferma "Rigenera link" aperta / richiesta in corso. */
+  readonly regenerateConfirm = signal(false);
+  readonly regenerating = signal(false);
   readonly canNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
   readonly inviteLink = computed(() => {
@@ -49,11 +56,8 @@ export class GroupShareModalComponent {
         const g = this.group();
         if (!g) return;
         this.codeVisible.set(false);
-        this.customMessage.set(
-          `Unisciti al gruppo "${g.name}" su WanderBite! 🌍\n` +
-          `Apri il link e chiedi l'accesso: ${this.invites.inviteLink(g.inviteCode)}\n` +
-          `Oppure usa il codice invito: ${g.inviteCode}`
-        );
+        this.regenerateConfirm.set(false);
+        this.customMessage.set(this.defaultMessage(g));
         this.invitedIds.set([]);
         this.notificationService.groupInvites(g.id).subscribe({
           next: pending => this.invitedIds.update(ids => [...new Set([...ids, ...pending.map(n => n.recipientId)])]),
@@ -63,8 +67,34 @@ export class GroupShareModalComponent {
     });
   }
 
+  private defaultMessage(g: Group): string {
+    return `Unisciti al gruppo "${g.name}" su WanderBite! 🌍\n` +
+      `Apri il link e chiedi l'accesso: ${this.invites.inviteLink(g.inviteCode)}\n` +
+      `Oppure usa il codice invito: ${g.inviteCode}`;
+  }
+
+  /** Nuovo codice: il link attuale smette di funzionare; link, codice e messaggio si aggiornano subito. */
+  regenerateLink(): void {
+    const g = this.group();
+    if (!g || !this.isAdmin() || this.regenerating()) return;
+    this.regenerating.set(true);
+    this.groupService.regenerateInviteCode(g.id).subscribe({
+      next: saved => {
+        this.regenerating.set(false);
+        this.regenerateConfirm.set(false);
+        this.customMessage.set(this.defaultMessage({ ...g, inviteCode: saved.inviteCode }));
+        this.toastService.success('Nuovo link di invito generato: quello precedente non funziona più.');
+      },
+      error: err => {
+        this.regenerating.set(false);
+        this.toastService.error(err.error?.message || 'Non è stato possibile rigenerare il link.');
+      }
+    });
+  }
+
   onClose(): void {
     this.codeVisible.set(false);
+    this.regenerateConfirm.set(false);
     this.closeModal.emit();
   }
 

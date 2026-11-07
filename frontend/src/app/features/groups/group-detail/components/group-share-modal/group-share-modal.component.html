@@ -24,6 +24,27 @@
             </button>
           }
         </div>
+        @if (isAdmin()) {
+          @if (regenerateConfirm()) {
+            <div class="regenerate-confirm" role="alert">
+              <p class="regenerate-warning">{{ 'groups.share_regenerate_warning' | translate }}</p>
+              <div class="regenerate-actions">
+                <button type="button" class="btn btn-secondary btn-sm" (click)="regenerateConfirm.set(false)" [disabled]="regenerating()">
+                  {{ 'groups.share_regenerate_cancel' | translate }}
+                </button>
+                <button type="button" class="btn btn-primary btn-sm btn-danger-solid" (click)="regenerateLink()" [disabled]="regenerating()">
+                  <span class="material-symbols-outlined" style="font-size:16px">autorenew</span>
+                  {{ 'groups.share_regenerate_confirm' | translate }}
+                </button>
+              </div>
+            </div>
+          } @else {
+            <button type="button" class="regenerate-btn" (click)="regenerateConfirm.set(true)">
+              <span class="material-symbols-outlined" style="font-size:16px">autorenew</span>
+              {{ 'groups.share_regenerate' | translate }}
+            </button>
+          }
+        }
       </div>
 
       <!-- Codice invito -->

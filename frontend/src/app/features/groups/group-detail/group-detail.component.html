@@ -79,6 +79,7 @@
 <app-group-share-modal
   [isOpen]="shareModalVisible()"
   [group]="group()"
+  [isAdmin]="isCurrentUserAdmin()"
   (closeModal)="shareModalVisible.set(false)" />
 
 <!-- Edit Group Modal -->
