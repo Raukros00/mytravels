@@ -5,6 +5,10 @@ import { AuthService } from './auth.service';
 import { ApiService } from './api.service';
 import { CreateGroupDto, Group } from '../models/group.model';
 import { USE_MOCK_DATA } from '../config/mock.config';
+import { todayIso } from '../utils/date.utils';
+
+/** Toast quando l'unico admin prova a uscire da un gruppo con altri membri. */
+export const LAST_ADMIN_LEAVE_MESSAGE = 'Nomina prima un altro amministratore: sei l\'unico admin del gruppo.';
 
 @Injectable({
   providedIn: 'root'
@@ -106,7 +110,7 @@ export class GroupService {
       color: dto.color || '#4f46e5',
       creatorId: user?.id || 'anonymous',
       inviteCode: code,
-      createdAt: new Date().toISOString().split('T')[0],
+      createdAt: todayIso(),
       members: user ? [
         {
           id: user.id,
@@ -181,7 +185,18 @@ export class GroupService {
     const group = this.groupsSignal().find(g => g.id === groupId);
     if (!user || !group) return;
     const others = (group.mutedBy ?? []).filter(id => id !== user.id);
-    this.patchGroup(groupId, { mutedBy: muted ? [...others, user.id] : others });
+    this.setLocalMutedBy(groupId, muted ? [...others, user.id] : others);
+    // Endpoint dedicato: tocca solo l'utente autenticato, mai le preferenze degli altri membri.
+    this.apiService.post<Group>(`/api/v1/groups/${groupId}/mute`, { muted }).subscribe({
+      next: (saved) => this.setLocalMutedBy(groupId, saved?.mutedBy ?? []),
+      error: (err) => console.error('Error updating group mute:', err)
+    });
+  }
+
+  private setLocalMutedBy(groupId: string, mutedBy: string[]): void {
+    const updated = this.groupsSignal().map(g => g.id === groupId ? { ...g, mutedBy } : g);
+    this.groupsSignal.set(updated);
+    this.storageService.setGroups(updated);
   }
 
   public setCurrency(groupId: string, currency: string): void {
@@ -239,7 +254,7 @@ export class GroupService {
     this.groupsSignal.set(updated);
     this.storageService.setGroups(updated);
     this.apiService.put<Group>(`/api/v1/groups/${groupId}/members/${memberId}/role`, { role }).subscribe({
-      error: (err) => console.error('Error updating member role on backend:', err)
+      error: (err) => this.handleMemberRuleError(err, 'Error updating member role on backend:')
     });
     this.toastService.success(role === 'admin' ? 'Membro promosso ad admin.' : 'Ruolo rimosso.');
   }
@@ -270,10 +285,57 @@ export class GroupService {
     );
     this.groupsSignal.set(updated);
     this.storageService.setGroups(updated);
-    this.apiService.delete(`/api/v1/groups/${groupId}/members/${memberId}`).subscribe({
-      error: (err) => console.error('Error removing member:', err)
+    this.apiService.delete<{ groupDeleted?: boolean }>(`/api/v1/groups/${groupId}/members/${memberId}`).subscribe({
+      next: (res) => {
+        if (res?.groupDeleted) this.dropGroup(groupId);
+      },
+      error: (err) => this.handleMemberRuleError(err, 'Error removing member:')
     });
     if (!isSelf) this.toastService.success('Membro rimosso dal gruppo.');
+  }
+
+  /**
+   * L'utente è l'unico admin e nel gruppo ci sono altri membri: non può uscire
+   * (il backend risponde 409) finché non nomina un altro amministratore.
+   */
+  public isLastAdmin(group: Group, userId: string): boolean {
+    const me = group.members.find(m => m.id === userId);
+    if (me?.role !== 'admin') return false;
+    const others = group.members.filter(m => m.id !== userId);
+    return others.length > 0 && !others.some(m => m.role === 'admin');
+  }
+
+  /** L'utente è l'unico membro rimasto: uscendo, il gruppo viene eliminato. */
+  public isLastMember(group: Group | null | undefined, userId: string | undefined): boolean {
+    return !!group && !!userId && group.members.length === 1 && group.members[0].id === userId;
+  }
+
+  /** Il gruppo non esiste più sul server (es. è uscito l'ultimo membro): lo toglie dalla cache. */
+  private dropGroup(groupId: string): void {
+    const updated = this.groupsSignal().filter(g => g.id !== groupId);
+    this.groupsSignal.set(updated);
+    this.storageService.setGroups(updated);
+    if (this.activeGroupIdSignal() === groupId) {
+      const next = updated[0];
+      if (next) this.setActiveGroup(next.id, { silent: true });
+      else {
+        this.activeGroupIdSignal.set(null);
+        this.storageService.setActiveGroupId(null);
+      }
+    }
+  }
+
+  /**
+   * Regole sui membri violate (400/409, es. ultimo admin): messaggio del server
+   * e ricarico dei gruppi per annullare l'aggiornamento ottimistico.
+   */
+  private handleMemberRuleError(err: { status?: number; error?: { message?: string } }, logPrefix: string): void {
+    if (err?.status === 400 || err?.status === 409) {
+      this.toastService.error(err.error?.message || 'Operazione non consentita.');
+      this.loadGroups();
+      return;
+    }
+    console.error(logPrefix, err);
   }
 
   // L'ingresso con codice o link passa da una richiesta di accesso approvata da un admin

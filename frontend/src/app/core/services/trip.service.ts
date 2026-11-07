@@ -19,6 +19,7 @@ import {
   deriveTripStatus,
   isProposal
 } from '../models/trip.model';
+import { addDaysIso } from '../utils/date.utils';
 
 @Injectable({
   providedIn: 'root'
@@ -160,9 +161,7 @@ export class TripService {
    * list only once everything is stored; if a part fails the half-created trip is removed again.
    */
   public createTripFromTemplate(template: TripTemplate, groupId: string, startDate: string): Observable<Trip> {
-    const end = new Date(startDate + 'T00:00:00Z');
-    end.setUTCDate(end.getUTCDate() + Math.max(template.durationDays, 1) - 1);
-    const endDate = end.toISOString().split('T')[0];
+    const endDate = addDaysIso(startDate, Math.max(template.durationDays, 1) - 1);
 
     const base = {
       groupId,

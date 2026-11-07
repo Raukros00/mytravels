@@ -5,7 +5,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { TripStatus, deriveTripStatus, isProposal } from '../../../core/models/trip.model';
 import { AuthService } from '../../../core/services/auth.service';
-import { GroupService } from '../../../core/services/group.service';
+import { GroupService, LAST_ADMIN_LEAVE_MESSAGE } from '../../../core/services/group.service';
 import { TripService } from '../../../core/services/trip.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
@@ -103,17 +103,17 @@ export class GroupDetailComponent {
     const g = this.group();
     const user = this.authService.currentUser();
     if (!g || !user) return;
-    const isAdmin = g.members.find(m => m.id === user.id)?.role === 'admin';
-    if (isAdmin) {
-      const otherAdmins = g.members.filter(m => m.id !== user.id && m.role === 'admin');
-      if (otherAdmins.length === 0) {
-        this.toastService.error('Non puoi uscire dal gruppo finché non assegni un altro admin.');
-        return;
-      }
+    if (this.groupService.isLastAdmin(g, user.id)) {
+      this.toastService.error(LAST_ADMIN_LEAVE_MESSAGE);
+      return;
     }
     this.membersModalVisible.set(false);
     this.leaveConfirmVisible.set(true);
   }
+
+  /** Nella conferma di uscita: l'utente è l'ultimo membro, quindi il gruppo verrà eliminato. */
+  readonly leaveDeletesGroup = computed(() =>
+    this.groupService.isLastMember(this.group(), this.authService.currentUser()?.id));
 
   leaveGroup(): void {
     const g = this.group();

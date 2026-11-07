@@ -124,7 +124,13 @@
               type="date" 
               id="endDate" 
               formControlName="endDate" 
+              [attr.min]="tripForm.controls.startDate.value || null"
+              [attr.aria-invalid]="tripForm.hasError('dateRange')"
+              [attr.aria-describedby]="tripForm.hasError('dateRange') ? 'date-range-error' : null"
               class="form-input">
+            @if (tripForm.hasError('dateRange')) {
+              <span id="date-range-error" class="form-error" role="alert">La data di fine non può precedere la data di inizio.</span>
+            }
           </div>
         </div>
 

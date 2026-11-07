@@ -67,10 +67,12 @@ public class GroupController {
         return ResponseEntity.ok(groupService.getGroupsByUser(userId).stream().filter(g -> isMember(g, userId)).toList());
     }
 
+    /** Solo gli admin: nome, descrizione, icona, colore, valuta e archiviazione. */
     @PutMapping("/{id}")
-    public ResponseEntity<Group> updateGroup(@PathVariable String id, @RequestBody UpdateGroupRequest request,
-                                             Authentication authentication) {
-        if (memberGroup(id, authentication).isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    public ResponseEntity<?> updateGroup(@PathVariable String id, @RequestBody UpdateGroupRequest request,
+                                         Authentication authentication) {
+        ResponseEntity<?> denied = requireAdmin(id, authentication);
+        if (denied != null) return denied;
         Optional<Group> updated = groupService.updateGroup(id, request);
         return updated.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
@@ -89,7 +91,11 @@ public class GroupController {
 
     // L'ingresso con codice/link passa da una richiesta approvata da un admin: vedi JoinRequestController.
 
-    /** Un admin può rimuovere chiunque; un membro può rimuovere solo sé stesso (lasciare il gruppo). */
+    /**
+     * Un admin può rimuovere chiunque; un membro può rimuovere solo sé stesso (lasciare il gruppo).
+     * L'ultimo admin non può uscire finché ci sono altri membri (409); se esce l'ultimo membro
+     * il gruppo viene eliminato e la risposta è {@code {"groupDeleted": true}}.
+     */
     @DeleteMapping("/{groupId}/members/{memberId}")
     public ResponseEntity<?> removeMember(@PathVariable String groupId, @PathVariable String memberId,
                                           Authentication authentication) {
@@ -99,11 +105,15 @@ public class GroupController {
         ResponseEntity<?> denied = isSelf ? requireMember(groupId, authentication) : requireAdmin(groupId, authentication);
         if (denied != null) return denied;
 
-        Optional<Group> groupOpt = groupService.removeMember(groupId, memberId);
-        return groupOpt.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        Optional<GroupService.RemoveMemberResult> result = groupService.removeMember(groupId, memberId);
+        if (result.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        if (result.get().groupDeleted()) {
+            return ResponseEntity.ok(Map.of("groupDeleted", true, "message", "Eri l'ultimo membro: il gruppo è stato eliminato"));
+        }
+        return ResponseEntity.ok(result.get().group());
     }
 
+    /** Solo admin. Ruoli ammessi: admin, member (400). L'ultimo admin non può declassarsi (409). */
     @PutMapping("/{groupId}/members/{memberId}/role")
     public ResponseEntity<?> updateMemberRole(@PathVariable String groupId,
                                               @PathVariable String memberId,
@@ -113,22 +123,36 @@ public class GroupController {
         if (denied != null) return denied;
         String role = body.get("role");
         if (role == null || role.isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Role is required"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Il ruolo è obbligatorio"));
         }
         Optional<Group> groupOpt = groupService.updateMemberRole(groupId, memberId, role);
         return groupOpt.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    /** Silenzia/riattiva il gruppo per l'utente autenticato. */
+    /**
+     * Silenzia/riattiva il gruppo solo per l'utente autenticato.
+     * Body opzionale {@code {"muted": true|false}}; senza body inverte lo stato attuale.
+     */
     @PostMapping("/{groupId}/mute")
-    public ResponseEntity<?> toggleMuteGroup(@PathVariable String groupId, Authentication authentication) {
+    public ResponseEntity<?> toggleMuteGroup(@PathVariable String groupId,
+                                             @RequestBody(required = false) Map<String, Object> body,
+                                             Authentication authentication) {
         Optional<User> me = currentUser(authentication);
         if (me.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         if (memberGroup(groupId, authentication).isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        Optional<Group> groupOpt = groupService.toggleMuteGroup(groupId, me.get().getId());
+        Object muted = body != null ? body.get("muted") : null;
+        if (muted != null && !(muted instanceof Boolean)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "muted deve essere true o false"));
+        }
+        Optional<Group> groupOpt = groupService.setGroupMuted(groupId, me.get().getId(), (Boolean) muted);
         return groupOpt.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @ExceptionHandler(GroupService.GroupRuleException.class)
+    public ResponseEntity<Map<String, String>> handleGroupRule(GroupService.GroupRuleException e) {
+        return ResponseEntity.status(e.getStatus()).body(Map.of("message", e.getMessage()));
     }
 
     // ── Autorizzazione ────────────────────────────────────────────────────────
@@ -157,7 +181,7 @@ public class GroupController {
         String userId = me.get().getId();
         boolean admin = group.get().getMembers().stream()
                 .anyMatch(m -> userId.equals(m.getId()) && "admin".equalsIgnoreCase(m.getRole()));
-        return admin ? null : ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Only group admins can do this"));
+        return admin ? null : ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Solo gli amministratori del gruppo possono farlo"));
     }
 
     /** Membro = presente nella lista membri (il creatore che ha lasciato il gruppo non lo è più). */

@@ -8,6 +8,8 @@ import { GroupService } from '../../../core/services/group.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { CoverService, CoverSuggestion, UNSPLASH_LINK } from '../../../core/services/cover.service';
 import { GEONAMES_LINK, Place, PlaceService } from '../../../core/services/place.service';
+import { addDaysIso, todayIso } from '../../../core/utils/date.utils';
+import { dateRangeValidator } from '../../../core/utils/date-range.validator';
 
 interface CoverPreset {
   title: string;
@@ -96,14 +98,14 @@ export class TripCreateComponent {
     title: ['', [Validators.required, Validators.minLength(3)]],
     destination: ['', Validators.required],
     country: ['Italia', Validators.required],
-    startDate: [new Date().toISOString().split('T')[0], Validators.required],
-    endDate: [new Date(Date.now() + 4 * 86400000).toISOString().split('T')[0], Validators.required],
+    startDate: [todayIso(), Validators.required],
+    endDate: [addDaysIso(todayIso(), 4), Validators.required],
     budgetEstimate: [500],
     currency: [this.groupService.getGroupById(this.defaultGroupId())?.currency || 'EUR'],
     coverUrl: [this.coverPresets[0].url, Validators.required],
     notes: [''],
     asProposal: [false]
-  });
+  }, { validators: dateRangeValidator() });
 
   /** Copertina scelta tra i suggerimenti (null se è un preset o un URL personalizzato). */
   private readonly coverUrlValue = toSignal(this.tripForm.controls.coverUrl.valueChanges, {
@@ -263,6 +265,10 @@ export class TripCreateComponent {
 
   onSubmit(): void {
     if (this.saving()) return;
+    if (this.tripForm.hasError('dateRange')) {
+      this.toastService.error('La data di fine non può precedere la data di inizio.');
+      return;
+    }
     if (this.tripForm.invalid) {
       this.toastService.error('Compila tutti i campi obbligatori.');
       return;

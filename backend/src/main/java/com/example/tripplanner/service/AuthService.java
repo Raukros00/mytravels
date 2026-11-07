@@ -1,5 +1,6 @@
 package com.example.tripplanner.service;
 
+import com.example.tripplanner.util.AppDates;
 import com.example.tripplanner.dto.RegisterDto;
 import com.example.tripplanner.model.User;
 import com.example.tripplanner.repository.UserRepository;
@@ -7,7 +8,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,7 +47,7 @@ public class AuthService {
                 .avatar(dto.getAvatar() != null ? dto.getAvatar() : "🚀")
                 .color(dto.getColor() != null ? dto.getColor() : "#6366f1")
                 .role("USER")
-                .joinedDate(Instant.now().toString().split("T")[0])
+                .joinedDate(AppDates.todayIso())
                 .build();
         return userRepository.save(user);
     }
@@ -64,7 +64,7 @@ public class AuthService {
                     .avatar("👑")
                     .color("#4f46e5")
                     .role("ADMIN")
-                    .joinedDate(Instant.now().toString().split("T")[0])
+                    .joinedDate(AppDates.todayIso())
                     .build();
             return userRepository.save(user);
         });

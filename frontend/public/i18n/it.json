@@ -35,6 +35,7 @@
     "leave_title": "Lascia gruppo",
     "leave_text_1": "Stai per uscire da",
     "leave_text_2": "Non preoccuparti: potrai essere reinvitato da un admin o rientrare autonomamente usando il codice invito del gruppo.",
+    "leave_last_member_text": "Sei l'ultimo membro: uscendo, il gruppo e tutti i suoi viaggi verranno eliminati definitivamente.",
     "leave_stay": "Rimani nel gruppo",
     "leave_btn": "Lascia gruppo",
     "delete_title": "Elimina gruppo",

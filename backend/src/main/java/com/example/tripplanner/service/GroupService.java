@@ -1,5 +1,6 @@
 package com.example.tripplanner.service;
 
+import com.example.tripplanner.util.AppDates;
 import com.example.tripplanner.dto.CreateGroupRequest;
 import com.example.tripplanner.dto.JoinGroupRequest;
 import com.example.tripplanner.dto.UpdateGroupRequest;
@@ -12,11 +13,11 @@ import com.example.tripplanner.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Service
 public class GroupService {
@@ -31,8 +32,36 @@ public class GroupService {
         this.tripRepository = tripRepository;
     }
 
+    /** Immagine del gruppo: data URL JPEG/PNG/WebP, come la foto profilo (il client invia un JPEG ritagliato). */
+    private static final Pattern IMAGE_ICON = Pattern.compile("^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$");
+    /** Limite ~300 KB di immagine, come per la foto profilo. */
+    static final int MAX_IMAGE_ICON_LENGTH = 400_000;
+    /** Un'emoji (anche composta, es. famiglie o bandiere) sta comodamente in 16 caratteri UTF-16. */
+    static final int MAX_EMOJI_ICON_LENGTH = 16;
+
+    /**
+     * L'icona è un'emoji (testo breve, mai un URL) oppure un'immagine data URL di dimensione limitata.
+     * Vuota/null = nessuna modifica (o icona di default alla creazione).
+     */
+    static void validateIcon(String icon) {
+        if (icon == null || icon.isBlank()) return;
+        if (icon.startsWith("data:")) {
+            if (icon.length() > MAX_IMAGE_ICON_LENGTH) {
+                throw new IllegalArgumentException("Immagine del gruppo troppo grande (massimo 300 KB)");
+            }
+            if (!IMAGE_ICON.matcher(icon).matches()) {
+                throw new IllegalArgumentException("Formato immagine del gruppo non valido: usa JPG, PNG o WebP");
+            }
+            return;
+        }
+        if (icon.length() > MAX_EMOJI_ICON_LENGTH || icon.contains(":") || icon.contains("/")) {
+            throw new IllegalArgumentException("Icona del gruppo non valida: usa un'emoji o un'immagine");
+        }
+    }
+
     @Transactional
     public Group createGroup(CreateGroupRequest request, String defaultUserId) {
+        validateIcon(request.getIcon());
         String creatorId = request.getCreatorId() != null && !request.getCreatorId().isBlank()
                 ? request.getCreatorId()
                 : defaultUserId;
@@ -47,7 +76,7 @@ public class GroupService {
                 .color(request.getColor() != null && !request.getColor().isBlank() ? request.getColor() : "#4f46e5")
                 .creatorId(creatorId)
                 .inviteCode(inviteCode)
-                .createdAt(Instant.now().toString().split("T")[0])
+                .createdAt(AppDates.todayIso())
                 .currency(request.getCurrency() != null && !request.getCurrency().isBlank() ? request.getCurrency() : "EUR")
                 .archived(false)
                 .mutedBy(new ArrayList<>())
@@ -100,6 +129,7 @@ public class GroupService {
 
     @Transactional
     public Optional<Group> updateGroup(String id, UpdateGroupRequest request) {
+        validateIcon(request.getIcon());
         return groupRepository.findById(id).map(existing -> {
             if (request.getName() != null && !request.getName().isBlank()) {
                 existing.setName(request.getName().trim());
@@ -118,10 +148,6 @@ public class GroupService {
             }
             if (request.getArchived() != null) {
                 existing.setArchived(request.getArchived());
-            }
-            if (request.getMutedBy() != null) {
-                existing.getMutedBy().clear();
-                existing.getMutedBy().addAll(request.getMutedBy());
             }
             return groupRepository.save(existing);
         });
@@ -167,31 +193,91 @@ public class GroupService {
         return Optional.of(group);
     }
 
-    @Transactional
-    public Optional<Group> removeMember(String groupId, String memberId) {
-        return groupRepository.findById(groupId).map(group -> {
-            group.getMembers().removeIf(m -> m.getId() != null && m.getId().equals(memberId));
-            return groupRepository.save(group);
-        });
+    /** Errore di una regola sui membri del gruppo, con lo status HTTP da restituire. */
+    public static class GroupRuleException extends RuntimeException {
+        private final int status;
+        public GroupRuleException(int status, String message) {
+            super(message);
+            this.status = status;
+        }
+        public int getStatus() { return status; }
     }
 
+    public static final String ROLE_ADMIN = "admin";
+    public static final String ROLE_MEMBER = "member";
+    public static final String LAST_ADMIN_MESSAGE =
+            "Sei l'unico amministratore del gruppo: nomina prima un altro amministratore";
+
+    /** Esito dell'uscita/rimozione: il gruppo aggiornato, oppure {@code groupDeleted} se era l'ultimo membro. */
+    public record RemoveMemberResult(Group group, boolean groupDeleted) {}
+
+    private static boolean isAdminRole(GroupMember m) {
+        return ROLE_ADMIN.equalsIgnoreCase(m.getRole());
+    }
+
+    private static GroupMember findMember(Group group, String memberId) {
+        return group.getMembers().stream()
+                .filter(m -> m.getId() != null && m.getId().equals(memberId))
+                .findFirst()
+                .orElseThrow(() -> new GroupRuleException(404, "Membro non trovato nel gruppo"));
+    }
+
+    /**
+     * Rimuove un membro (o l'utente esce). Regole:
+     * - se esce l'ultimo membro il gruppo viene eliminato (con i suoi viaggi);
+     * - l'ultimo admin non può uscire finché restano altri membri (409): un gruppo con membri ha sempre un admin.
+     */
+    @Transactional
+    public Optional<RemoveMemberResult> removeMember(String groupId, String memberId) {
+        Optional<Group> opt = groupRepository.findById(groupId);
+        if (opt.isEmpty()) return Optional.empty();
+        Group group = opt.get();
+        GroupMember target = findMember(group, memberId);
+        List<GroupMember> others = group.getMembers().stream().filter(m -> m != target).toList();
+        if (others.isEmpty()) {
+            deleteGroup(groupId);
+            return Optional.of(new RemoveMemberResult(null, true));
+        }
+        if (isAdminRole(target) && others.stream().noneMatch(GroupService::isAdminRole)) {
+            throw new GroupRuleException(409, LAST_ADMIN_MESSAGE);
+        }
+        group.getMembers().remove(target);
+        group.getMutedBy().remove(memberId);
+        return Optional.of(new RemoveMemberResult(groupRepository.save(group), false));
+    }
+
+    /**
+     * Cambia il ruolo di un membro. Ruoli ammessi: {@code admin} e {@code member} (400 altrimenti).
+     * L'ultimo admin non può declassarsi (409).
+     */
     @Transactional
     public Optional<Group> updateMemberRole(String groupId, String memberId, String role) {
-        return groupRepository.findById(groupId).map(group -> {
-            group.getMembers().stream()
-                    .filter(m -> m.getId() != null && m.getId().equals(memberId))
-                    .findFirst()
-                    .ifPresent(m -> m.setRole(role));
-            return groupRepository.save(group);
-        });
+        String normalized = role == null ? "" : role.trim().toLowerCase();
+        if (!ROLE_ADMIN.equals(normalized) && !ROLE_MEMBER.equals(normalized)) {
+            throw new GroupRuleException(400, "Ruolo non valido: usa \"admin\" o \"member\"");
+        }
+        Optional<Group> opt = groupRepository.findById(groupId);
+        if (opt.isEmpty()) return Optional.empty();
+        Group group = opt.get();
+        GroupMember target = findMember(group, memberId);
+        if (ROLE_MEMBER.equals(normalized) && isAdminRole(target)
+                && group.getMembers().stream().filter(m -> m != target).noneMatch(GroupService::isAdminRole)) {
+            throw new GroupRuleException(409, LAST_ADMIN_MESSAGE);
+        }
+        target.setRole(normalized);
+        return Optional.of(groupRepository.save(group));
     }
 
+    /**
+     * Silenzia/riattiva il gruppo per un solo utente. {@code muted} null = inverte lo stato attuale,
+     * altrimenti imposta lo stato richiesto (idempotente).
+     */
     @Transactional
-    public Optional<Group> toggleMuteGroup(String groupId, String userId) {
+    public Optional<Group> setGroupMuted(String groupId, String userId, Boolean muted) {
         return groupRepository.findById(groupId).map(group -> {
-            if (group.getMutedBy().contains(userId)) {
-                group.getMutedBy().remove(userId);
-            } else {
+            boolean target = muted != null ? muted : !group.getMutedBy().contains(userId);
+            group.getMutedBy().remove(userId);
+            if (target) {
                 group.getMutedBy().add(userId);
             }
             return groupRepository.save(group);

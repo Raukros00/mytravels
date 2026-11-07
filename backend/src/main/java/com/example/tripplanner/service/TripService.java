@@ -1,5 +1,6 @@
 package com.example.tripplanner.service;
 
+import com.example.tripplanner.util.AppDates;
 import com.example.tripplanner.dto.CreateTripRequest;
 import com.example.tripplanner.dto.UpdateTripRequest;
 import com.example.tripplanner.model.*;
@@ -7,10 +8,10 @@ import com.example.tripplanner.repository.TripActivityRepository;
 import com.example.tripplanner.repository.TripExpenseRepository;
 import com.example.tripplanner.repository.TripPlaceToEatRepository;
 import com.example.tripplanner.repository.TripRepository;
+import com.example.tripplanner.validation.TripDates;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -37,6 +38,7 @@ public class TripService {
 
     @Transactional
     public Trip createTrip(CreateTripRequest request) {
+        TripDates.validate(request.getStartDate(), request.getEndDate());
         String decision = request.getDecision();
         if (decision == null) {
             decision = Boolean.TRUE.equals(request.getAsProposal()) ? "proposal" : "confirmed";
@@ -69,7 +71,7 @@ public class TripService {
                         ? new ArrayList<>(request.getTags())
                         : new ArrayList<>(List.of("Viaggio", "Gourmet")))
                 .notes(request.getNotes() != null ? request.getNotes().trim() : "")
-                .createdAt(Instant.now().toString().split("T")[0])
+                .createdAt(AppDates.todayIso())
                 .activities(new ArrayList<>())
                 .placesToEat(new ArrayList<>())
                 .expenses(new ArrayList<>())
@@ -93,6 +95,8 @@ public class TripService {
     @Transactional
     public Optional<Trip> updateTrip(String id, UpdateTripRequest request) {
         return tripRepository.findById(id).map(existing -> {
+            TripDates.validateUpdate(existing.getStartDate(), existing.getEndDate(),
+                    request.getStartDate(), request.getEndDate());
             if (request.getTitle() != null)       existing.setTitle(request.getTitle().trim());
             if (request.getDestination() != null) {
                 existing.setDestination(request.getDestination().trim());
