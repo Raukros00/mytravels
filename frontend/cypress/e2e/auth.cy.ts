@@ -1,5 +1,6 @@
 import { uniq } from '../support/e2e';
 import { USERS } from '../support/users';
+import { toIsoDate } from '../../src/app/core/utils/date.utils';
 
 const authModal = () => cy.dialog('Accedi o registrati');
 
@@ -205,7 +206,7 @@ describe('Autenticazione (modale)', () => {
       const d = new Date();
       d.setFullYear(d.getFullYear() - years);
       d.setDate(d.getDate() + days);
-      return d.toISOString().split('T')[0];
+      return toIsoDate(d); // data locale, come l'app (non UTC: sbagliata tra mezzanotte e l'una)
     };
 
     function fillRegistration(first: string, last: string, email: string, birthDate = '1990-05-17') {
@@ -366,7 +367,7 @@ describe('Autenticazione (modale)', () => {
     it('rifiuta chi ha meno di 14 anni', () => {
       const d = new Date();
       d.setFullYear(d.getFullYear() - 13);
-      register({ ...valid(), birthDate: d.toISOString().split('T')[0] }).then(res => {
+      register({ ...valid(), birthDate: toIsoDate(d) }).then(res => {
         expect(res.status).to.eq(400);
         expect(res.body.message).to.contain('birthDate');
       });

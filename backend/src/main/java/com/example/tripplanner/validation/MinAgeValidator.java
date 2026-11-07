@@ -1,5 +1,6 @@
 package com.example.tripplanner.validation;
 
+import com.example.tripplanner.util.AppDates;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
@@ -17,6 +18,6 @@ public class MinAgeValidator implements ConstraintValidator<MinAge, LocalDate> {
     @Override
     public boolean isValid(LocalDate birthDate, ConstraintValidatorContext context) {
         if (birthDate == null) return true; // l'obbligatorietà la gestisce @NotNull
-        return !birthDate.isAfter(LocalDate.now().minusYears(minAge));
+        return !birthDate.isAfter(AppDates.today().minusYears(minAge));
     }
 }

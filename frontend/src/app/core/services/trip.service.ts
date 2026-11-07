@@ -19,6 +19,7 @@ import {
   deriveTripStatus,
   isProposal
 } from '../models/trip.model';
+import { addDaysIso, todayIso } from '../utils/date.utils';
 
 @Injectable({
   providedIn: 'root'
@@ -141,7 +142,7 @@ export class TripService {
       currency: dto.currency || 'EUR',
       tags: dto.tags && dto.tags.length > 0 ? dto.tags : ['Viaggio', 'Gourmet'],
       notes: dto.notes?.trim() || '',
-      createdAt: new Date().toISOString().split('T')[0],
+      createdAt: todayIso(),
       activities: [],
       placesToEat: []
     };
@@ -176,9 +177,7 @@ export class TripService {
   public createTripFromTemplate(template: TripTemplate, groupId: string, startDate: string): Trip {
     const stamp = Date.now();
     const id = 'trip_' + stamp;
-    const end = new Date(startDate + 'T00:00:00Z');
-    end.setUTCDate(end.getUTCDate() + Math.max(template.durationDays, 1) - 1);
-    const endDate = end.toISOString().split('T')[0];
+    const endDate = addDaysIso(startDate, Math.max(template.durationDays, 1) - 1);
     const uid = (prefix: string, i: number) => `${prefix}_${stamp}_${i}`;
 
     const trip: Trip = {
@@ -196,7 +195,7 @@ export class TripService {
       currency: template.currency,
       tags: [...template.tags],
       notes: [`Ispirato all'itinerario di ${template.authorName}.`, template.notes].filter(Boolean).join('\n\n'),
-      createdAt: new Date().toISOString().split('T')[0],
+      createdAt: todayIso(),
       activities: template.activities.map((a, i) => ({ ...a, id: uid('act', i), tripId: id, isCompleted: false })),
       placesToEat: template.placesToEat.map((p, i) => ({ ...p, id: uid('eat', i), tripId: id, isVisited: false })),
       accommodation: template.accommodation ? { ...template.accommodation } : undefined

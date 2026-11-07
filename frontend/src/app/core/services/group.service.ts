@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { ApiService } from './api.service';
 import { CreateGroupDto, Group } from '../models/group.model';
 import { USE_MOCK_DATA } from '../config/mock.config';
+import { todayIso } from '../utils/date.utils';
 
 /** Toast quando l'unico admin prova a uscire da un gruppo con altri membri. */
 export const LAST_ADMIN_LEAVE_MESSAGE = 'Nomina prima un altro amministratore: sei l\'unico admin del gruppo.';
@@ -109,7 +110,7 @@ export class GroupService {
       color: dto.color || '#4f46e5',
       creatorId: user?.id || 'anonymous',
       inviteCode: code,
-      createdAt: new Date().toISOString().split('T')[0],
+      createdAt: todayIso(),
       members: user ? [
         {
           id: user.id,

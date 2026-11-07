@@ -13,12 +13,13 @@ import {
   splitEqually,
   toCents
 } from '../trip-expenses-tab/trip-expenses.utils';
+import { todayIso } from '../../../../../core/utils/date.utils';
 
 export type ExpenseFormValue = Omit<TripExpense, 'id' | 'tripId'>;
 type SplitMode = 'equal' | 'custom';
 
 function today(): string {
-  return new Date().toISOString().split('T')[0];
+  return todayIso();
 }
 
 @Component({

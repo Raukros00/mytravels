@@ -1,3 +1,5 @@
+import { todayIso } from '../utils/date.utils';
+
 export type TripStatus = 'planning' | 'upcoming' | 'ongoing' | 'completed';
 
 /** 'proposal' = still to be voted by the group; missing value means 'confirmed'. */
@@ -178,7 +180,7 @@ export interface CreateTripDto {
 
 /** Timeline status derived from the dates, so it never gets stale. */
 export function deriveTripStatus(trip: Pick<Trip, 'startDate' | 'endDate'>, now = new Date()): TripStatus {
-  const today = now.toISOString().split('T')[0];
+  const today = todayIso(now);
   if (trip.endDate < today) return 'completed';
   if (trip.startDate <= today) return 'ongoing';
   return 'upcoming';
