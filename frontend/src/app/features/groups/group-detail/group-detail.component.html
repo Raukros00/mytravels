@@ -97,7 +97,11 @@
 
   <p style="font-size:0.9rem; color:var(--wb-text-secondary); line-height:1.6">
     {{ 'groups.leave_text_1' | translate }} <strong>{{ group()?.name }}</strong>.<br>
-    {{ 'groups.leave_text_2' | translate }}
+    @if (leaveDeletesGroup()) {
+      <span class="leave-delete-warning" style="color:#dc2626; font-weight:600">{{ 'groups.leave_last_member_text' | translate }}</span>
+    } @else {
+      {{ 'groups.leave_text_2' | translate }}
+    }
   </p>
 
   <div modal-footer style="display:flex; justify-content:space-between; width:100%">

@@ -163,8 +163,28 @@ describe('Gruppi – lista', () => {
 
       openCardMenu(name);
       cy.contains('.dropdown-item', t.card_leave).click();
-      cy.toast('Non puoi uscire dal gruppo finché non assegni un altro admin.').should('be.visible');
+      cy.toast('Nomina prima un altro amministratore: sei l\'unico admin del gruppo.').should('be.visible');
       groupCard(name).should('be.visible');
+    });
+  });
+
+  it('l\'ultimo membro può lasciare il gruppo, che viene eliminato dopo conferma', () => {
+    const name = uniq('E2E Ultimo membro');
+    cy.createGroup('admin', name).then(group => {
+      cy.reload();
+
+      openCardMenu(name);
+      cy.contains('.dropdown-item', t.card_leave).click();
+      cy.dialog(t.leave_title).within(() => {
+        cy.contains(t.leave_last_member_text).should('be.visible');
+        cy.contains('button', t.leave_btn).click();
+      });
+
+      cy.toast(`Hai lasciato il gruppo "${name}", che è stato eliminato.`).should('be.visible');
+      cy.contains('.group-name', name).should('not.exist');
+      // Il gruppo non esiste più: nessun membro lo vede.
+      cy.apiUntil('admin', '/api/v1/groups', (groups: any[]) =>
+        expect(groups.map(g => g.id)).not.to.include(group.id));
     });
   });
 });

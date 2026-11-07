@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
-import { GroupService } from '../../../core/services/group.service';
+import { GroupService, LAST_ADMIN_LEAVE_MESSAGE } from '../../../core/services/group.service';
 import { GroupInviteService } from '../../../core/services/group-invite.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Group } from '../../../core/models/group.model';
@@ -48,24 +48,27 @@ export class GroupListComponent {
     this.openMenuId.set(null);
     const user = this.authService.currentUser();
     if (!user) return;
-    const member = group.members.find(m => m.id === user.id);
-    if (member?.role === 'admin') {
-      const otherAdmins = group.members.filter(m => m.id !== user.id && m.role === 'admin');
-      if (otherAdmins.length === 0) {
-        this.toastService.error('Non puoi uscire dal gruppo finché non assegni un altro admin.');
-        return;
-      }
+    if (this.groupService.isLastAdmin(group, user.id)) {
+      this.toastService.error(LAST_ADMIN_LEAVE_MESSAGE);
+      return;
     }
     this.leaveConfirmGroup.set(group);
   }
+
+  /** Nella conferma di uscita: l'utente è l'ultimo membro, quindi il gruppo verrà eliminato. */
+  readonly leaveDeletesGroup = computed(() =>
+    this.groupService.isLastMember(this.leaveConfirmGroup(), this.authService.currentUser()?.id));
 
   confirmLeave(): void {
     const group = this.leaveConfirmGroup();
     const user = this.authService.currentUser();
     if (!group || !user) return;
+    const deletesGroup = this.leaveDeletesGroup();
     this.groupService.removeMember(group.id, user.id);
     this.leaveConfirmGroup.set(null);
-    this.toastService.success(`Hai lasciato il gruppo "${group.name}".`);
+    this.toastService.success(deletesGroup
+      ? `Hai lasciato il gruppo "${group.name}", che è stato eliminato.`
+      : `Hai lasciato il gruppo "${group.name}".`);
   }
 
   isGroupCreator(group: Group): boolean {
