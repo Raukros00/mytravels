@@ -53,6 +53,8 @@ export class TripCreateComponent {
   private requestedGroupId = this.route.snapshot.queryParamMap.get('groupId');
   private toastService = inject(ToastService);
 
+  /** Creazione in corso: il viaggio si apre solo quando il server lo ha salvato. */
+  protected readonly saving = signal(false);
   public currentTag = signal('');
   public tagsList = signal<string[]>(['Food Tour', 'Tapas & Gusto']);
 
@@ -260,6 +262,7 @@ export class TripCreateComponent {
   }
 
   onSubmit(): void {
+    if (this.saving()) return;
     if (this.tripForm.invalid) {
       this.toastService.error('Compila tutti i campi obbligatori.');
       return;
@@ -269,7 +272,8 @@ export class TripCreateComponent {
     const suggestion = this.selectedSuggestion();
     const place = this.selectedPlace();
     if (suggestion) this.covers.trackDownload(suggestion.downloadLocation);
-    const created = this.tripService.createTrip({
+    this.saving.set(true);
+    this.tripService.createTrip({
       groupId: val.groupId!,
       title: val.title!,
       destination: val.destination!,
@@ -288,8 +292,10 @@ export class TripCreateComponent {
       tags: this.tagsList(),
       notes: val.notes || '',
       asProposal: !!val.asProposal
+    }).subscribe({
+      next: (created) => this.router.navigate(val.asProposal ? ['/groups', created.groupId] : ['/trips', created.id]),
+      // L'errore è già stato mostrato: il form resta compilato per riprovare.
+      error: () => this.saving.set(false)
     });
-
-    this.router.navigate(val.asProposal ? ['/groups', created.groupId] : ['/trips', created.id]);
   }
 }

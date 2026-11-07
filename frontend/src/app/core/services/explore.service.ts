@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { DurationBucket, ExploreFilters, ExploreSort, TripTemplate } from '../models/trip-template.model';
+import { Observable, tap } from 'rxjs';
 import { Trip } from '../models/trip.model';
 import { EXPLORE_CATALOG } from '../data/explore-catalog';
 import { TripService } from './trip.service';
@@ -106,15 +107,17 @@ export class ExploreService {
     return this.templatesSignal().find(t => t.id === id);
   }
 
-  /** Clones a template into a real, freely editable trip of the group. */
-  public assignToGroup(templateId: string, groupId: string, startDate: string): Trip | undefined {
+  /** Clones a template into a real, freely editable trip of the group (once the backend has saved it). */
+  public assignToGroup(templateId: string, groupId: string, startDate: string): Observable<Trip> | undefined {
     const template = this.getById(templateId);
     if (!template || !groupId || !startDate) return undefined;
 
-    const trip = this.tripService.createTripFromTemplate(template, groupId, startDate);
-    // Local only: usesCount persistence needs the backend (TECHNICAL_DEBT.md)
-    this.templatesSignal.update(list => list.map(t => t.id === templateId ? { ...t, usesCount: t.usesCount + 1 } : t));
-    this.toastService.success(`"${template.title}" aggiunto al gruppo: ora puoi personalizzarlo! 🎒`);
-    return trip;
+    return this.tripService.createTripFromTemplate(template, groupId, startDate).pipe(
+      tap(() => {
+        // Local only: usesCount persistence needs the backend (TECHNICAL_DEBT.md)
+        this.templatesSignal.update(list => list.map(t => t.id === templateId ? { ...t, usesCount: t.usesCount + 1 } : t));
+        this.toastService.success(`"${template.title}" aggiunto al gruppo: ora puoi personalizzarlo! 🎒`);
+      })
+    );
   }
 }

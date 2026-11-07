@@ -1,5 +1,5 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
-import { forkJoin, of, switchMap } from 'rxjs';
+import { EMPTY, Observable, catchError, finalize, forkJoin, from, of, switchMap, tap, throwError } from 'rxjs';
 import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
 import { GroupService } from './group.service';
@@ -35,10 +35,12 @@ export class TripService {
    */
   private readonly deletedIds = new Set<string>();
 
-  /** Optimistic local ids (trip_<timestamp>) → ids assigned by the backend. */
-  private readonly idAliases = signal<Record<string, string>>({});
+  /** Elementi (attività, locali, spese) appena aggiunti e non ancora confermati dal server. */
+  private readonly pendingCreates = new Map<string, Promise<boolean>>();
 
-  private tripsSignal = signal<Trip[]>(this.storageService.getTrips());
+  // Viaggi con id provvisorio (trip_<timestamp>) lasciati in cache da versioni precedenti:
+  // non esistono sul server, quindi non vanno mostrati (i dati demo locali usano lo stesso prefisso).
+  private tripsSignal = signal<Trip[]>(this.cachedTrips());
   public readonly trips = this.tripsSignal.asReadonly();
 
   // Confirmed trips for the active group, with the status derived from their dates
@@ -64,6 +66,14 @@ export class TripService {
     };
   });
 
+  private cachedTrips(): Trip[] {
+    const cached = this.storageService.getTrips();
+    if (USE_MOCK_DATA) return cached;
+    const synced = cached.filter(t => !t.id.startsWith('trip_'));
+    if (synced.length !== cached.length) this.storageService.setTrips(synced);
+    return synced;
+  }
+
   constructor() {
     // Logout: niente viaggi dell'utente precedente in memoria.
     effect(() => {
@@ -80,21 +90,23 @@ export class TripService {
   }
 
   /**
-   * Loads a single trip from the backend if it is not in memory yet: only the active
-   * group's trips are preloaded, so a direct link or a reload of another group's trip
-   * would otherwise show "Viaggio non trovato".
+   * Loads a single trip from the backend when its page is opened. Only the active group's
+   * trips are preloaded, so a direct link to another group's trip would otherwise show
+   * "Viaggio non trovato"; and a copy already in cache may be stale (changes made by other
+   * members), so it is replaced by the server's one.
    */
   public ensureTripLoaded(id: string): void {
-    if (USE_MOCK_DATA || id.startsWith('trip_') || this.getTripById(id)) return;
+    if (USE_MOCK_DATA || id.startsWith('trip_')) return;
     this.apiService.get<Trip>(`/api/v1/trips/${id}`).subscribe({
       next: (trip) => {
-        if (!trip || this.getTripById(trip.id)) return;
-        const updated = [trip, ...this.tripsSignal()];
-        this.tripsSignal.set(updated);
-        this.storageService.setTrips(updated);
+        if (!trip || this.deletedIds.has(trip.id)) return;
+        this.addLocalTrip(trip, false);
       },
-      // 404: the trip does not exist, the page shows "Viaggio non trovato".
-      error: (err) => { if (err.status !== 404) console.warn('Could not load trip:', err.status); }
+      error: (err) => {
+        // 404: the trip does not exist (any more), the page shows "Viaggio non trovato".
+        if (err.status === 404) this.setLocalTrips(this.tripsSignal().filter(t => t.id !== id));
+        else console.warn('Could not load trip:', err.status);
+      }
     });
   }
 
@@ -106,7 +118,7 @@ export class TripService {
         if (!this.authService.currentUser()) return;
         if (trips) {
           const otherTrips = this.tripsSignal().filter(t => t.groupId !== groupId);
-          const merged = [...trips.filter(t => !this.deletedIds.has(t.id)), ...otherTrips];
+          const merged = [...trips.filter(t => !this.deletedIds.has(t.id)).map(t => this.withPendingChildren(t)), ...otherTrips];
           this.tripsSignal.set(merged);
           this.storageService.setTrips(merged);
         }
@@ -117,72 +129,42 @@ export class TripService {
     });
   }
 
-  public createTrip(dto: CreateTripDto): Trip {
-    const localTrip: Trip = {
-      id: 'trip_' + Date.now(),
-      groupId: dto.groupId,
-      title: dto.title.trim(),
-      destination: dto.destination.trim(),
-      country: dto.country.trim(),
-      startDate: dto.startDate,
-      endDate: dto.endDate,
-      coverUrl: dto.coverUrl || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80',
-      coverCreditName: dto.coverCreditName ?? null,
-      coverCreditUrl: dto.coverCreditUrl ?? null,
-      destinationPlaceId: dto.destinationPlaceId ?? null,
-      destinationIntlName: dto.destinationIntlName ?? null,
-      destinationLat: dto.destinationLat ?? null,
-      destinationLng: dto.destinationLng ?? null,
-      status: 'planning',
-      decision: dto.asProposal ? 'proposal' : 'confirmed',
-      proposedBy: dto.asProposal ? this.authService.currentUser()?.id : undefined,
-      votes: dto.asProposal ? [] : undefined,
-      budgetEstimate: dto.budgetEstimate || 0,
-      currency: dto.currency || 'EUR',
-      tags: dto.tags && dto.tags.length > 0 ? dto.tags : ['Viaggio', 'Gourmet'],
-      notes: dto.notes?.trim() || '',
-      createdAt: new Date().toISOString().split('T')[0],
-      activities: [],
-      placesToEat: []
-    };
-
-    const updated = [localTrip, ...this.tripsSignal()];
-    this.tripsSignal.set(updated);
-    this.storageService.setTrips(updated);
-
-    // Sync to backend
-    this.apiService.post<Trip>('/api/v1/trips', {
-      ...dto,
-      decision: localTrip.decision,
-      proposedBy: localTrip.proposedBy
-    }).subscribe({
-      next: (created) => this.replaceLocalTrip(localTrip.id, created),
-      error: (err) => {
-        console.error('Error creating trip on backend:', err);
-      }
-    });
-
-    this.toastService.success(dto.asProposal
-      ? `Proposta "${dto.title}" creata: ora il gruppo può votarla.`
-      : `Viaggio "${dto.title}" creato con successo! 🎒`);
-    return localTrip;
+  /**
+   * Crea il viaggio sul server e lo aggiunge alla lista solo dopo la conferma: niente id
+   * locali provvisori, quindi niente viaggi fantasma in caso di errore e le modifiche fatte
+   * subito dopo partono già con l'id definitivo. In caso di errore mostra un toast e
+   * propaga l'errore (chi chiama riabilita il form).
+   */
+  public createTrip(dto: CreateTripDto): Observable<Trip> {
+    const { asProposal, ...fields } = dto;
+    return this.apiService.post<Trip>('/api/v1/trips', {
+      ...fields,
+      decision: asProposal ? 'proposal' : 'confirmed',
+      proposedBy: asProposal ? this.authService.currentUser()?.id : undefined
+    }).pipe(
+      tap({
+        next: (created) => {
+          this.addLocalTrip(created);
+          this.toastService.success(asProposal
+            ? `Proposta "${created.title}" creata: ora il gruppo può votarla.`
+            : `Viaggio "${created.title}" creato con successo! 🎒`);
+        },
+        error: (err) => this.warnFailure('creare il viaggio', err, 'Non è stato possibile creare il viaggio. Riprova.')
+      })
+    );
   }
 
   /**
    * Clones an "Esplora" template into a regular trip of the group (new ids, dates from `startDate`).
-   * Stored locally only: the backend has no template/bulk-activities endpoints yet, and syncing the trip
-   * alone would replace it with a response without activities (see TECHNICAL_DEBT.md).
+   * Saved on the backend first (trip, then activities, places and accommodation) and added to the
+   * list only once everything is stored; if a part fails the half-created trip is removed again.
    */
-  public createTripFromTemplate(template: TripTemplate, groupId: string, startDate: string): Trip {
-    const stamp = Date.now();
-    const id = 'trip_' + stamp;
+  public createTripFromTemplate(template: TripTemplate, groupId: string, startDate: string): Observable<Trip> {
     const end = new Date(startDate + 'T00:00:00Z');
     end.setUTCDate(end.getUTCDate() + Math.max(template.durationDays, 1) - 1);
     const endDate = end.toISOString().split('T')[0];
-    const uid = (prefix: string, i: number) => `${prefix}_${stamp}_${i}`;
 
-    const trip: Trip = {
-      id,
+    const base = {
       groupId,
       title: template.title,
       destination: template.destination,
@@ -190,56 +172,73 @@ export class TripService {
       startDate,
       endDate,
       coverUrl: template.coverUrl,
-      status: 'planning',
       decision: 'confirmed',
       budgetEstimate: template.budgetEstimate,
       currency: template.currency,
       tags: [...template.tags],
-      notes: [`Ispirato all'itinerario di ${template.authorName}.`, template.notes].filter(Boolean).join('\n\n'),
-      createdAt: new Date().toISOString().split('T')[0],
-      activities: template.activities.map((a, i) => ({ ...a, id: uid('act', i), tripId: id, isCompleted: false })),
-      placesToEat: template.placesToEat.map((p, i) => ({ ...p, id: uid('eat', i), tripId: id, isVisited: false })),
-      accommodation: template.accommodation ? { ...template.accommodation } : undefined
+      notes: [`Ispirato all'itinerario di ${template.authorName}.`, template.notes].filter(Boolean).join('\n\n')
     };
+    // Senza id: li assegna il backend (quelli del modello si ripeterebbero a ogni assegnazione).
+    const activities = template.activities.map(({ id: _id, tripId: _t, ...a }) => ({ ...a, isCompleted: false }));
+    const placesToEat = template.placesToEat.map(({ id: _id, tripId: _t, ...p }) => ({ ...p, isVisited: false }));
+    const accommodation = template.accommodation ? { ...template.accommodation } : undefined;
 
-    const updated = [trip, ...this.tripsSignal()];
-    this.tripsSignal.set(updated);
-    this.storageService.setTrips(updated);
-
-    // Persist on the backend: the trip first, then its activities, places and accommodation.
-    const { id: _id, activities, placesToEat, accommodation, status: _status, createdAt: _createdAt, ...base } = trip;
-    this.apiService.post<Trip>('/api/v1/trips', base).pipe(
+    return this.apiService.post<Trip>('/api/v1/trips', base).pipe(
       switchMap(created => {
         const children = [
-          ...(activities ?? []).map(({ id: _a, tripId: _t, ...a }) =>
-            this.apiService.post(`/api/v1/trips/${created.id}/activities`, a)),
-          ...(placesToEat ?? []).map(({ id: _p, tripId: _t, ...p }) =>
-            this.apiService.post(`/api/v1/trips/${created.id}/places-to-eat`, p)),
+          ...activities.map(a => this.apiService.post(`/api/v1/trips/${created.id}/activities`, a)),
+          ...placesToEat.map(p => this.apiService.post(`/api/v1/trips/${created.id}/places-to-eat`, p)),
           ...(accommodation ? [this.apiService.put(`/api/v1/trips/${created.id}/accommodation`, accommodation)] : [])
         ];
         return (children.length ? forkJoin(children) : of([])).pipe(
-          switchMap(() => this.apiService.get<Trip>(`/api/v1/trips/${created.id}`))
+          switchMap(() => this.apiService.get<Trip>(`/api/v1/trips/${created.id}`)),
+          // Salvato a metà: meglio nessun viaggio che uno senza metà delle attività.
+          catchError(err => this.apiService.delete(`/api/v1/trips/${created.id}`).pipe(
+            catchError(() => of(null)),
+            switchMap(() => throwError(() => err))
+          ))
         );
+      }),
+      tap({
+        next: (saved) => this.addLocalTrip(saved),
+        error: (err) => this.warnFailure('salvare l\'itinerario', err, 'Non è stato possibile salvare il viaggio sul server. Riprova.')
       })
-    ).subscribe({
-      next: (saved) => this.replaceLocalTrip(id, saved),
-      error: (err) => {
-        console.error('Error creating trip from template on backend:', err);
-        this.toastService.error('Non è stato possibile salvare il viaggio sul server.');
-      }
-    });
-    return trip;
+    );
   }
 
   /**
-   * Replaces the optimistic local trip with the one saved by the backend (new id)
-   * and remembers the alias, so a page opened on the local id keeps working.
+   * Mette in lista la copia del server (in testa, o al posto di quella locale). Gli elementi
+   * aggiunti in locale e non ancora confermati dal server restano, per non farli sparire.
    */
-  private replaceLocalTrip(localId: string, saved: Trip): void {
-    this.idAliases.update(a => ({ ...a, [localId]: saved.id }));
-    const synced = this.tripsSignal().map(t => t.id === localId ? saved : t);
-    this.tripsSignal.set(synced);
-    this.storageService.setTrips(synced);
+  private addLocalTrip(trip: Trip, toFront = true): void {
+    const current = this.getTripById(trip.id);
+    const merged = this.withPendingChildren(trip);
+    this.setLocalTrips(current && !toFront
+      ? this.tripsSignal().map(t => t.id === trip.id ? merged : t)
+      : [merged, ...this.tripsSignal().filter(t => t.id !== trip.id)]);
+  }
+
+  /** La copia del server più gli elementi locali non ancora confermati (altrimenti sparirebbero). */
+  private withPendingChildren(trip: Trip): Trip {
+    const current = this.getTripById(trip.id);
+    if (!current || this.pendingCreates.size === 0) return trip;
+    const keep = <T extends { id: string }>(local: T[] | undefined, server: T[] | undefined): T[] => [
+      ...(server ?? []),
+      ...(local ?? []).filter(i => this.pendingCreates.has(i.id) && !(server ?? []).some(s => s.id === i.id))
+    ];
+    return {
+      ...trip,
+      activities: keep(current.activities, trip.activities),
+      placesToEat: keep(current.placesToEat, trip.placesToEat),
+      expenses: keep(current.expenses, trip.expenses)
+    };
+  }
+
+  /** Errore di salvataggio gestito: avviso all'utente (non è un errore inatteso dell'app). */
+  private warnFailure(action: string, err: unknown, message = `Non è stato possibile ${action}: modifica annullata.`): void {
+    const e = err as { status?: number; message?: string };
+    console.warn(`Could not ${action} on backend:`, e?.status, e?.message);
+    this.toastService.error(message);
   }
 
   /** Votes that still count: only from current members of the group. */
@@ -277,30 +276,23 @@ export class TripService {
     return this.tripsSignal().find(t => t.id === id);
   }
 
-  /** The current id of a trip: follows the optimistic local id once the backend has saved it. */
-  public resolveTripId(id: string): string {
-    return this.idAliases()[id] ?? id;
-  }
-
+  /**
+   * Aggiorna i campi del viaggio: subito in locale, poi sul server. In caso di errore
+   * i campi tornano ai valori precedenti e l'utente viene avvisato.
+   */
   public updateTrip(id: string, partial: Partial<Trip>): Trip | undefined {
-    const found = this.tripsSignal().find(t => t.id === id);
+    const found = this.getTripById(id);
     if (!found) return undefined;
 
+    const previous = Object.fromEntries(Object.keys(partial).map(k => [k, found[k as keyof Trip]])) as Partial<Trip>;
     const updatedTrip = { ...found, ...partial };
-    const updatedAll = this.tripsSignal().map(t => t.id === id ? updatedTrip : t);
+    this.patchLocalTrip(id, partial);
 
-    this.tripsSignal.set(updatedAll);
-    this.storageService.setTrips(updatedAll);
-
-    // Sync to backend
     this.apiService.put<Trip>(`/api/v1/trips/${id}`, updatedTrip).subscribe({
-      next: (syncedTrip) => {
-        const synced = this.tripsSignal().map(t => t.id === id ? syncedTrip : t);
-        this.tripsSignal.set(synced);
-        this.storageService.setTrips(synced);
-      },
+      next: (syncedTrip) => this.patchLocalTrip(id, syncedTrip),
       error: (err) => {
-        console.error('Error updating trip on backend:', err);
+        this.patchLocalTrip(id, previous);
+        this.warnFailure('salvare le modifiche al viaggio', err);
       }
     });
 
@@ -308,236 +300,250 @@ export class TripService {
   }
 
   public deleteTrip(id: string): void {
+    const index = this.tripsSignal().findIndex(t => t.id === id);
+    if (index < 0) return;
+    const found = this.tripsSignal()[index];
     this.deletedIds.add(id);
-    const found = this.tripsSignal().find(t => t.id === id);
-    const updated = this.tripsSignal().filter(t => t.id !== id);
-    this.tripsSignal.set(updated);
-    this.storageService.setTrips(updated);
+    this.setLocalTrips(this.tripsSignal().filter(t => t.id !== id));
 
-    if (found) {
-      this.toastService.info(`Viaggio "${found.title}" rimosso.`);
-    }
-
-    // Sync to backend
     this.apiService.delete(`/api/v1/trips/${id}`).subscribe({
+      next: () => this.toastService.info(`Viaggio "${found.title}" rimosso.`),
       error: (err) => {
-        // Non eliminato sul server: le prossime liste lo devono mostrare di nuovo.
+        // Già eliminato sul server (es. da un altro membro): il risultato è quello voluto.
+        if (err?.status === 404) {
+          this.toastService.info(`Viaggio "${found.title}" rimosso.`);
+          return;
+        }
+        // Non eliminato: torna al suo posto e le prossime liste lo devono mostrare di nuovo.
         this.deletedIds.delete(id);
-        console.error('Error deleting trip on backend:', err);
+        if (!this.getTripById(id)) {
+          const list = [...this.tripsSignal()];
+          list.splice(Math.min(index, list.length), 0, found);
+          this.setLocalTrips(list);
+        }
+        this.warnFailure('eliminare il viaggio', err, `Non è stato possibile eliminare il viaggio "${found.title}". Riprova.`);
       }
     });
   }
 
   // Activity Management
   public addActivity(tripId: string, activity: Omit<TripActivity, 'id' | 'tripId'>): TripActivity {
-    const newAct: TripActivity = {
-      ...activity,
-      id: 'act_' + Date.now(),
-      tripId
-    };
-
-    const trip = this.getTripById(tripId);
-    if (trip) {
-      const activities = [...(trip.activities || []), newAct];
-      this.patchLocalTrip(tripId, { activities });
-      this.toastService.success(`Attrazione "${newAct.name}" aggiunta! 🏛️`);
-    }
-
-    // Direct endpoint sync
-    this.apiService.post<TripActivity>(`/api/v1/trips/${tripId}/activities`, newAct).subscribe({
-      next: (savedAct) => {
-        const currentTrip = this.getTripById(tripId);
-        if (currentTrip && currentTrip.activities) {
-          const acts = currentTrip.activities.map(a => a.id === newAct.id ? savedAct : a);
-          this.patchLocalTrip(tripId, { activities: acts });
-        }
-      },
-      error: (err) => console.error('Error adding activity to backend:', err)
+    const newAct: TripActivity = { ...activity, id: localId('act'), tripId };
+    this.addChild(tripId, 'activities', newAct, {
+      success: `Attrazione "${newAct.name}" aggiunta! 🏛️`,
+      action: `aggiungere l'attrazione "${newAct.name}"`
     });
-
     return newAct;
   }
 
   public updateActivity(tripId: string, activityId: string, partial: Partial<TripActivity>): void {
-    const trip = this.getTripById(tripId);
-    if (!trip || !trip.activities) return;
-
-    const target = trip.activities.find(a => a.id === activityId);
-    if (!target) return;
-    const merged = { ...target, ...partial };
-
-    const updatedActivities = trip.activities.map(a => a.id === activityId ? merged : a);
-    this.patchLocalTrip(tripId, { activities: updatedActivities });
-    this.toastService.success('Attrazione aggiornata!');
-
-    this.apiService.put<TripActivity>(`/api/v1/trips/${tripId}/activities/${activityId}`, merged).subscribe({
-      error: (err) => console.error('Error updating activity on backend:', err)
+    this.updateChild(tripId, 'activities', activityId, partial, {
+      success: 'Attrazione aggiornata!',
+      action: 'aggiornare l\'attrazione'
     });
   }
 
   public deleteActivity(tripId: string, activityId: string): void {
-    const trip = this.getTripById(tripId);
-    if (!trip || !trip.activities) return;
-
-    const updatedActivities = trip.activities.filter(a => a.id !== activityId);
-    this.patchLocalTrip(tripId, { activities: updatedActivities });
-    this.toastService.info('Attrazione rimossa dal viaggio.');
-
-    this.apiService.delete(`/api/v1/trips/${tripId}/activities/${activityId}`).subscribe({
-      error: (err) => console.error('Error deleting activity on backend:', err)
+    this.deleteChild(tripId, 'activities', activityId, {
+      success: 'Attrazione rimossa dal viaggio.',
+      action: 'rimuovere l\'attrazione'
     });
   }
 
   // Food / Places to Eat Management
   public addPlaceToEat(tripId: string, place: Omit<TripPlaceToEat, 'id' | 'tripId'>): TripPlaceToEat {
-    const newPlace: TripPlaceToEat = {
-      ...place,
-      id: 'eat_' + Date.now(),
-      tripId
-    };
-
-    const trip = this.getTripById(tripId);
-    if (trip) {
-      const placesToEat = [...(trip.placesToEat || []), newPlace];
-      this.patchLocalTrip(tripId, { placesToEat });
-      this.toastService.success(`Posto "${newPlace.name}" aggiunto ai ristoranti! 🍽️`);
-    }
-
-    this.apiService.post<TripPlaceToEat>(`/api/v1/trips/${tripId}/places-to-eat`, newPlace).subscribe({
-      next: (savedPlace) => {
-        const currentTrip = this.getTripById(tripId);
-        if (currentTrip && currentTrip.placesToEat) {
-          const places = currentTrip.placesToEat.map(p => p.id === newPlace.id ? savedPlace : p);
-          this.patchLocalTrip(tripId, { placesToEat: places });
-        }
-      },
-      error: (err) => console.error('Error adding place to eat to backend:', err)
+    const newPlace: TripPlaceToEat = { ...place, id: localId('eat'), tripId };
+    this.addChild(tripId, 'placesToEat', newPlace, {
+      success: `Posto "${newPlace.name}" aggiunto ai ristoranti! 🍽️`,
+      action: `aggiungere il locale "${newPlace.name}"`
     });
-
     return newPlace;
   }
 
   public updatePlaceToEat(tripId: string, placeId: string, partial: Partial<TripPlaceToEat>): void {
-    const trip = this.getTripById(tripId);
-    if (!trip || !trip.placesToEat) return;
-
-    const target = trip.placesToEat.find(p => p.id === placeId);
-    if (!target) return;
-    const merged = { ...target, ...partial };
-
-    const updatedPlaces = trip.placesToEat.map(p => p.id === placeId ? merged : p);
-    this.patchLocalTrip(tripId, { placesToEat: updatedPlaces });
-    this.toastService.success('Locale aggiornato!');
-
-    this.apiService.put<TripPlaceToEat>(`/api/v1/trips/${tripId}/places-to-eat/${placeId}`, merged).subscribe({
-      error: (err) => console.error('Error updating place to eat on backend:', err)
+    this.updateChild(tripId, 'placesToEat', placeId, partial, {
+      success: 'Locale aggiornato!',
+      action: 'aggiornare il locale'
     });
   }
 
   public deletePlaceToEat(tripId: string, placeId: string): void {
-    const trip = this.getTripById(tripId);
-    if (!trip || !trip.placesToEat) return;
-
-    const updatedPlaces = trip.placesToEat.filter(p => p.id !== placeId);
-    this.patchLocalTrip(tripId, { placesToEat: updatedPlaces });
-    this.toastService.info('Locale rimosso.');
-
-    this.apiService.delete(`/api/v1/trips/${tripId}/places-to-eat/${placeId}`).subscribe({
-      error: (err) => console.error('Error deleting place to eat on backend:', err)
+    this.deleteChild(tripId, 'placesToEat', placeId, {
+      success: 'Locale rimosso.',
+      action: 'rimuovere il locale'
     });
   }
 
   // Flights & Logistics Management
   public updateFlights(tripId: string, flights: FlightDetails): void {
-    this.patchLocalTrip(tripId, { flights });
-    this.toastService.success('Dettagli voli salvati! ✈️');
-    this.apiService.put<Trip>(`/api/v1/trips/${tripId}/flights`, flights).subscribe({
-      error: (err) => console.error('Error updating flights on backend:', err)
-    });
+    this.updateLogistics(tripId, 'flights', flights, 'Dettagli voli salvati! ✈️', 'salvare i voli');
   }
 
   public updateTransfers(tripId: string, transfers: AirportTransfer): void {
-    this.patchLocalTrip(tripId, { transfers });
-    this.toastService.success('Informazioni spostamenti aeroporto salvate! 🚇');
-    this.apiService.put<Trip>(`/api/v1/trips/${tripId}/transfers`, transfers).subscribe({
-      error: (err) => console.error('Error updating transfers on backend:', err)
-    });
+    this.updateLogistics(tripId, 'transfers', transfers, 'Informazioni spostamenti aeroporto salvate! 🚇', 'salvare gli spostamenti');
   }
 
   public updateAccommodation(tripId: string, accommodation: AccommodationDetails): void {
-    this.patchLocalTrip(tripId, { accommodation });
-    this.toastService.success('Dettagli hotel aggiornati! 🏨');
-    this.apiService.put<Trip>(`/api/v1/trips/${tripId}/accommodation`, accommodation).subscribe({
-      error: (err) => console.error('Error updating accommodation on backend:', err)
-    });
+    this.updateLogistics(tripId, 'accommodation', accommodation, 'Dettagli hotel aggiornati! 🏨', 'salvare l\'alloggio');
   }
 
   // Expenses Management
+  public addExpense(tripId: string, expense: Omit<TripExpense, 'id' | 'tripId'>): TripExpense | undefined {
+    if (!this.getTripById(tripId)) return undefined;
+    const created: TripExpense = { ...expense, id: localId('exp'), tripId };
+    const isSettlement = expense.type === 'settlement';
+    this.addChild(tripId, 'expenses', created, {
+      success: isSettlement ? 'Pagamento registrato!' : `Spesa "${created.title}" aggiunta! 💸`,
+      action: isSettlement ? 'registrare il pagamento' : `aggiungere la spesa "${created.title}"`
+    });
+    return created;
+  }
+
+  public updateExpense(tripId: string, expenseId: string, partial: Partial<Omit<TripExpense, 'id' | 'tripId'>>): void {
+    this.updateChild(tripId, 'expenses', expenseId, partial, {
+      success: 'Spesa aggiornata!',
+      action: 'aggiornare la spesa'
+    });
+  }
+
+  public deleteExpense(tripId: string, expenseId: string): void {
+    this.deleteChild(tripId, 'expenses', expenseId, {
+      success: 'Spesa rimossa.',
+      action: 'rimuovere la spesa'
+    });
+  }
+
+  // ── Sincronizzazione ottimistica, con ripristino in caso di errore ─────────
+
+  private setLocalTrips(trips: Trip[]): void {
+    this.tripsSignal.set(trips);
+    this.storageService.setTrips(trips);
+  }
+
   /**
    * Updates the trip in the local state only. For activities, places and logistics the
    * backend is updated by their dedicated endpoint: a full PUT of the trip as well would
    * write the same rows twice (duplicate key → 503).
    */
   private patchLocalTrip(tripId: string, partial: Partial<Trip>): void {
-    const updated = this.tripsSignal().map(t => t.id === tripId ? { ...t, ...partial } : t);
-    this.tripsSignal.set(updated);
-    this.storageService.setTrips(updated);
+    this.setLocalTrips(this.tripsSignal().map(t => t.id === tripId ? { ...t, ...partial } : t));
   }
 
-  private saveExpenses(tripId: string, expenses: TripExpense[]): void {
-    const updated = this.tripsSignal().map(t => t.id === tripId ? { ...t, expenses } : t);
-    this.tripsSignal.set(updated);
-    this.storageService.setTrips(updated);
-  }
-
-  public addExpense(tripId: string, expense: Omit<TripExpense, 'id' | 'tripId'>): TripExpense | undefined {
+  /** Applica `fn` alla lista `key` del viaggio, partendo dallo stato più recente. */
+  private patchChildren<K extends ChildKey>(tripId: string, key: K, fn: (items: ChildOf<K>[]) => ChildOf<K>[]): void {
     const trip = this.getTripById(tripId);
-    if (!trip) return undefined;
-    const created: TripExpense = {
-      ...expense,
-      id: 'exp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-      tripId
-    };
-    this.saveExpenses(tripId, [...(trip.expenses ?? []), created]);
-    this.toastService.success(expense.type === 'settlement' ? 'Pagamento registrato!' : `Spesa "${created.title}" aggiunta! 💸`);
+    if (!trip) return;
+    this.patchLocalTrip(tripId, { [key]: fn((trip[key] ?? []) as ChildOf<K>[]) } as Partial<Trip>);
+  }
 
-    this.apiService.post<TripExpense>(`/api/v1/trips/${tripId}/expenses`, created).subscribe({
-      next: (savedExpense) => {
-        const currentTrip = this.getTripById(tripId);
-        if (currentTrip && currentTrip.expenses) {
-          const expenses = currentTrip.expenses.map(e => e.id === created.id ? savedExpense : e);
-          this.saveExpenses(tripId, expenses);
-        }
+  /**
+   * Esegue `request` solo dopo che l'elemento appena aggiunto è stato salvato sul server:
+   * una modifica immediata altrimenti arriverebbe prima della creazione (404).
+   * Se la creazione è fallita l'elemento non esiste più e la modifica viene scartata.
+   */
+  private afterSaved<T>(itemId: string, request: () => Observable<T>): Observable<T> {
+    const pending = this.pendingCreates.get(itemId);
+    if (!pending) return request();
+    return from(pending).pipe(switchMap(saved => saved ? request() : EMPTY));
+  }
+
+  private addChild<K extends ChildKey>(tripId: string, key: K, item: ChildOf<K>, msg: SyncMessages): void {
+    if (!this.getTripById(tripId)) return;
+    this.patchChildren(tripId, key, items => [...items, item]);
+
+    let settle: (saved: boolean) => void = () => undefined;
+    this.pendingCreates.set(item.id, new Promise<boolean>(resolve => settle = resolve));
+    this.apiService.post<ChildOf<K>>(`/api/v1/trips/${tripId}/${CHILD_PATHS[key]}`, item).pipe(
+      finalize(() => this.pendingCreates.delete(item.id))
+    ).subscribe({
+      next: (saved) => {
+        // I dati locali prevalgono: l'elemento può essere già stato modificato nel frattempo.
+        this.patchChildren(tripId, key, items => items.map(i => i.id === item.id ? { ...saved, ...i } : i));
+        this.toastService.success(msg.success);
+        settle(true);
       },
-      error: (err) => console.error('Error adding expense to backend:', err)
+      error: (err) => {
+        this.patchChildren(tripId, key, items => items.filter(i => i.id !== item.id));
+        this.warnFailure(msg.action, err);
+        settle(false);
+      }
     });
-
-    return created;
   }
 
-  public updateExpense(tripId: string, expenseId: string, partial: Partial<Omit<TripExpense, 'id' | 'tripId'>>): void {
-    const trip = this.getTripById(tripId);
-    if (!trip?.expenses?.some(e => e.id === expenseId)) return;
-    const target = trip.expenses.find(e => e.id === expenseId);
+  private updateChild<K extends ChildKey>(tripId: string, key: K, itemId: string, partial: Partial<ChildOf<K>>, msg: SyncMessages): void {
+    const target = ((this.getTripById(tripId)?.[key] ?? []) as ChildOf<K>[]).find(i => i.id === itemId);
     if (!target) return;
-    const merged = { ...target, ...partial };
+    const merged = { ...target, ...partial } as ChildOf<K>;
+    this.patchChildren(tripId, key, items => items.map(i => i.id === itemId ? merged : i));
 
-    this.saveExpenses(tripId, trip.expenses.map(e => e.id === expenseId ? merged : e));
-    this.toastService.success('Spesa aggiornata!');
-
-    this.apiService.put<TripExpense>(`/api/v1/trips/${tripId}/expenses/${expenseId}`, merged).subscribe({
-      error: (err) => console.error('Error updating expense on backend:', err)
+    this.afterSaved(itemId, () =>
+      this.apiService.put<ChildOf<K>>(`/api/v1/trips/${tripId}/${CHILD_PATHS[key]}/${itemId}`, merged)
+    ).subscribe({
+      next: () => {
+        // Riapplicata: una copia del server arrivata nel frattempo potrebbe averla sovrascritta.
+        this.patchChildren(tripId, key, items => items.map(i => i.id === itemId ? merged : i));
+        this.toastService.success(msg.success);
+      },
+      error: (err) => {
+        this.patchChildren(tripId, key, items => items.map(i => i.id === itemId ? target : i));
+        this.warnFailure(msg.action, err);
+      }
     });
   }
 
-  public deleteExpense(tripId: string, expenseId: string): void {
+  private deleteChild<K extends ChildKey>(tripId: string, key: K, itemId: string, msg: SyncMessages): void {
+    const before = (this.getTripById(tripId)?.[key] ?? []) as ChildOf<K>[];
+    const index = before.findIndex(i => i.id === itemId);
+    if (index < 0) return;
+    const target = before[index];
+    this.patchChildren(tripId, key, items => items.filter(i => i.id !== itemId));
+
+    this.afterSaved(itemId, () =>
+      this.apiService.delete(`/api/v1/trips/${tripId}/${CHILD_PATHS[key]}/${itemId}`)
+    ).subscribe({
+      next: () => this.toastService.info(msg.success),
+      error: (err) => {
+        if (err?.status === 404) return; // già rimosso sul server
+        this.patchChildren(tripId, key, items => {
+          if (items.some(i => i.id === itemId)) return items;
+          const restored = [...items];
+          restored.splice(Math.min(index, restored.length), 0, target);
+          return restored;
+        });
+        this.warnFailure(msg.action, err);
+      }
+    });
+  }
+
+  private updateLogistics<K extends 'flights' | 'transfers' | 'accommodation'>(
+    tripId: string, key: K, value: Trip[K], success: string, action: string
+  ): void {
     const trip = this.getTripById(tripId);
-    if (!trip?.expenses) return;
-    this.saveExpenses(tripId, trip.expenses.filter(e => e.id !== expenseId));
-    this.toastService.info('Spesa rimossa.');
+    if (!trip) return;
+    const previous = trip[key];
+    this.patchLocalTrip(tripId, { [key]: value } as Partial<Trip>);
 
-    this.apiService.delete(`/api/v1/trips/${tripId}/expenses/${expenseId}`).subscribe({
-      error: (err) => console.error('Error deleting expense on backend:', err)
+    this.apiService.put<Trip>(`/api/v1/trips/${tripId}/${key}`, value).subscribe({
+      next: () => this.toastService.success(success),
+      error: (err) => {
+        this.patchLocalTrip(tripId, { [key]: previous } as Partial<Trip>);
+        this.warnFailure(action, err);
+      }
     });
   }
+}
+
+type ChildKey = 'activities' | 'placesToEat' | 'expenses';
+type ChildOf<K extends ChildKey> = K extends 'activities' ? TripActivity : K extends 'placesToEat' ? TripPlaceToEat : TripExpense;
+interface SyncMessages { success: string; action: string; }
+
+const CHILD_PATHS: Record<ChildKey, string> = {
+  activities: 'activities',
+  placesToEat: 'places-to-eat',
+  expenses: 'expenses'
+};
+
+/** Id generato nel browser (il backend lo mantiene): con una parte casuale, per non collidere tra utenti. */
+function localId(prefix: string): string {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }

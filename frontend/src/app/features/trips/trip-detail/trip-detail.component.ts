@@ -80,22 +80,14 @@ export class TripDetailComponent {
   );
 
   // Always reflects the latest state held by TripService (no manual reload after mutations).
-  // A just-created trip may be opened on its temporary id: follow it to the backend id.
   protected readonly trip = computed(() => {
     const id = this.tripId();
-    return id ? this.tripService.getTripById(this.tripService.resolveTripId(id)) : undefined;
+    return id ? this.tripService.getTripById(id) : undefined;
   });
 
   private readonly loadTripIfMissing = effect(() => {
     const id = this.tripId();
-    if (id) this.tripService.ensureTripLoaded(this.tripService.resolveTripId(id));
-  });
-
-  private readonly syncUrlWithSavedId = effect(() => {
-    const id = this.tripId();
-    if (!id) return;
-    const resolved = this.tripService.resolveTripId(id);
-    if (resolved !== id) this.router.navigate(['/trips', resolved], { replaceUrl: true });
+    if (id) this.tripService.ensureTripLoaded(id);
   });
 
   protected readonly activeTab = signal<DetailTab>('itinerary');

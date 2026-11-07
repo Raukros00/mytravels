@@ -36,7 +36,9 @@ export class ExploreAssignModalComponent {
     return end.toISOString().split('T')[0];
   });
 
-  protected readonly canConfirm = computed(() => !!this.selectedGroupId() && !!this.startDate());
+  /** Salvataggio in corso: il viaggio si apre solo quando il server lo ha salvato. */
+  protected readonly saving = signal(false);
+  protected readonly canConfirm = computed(() => !!this.selectedGroupId() && !!this.startDate() && !this.saving());
 
   constructor() {
     effect(() => {
@@ -66,9 +68,17 @@ export class ExploreAssignModalComponent {
   protected confirm(): void {
     const groupId = this.selectedGroupId();
     if (!groupId || !this.startDate()) return;
-    const trip = this.exploreService.assignToGroup(this.template().id, groupId, this.startDate());
-    if (!trip) return;
-    this.closed.emit();
-    this.router.navigate(['/trips', trip.id]);
+    const save = this.exploreService.assignToGroup(this.template().id, groupId, this.startDate());
+    if (!save) return;
+    this.saving.set(true);
+    save.subscribe({
+      next: (trip) => {
+        this.saving.set(false);
+        this.closed.emit();
+        this.router.navigate(['/trips', trip.id]);
+      },
+      // L'errore è già stato mostrato: la modale resta aperta per riprovare.
+      error: () => this.saving.set(false)
+    });
   }
 }
