@@ -59,7 +59,7 @@
     <button type="button" class="btn btn-secondary" (click)="closed.emit()">Annulla</button>
     @if (groupService.userGroups().length > 0) {
       <button type="button" class="btn btn-primary" [disabled]="!canConfirm()" (click)="confirm()">
-        <span class="material-symbols-outlined">check</span> Assegna e apri
+        <span class="material-symbols-outlined">check</span> {{ saving() ? 'Salvataggio…' : 'Assegna e apri' }}
       </button>
     }
   </div>

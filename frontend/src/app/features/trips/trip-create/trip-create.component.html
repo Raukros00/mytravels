@@ -256,8 +256,12 @@
           <button 
             type="submit" 
             class="btn btn-primary flex-1" 
-            [disabled]="tripForm.invalid">
-            <span class="material-symbols-outlined">rocket_launch</span> Crea Viaggio
+            [disabled]="tripForm.invalid || saving()">
+            @if (saving()) {
+              <span class="material-symbols-outlined">hourglass_top</span> Salvataggio…
+            } @else {
+              <span class="material-symbols-outlined">rocket_launch</span> Crea Viaggio
+            }
           </button>
         </div>
       </form>
