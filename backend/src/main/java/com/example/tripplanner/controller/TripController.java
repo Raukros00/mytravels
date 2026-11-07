@@ -3,24 +3,30 @@ package com.example.tripplanner.controller;
 import com.example.tripplanner.dto.CreateTripRequest;
 import com.example.tripplanner.dto.UpdateTripRequest;
 import com.example.tripplanner.model.*;
+import com.example.tripplanner.security.GroupAccess;
 import com.example.tripplanner.service.TripService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/trips")
 public class TripController {
 
     private final TripService tripService;
+    private final GroupAccess groupAccess;
 
-    public TripController(TripService tripService) {
+    public TripController(TripService tripService, GroupAccess groupAccess) {
         this.tripService = tripService;
+        this.groupAccess = groupAccess;
     }
 
     @PostMapping
@@ -168,21 +174,38 @@ public class TripController {
     }
 
     // Voting
+
+    /**
+     * Voto dell'utente autenticato (il principal JWT è l'email; un eventuale {@code userId} nel
+     * corpo viene ignorato). Solo per i membri del gruppo del viaggio (403) e solo sulle
+     * proposte (409). Corpo facoltativo {@code {"voted": true|false}}: senza, il voto si inverte.
+     * Risponde con il viaggio aggiornato: {@code decision} diventa "confirmed" quando la
+     * maggioranza dei membri attuali ha votato.
+     */
     @PostMapping("/{id}/vote")
-    public ResponseEntity<Trip> toggleVote(@PathVariable String id,
-                                           @RequestBody(required = false) Map<String, String> body,
-                                           org.springframework.security.core.Authentication auth) {
-        String userId = null;
-        if (body != null && body.containsKey("userId")) {
-            userId = body.get("userId");
-        } else if (auth != null) {
-            userId = auth.getName();
+    public ResponseEntity<?> vote(@PathVariable String id,
+                                  @RequestBody(required = false) Map<String, Object> body,
+                                  Authentication auth) {
+        Optional<User> me = groupAccess.currentUser(auth);
+        if (me.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        Optional<Trip> trip = tripService.getTrip(id);
+        if (trip.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        Optional<Group> group = groupAccess.memberGroup(trip.get().getGroupId(), auth);
+        if (group.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Forbidden", "message", "Solo i membri del gruppo possono votare"));
         }
-        if (userId == null || userId.isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-        Optional<Trip> updated = tripService.toggleVote(id, userId);
-        return updated.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+
+        Object votedParam = body != null ? body.get("voted") : null;
+        Boolean voted = votedParam instanceof Boolean b ? b : null;
+        Set<String> memberIds = group.get().getMembers().stream().map(GroupMember::getId).collect(Collectors.toSet());
+
+        TripService.VoteResult result = tripService.vote(id, me.get().getId(), memberIds, voted);
+        return switch (result.outcome()) {
+            case OK -> ResponseEntity.ok(result.trip());
+            case NOT_FOUND -> ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            case NOT_PROPOSAL -> ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Conflict", "message", "Si può votare solo una proposta"));
+        };
     }
 }

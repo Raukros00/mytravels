@@ -252,7 +252,11 @@ export class TripService {
     return Math.floor(count / 2) + 1;
   }
 
-  /** Adds or removes the current user's vote; confirms the proposal when the majority is reached. */
+  /**
+   * Aggiunge o toglie il voto dell'utente con POST /vote: il server applica il voto in modo
+   * atomico (voti quasi simultanei contano tutti) e decide lui la conferma per maggioranza.
+   * In locale il voto si vede subito; poi vale la risposta del server (anche i voti degli altri).
+   */
   public toggleVote(tripId: string): void {
     const user = this.authService.currentUser();
     const trip = this.tripsSignal().find(t => t.id === tripId);
@@ -260,15 +264,30 @@ export class TripService {
     const group = this.groupService.getGroupById(trip.groupId);
     if (!group?.members.some(m => m.id === user.id)) return;
 
-    const has = (trip.votes ?? []).includes(user.id);
-    const votes = has ? (trip.votes ?? []).filter(v => v !== user.id) : [...(trip.votes ?? []), user.id];
-    const next: Trip = { ...trip, votes };
-    const confirmed = this.validVotes(next).length >= this.votesNeeded(next);
+    const previousVotes = trip.votes ?? [];
+    const voted = !previousVotes.includes(user.id);
+    this.patchLocalTrip(tripId, {
+      votes: voted ? [...previousVotes, user.id] : previousVotes.filter(v => v !== user.id)
+    });
 
-    this.updateTrip(tripId, confirmed ? { votes, decision: 'confirmed' } : { votes });
-    if (confirmed) {
-      this.toastService.success(`"${trip.title}" è stato scelto dal gruppo! 🎉`);
-    }
+    this.apiService.post<Trip>(`/api/v1/trips/${tripId}/vote`, { voted }).subscribe({
+      next: (saved) => {
+        this.patchLocalTrip(tripId, { votes: saved.votes ?? [], decision: saved.decision });
+        if (saved.decision === 'confirmed') {
+          this.toastService.success(`"${saved.title}" è stato scelto dal gruppo! 🎉`);
+        }
+      },
+      error: (err) => {
+        this.patchLocalTrip(tripId, { votes: previousVotes });
+        if (err?.status === 409) {
+          // Non è più una proposta (es. confermata nel frattempo dai voti degli altri): si ricarica.
+          console.warn('Vote rejected: the trip is no longer a proposal');
+          this.ensureTripLoaded(tripId);
+          return;
+        }
+        this.warnFailure('registrare il voto', err, 'Non è stato possibile registrare il voto. Riprova.');
+      }
+    });
   }
 
   public getTripById(id: string): Trip | undefined {
@@ -276,26 +295,31 @@ export class TripService {
   }
 
   /**
-   * Aggiorna i campi del viaggio: subito in locale, poi sul server. In caso di errore
-   * i campi tornano ai valori precedenti e l'utente viene avvisato.
+   * Aggiorna i campi del viaggio: subito in locale, poi sul server. Al server vanno solo i
+   * campi cambiati, mai le liste (attività, locali, spese, voti), che hanno i loro endpoint:
+   * rimandare la propria copia cancellerebbe le modifiche fatte nel frattempo da altri membri.
+   * In caso di errore i campi tornano ai valori precedenti e l'utente viene avvisato.
    */
   public updateTrip(id: string, partial: Partial<Trip>): Trip | undefined {
     const found = this.getTripById(id);
     if (!found) return undefined;
 
-    const previous = Object.fromEntries(Object.keys(partial).map(k => [k, found[k as keyof Trip]])) as Partial<Trip>;
-    const updatedTrip = { ...found, ...partial };
-    this.patchLocalTrip(id, partial);
+    const fields = Object.fromEntries(
+      Object.entries(partial).filter(([key]) => !LIST_KEYS.includes(key as keyof Trip))
+    ) as Partial<Trip>;
+    const previous = Object.fromEntries(Object.keys(fields).map(k => [k, found[k as keyof Trip]])) as Partial<Trip>;
+    this.patchLocalTrip(id, fields);
 
-    this.apiService.put<Trip>(`/api/v1/trips/${id}`, updatedTrip).subscribe({
-      next: (syncedTrip) => this.patchLocalTrip(id, syncedTrip),
+    this.apiService.put<Trip>(`/api/v1/trips/${id}`, fields).subscribe({
+      // La copia del server è la più aggiornata: comprende anche le modifiche degli altri membri.
+      next: (syncedTrip) => this.patchLocalTrip(id, this.withPendingChildren(syncedTrip)),
       error: (err) => {
         this.patchLocalTrip(id, previous);
         this.warnFailure('salvare le modifiche al viaggio', err);
       }
     });
 
-    return updatedTrip;
+    return { ...found, ...fields };
   }
 
   public deleteTrip(id: string): void {
@@ -532,7 +556,10 @@ export class TripService {
   }
 }
 
-type ChildKey = 'activities' | 'placesToEat' | 'expenses';
+/** Liste del viaggio con endpoint propri: non vanno mai rimandate con il PUT del viaggio. */
+const LIST_KEYS: (keyof Trip)[] = ['activities', 'placesToEat', 'expenses', 'votes'];
+
+type ChildKey ='activities' | 'placesToEat' | 'expenses';
 type ChildOf<K extends ChildKey> = K extends 'activities' ? TripActivity : K extends 'placesToEat' ? TripPlaceToEat : TripExpense;
 interface SyncMessages { success: string; action: string; }
 

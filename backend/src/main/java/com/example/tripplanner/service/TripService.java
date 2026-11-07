@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -125,11 +126,7 @@ public class TripService {
             if (request.getTransfers() != null)   existing.setTransfers(request.getTransfers());
             if (request.getAccommodation() != null) existing.setAccommodation(request.getAccommodation());
 
-            // Replace votes via clear+addAll
-            if (request.getVotes() != null) {
-                existing.getVotes().clear();
-                existing.getVotes().addAll(request.getVotes());
-            }
+            // I voti non si modificano da qui: cambiano solo con POST /trips/{id}/vote (vedi vote()).
 
             // Replace tags via clear+addAll to avoid reassigning the managed collection
             if (request.getTags() != null) {
@@ -326,15 +323,34 @@ public class TripService {
 
     // ── Voting ────────────────────────────────────────────────────────────────
 
+    public enum VoteOutcome { OK, NOT_FOUND, NOT_PROPOSAL }
+
+    public record VoteResult(VoteOutcome outcome, Trip trip) {
+        static VoteResult of(VoteOutcome outcome) { return new VoteResult(outcome, null); }
+    }
+
+    /**
+     * Voto dell'utente su una proposta, deciso interamente dal server: la riga del viaggio è
+     * bloccata, quindi voti quasi simultanei vengono applicati uno dopo l'altro e contano tutti.
+     * {@code voted} indica il voto voluto (idempotente); se nullo il voto viene invertito.
+     * Se i voti dei membri attuali ({@code memberIds}) raggiungono la maggioranza stretta del
+     * gruppo, la proposta diventa confermata. I voti di chi non è più membro restano ma non contano.
+     */
     @Transactional
-    public Optional<Trip> toggleVote(String tripId, String userId) {
-        return tripRepository.findById(tripId).map(trip -> {
-            if (trip.getVotes().contains(userId)) {
-                trip.getVotes().remove(userId);
-            } else {
-                trip.getVotes().add(userId);
-            }
-            return tripRepository.save(trip);
-        });
+    public VoteResult vote(String tripId, String userId, Set<String> memberIds, Boolean voted) {
+        Optional<Trip> found = tripRepository.findByIdForUpdate(tripId);
+        if (found.isEmpty()) return VoteResult.of(VoteOutcome.NOT_FOUND);
+        Trip trip = found.get();
+        if (!"proposal".equals(trip.getDecision())) return VoteResult.of(VoteOutcome.NOT_PROPOSAL);
+
+        boolean has = trip.getVotes().contains(userId);
+        boolean want = voted != null ? voted : !has;
+        if (want && !has) trip.getVotes().add(userId);
+        if (!want && has) trip.getVotes().removeIf(userId::equals);
+
+        long validVotes = trip.getVotes().stream().distinct().filter(memberIds::contains).count();
+        if (validVotes >= memberIds.size() / 2 + 1) trip.setDecision("confirmed");
+
+        return new VoteResult(VoteOutcome.OK, tripRepository.save(trip));
     }
 }
