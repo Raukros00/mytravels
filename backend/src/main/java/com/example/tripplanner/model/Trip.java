@@ -1,6 +1,7 @@
 package com.example.tripplanner.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import lombok.*;
@@ -17,6 +18,8 @@ import java.util.List;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "trips")
+// UPDATE solo delle colonne cambiate: due modifiche contemporanee a campi diversi non si sovrascrivono.
+@DynamicUpdate
 public class Trip implements Persistable<String> {
 
     @Id
