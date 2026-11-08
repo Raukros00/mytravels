@@ -110,3 +110,24 @@
   transition: transform 150ms var(--wb-ease);
 }
 .switch--on .switch-knob { transform: translateX(20px); }
+
+/* Preferenze per tipo (#97): sotto l'interruttore del dispositivo, separate da una linea. */
+.push-prefs {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--wb-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.push-prefs-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--wb-text-primary);
+}
+.push-prefs-hint {
+  margin: -0.6rem 0 0;
+  font-size: 0.78rem;
+  color: var(--wb-text-tertiary);
+}

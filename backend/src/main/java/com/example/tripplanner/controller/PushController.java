@@ -1,5 +1,6 @@
 package com.example.tripplanner.controller;
 
+import com.example.tripplanner.model.PushPreferences;
 import com.example.tripplanner.model.PushSubscription;
 import com.example.tripplanner.model.User;
 import com.example.tripplanner.security.GroupAccess;
@@ -89,6 +90,33 @@ public class PushController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Preferenze per tipo di notifica (#97), dell'utente e non del dispositivo: valgono su tutti i
+     * suoi dispositivi. Default: tutto attivo tranne `newMembers`.
+     */
+    @GetMapping("/preferences")
+    public ResponseEntity<Map<String, Object>> preferences(Authentication auth) {
+        Optional<User> me = groupAccess.currentUser(auth);
+        if (me.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.ok(view(pushService.preferencesOf(me.get().getId())));
+    }
+
+    /** Aggiorna le categorie presenti nel corpo (`invites`, `proposals`, `newMembers`, `reminders`: booleani). */
+    @PutMapping("/preferences")
+    public ResponseEntity<?> updatePreferences(@RequestBody Map<String, Object> body, Authentication auth) {
+        Optional<User> me = groupAccess.currentUser(auth);
+        if (me.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        for (String key : List.of("invites", "proposals", "newMembers", "reminders")) {
+            if (body.containsKey(key) && !(body.get(key) instanceof Boolean)) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Valore non valido per " + key + "."));
+            }
+        }
+        PushPreferences saved = pushService.updatePreferences(me.get().getId(),
+                (Boolean) body.get("invites"), (Boolean) body.get("proposals"),
+                (Boolean) body.get("newMembers"), (Boolean) body.get("reminders"));
+        return ResponseEntity.ok(view(saved));
+    }
+
     /** Notifica di prova a tutti i dispositivi dell'utente corrente (per verificare che arrivino). */
     @PostMapping("/test")
     public ResponseEntity<Map<String, Object>> test(Authentication auth) {
@@ -112,6 +140,15 @@ public class PushController {
         m.put("lang", s.getLang());
         m.put("createdAt", s.getCreatedAt() == null ? null : s.getCreatedAt().toString());
         m.put("lastUsedAt", s.getLastUsedAt() == null ? null : s.getLastUsedAt().toString());
+        return m;
+    }
+
+    private static Map<String, Object> view(PushPreferences p) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("invites", p.isInvites());
+        m.put("proposals", p.isProposals());
+        m.put("newMembers", p.isNewMembers());
+        m.put("reminders", p.isReminders());
         return m;
     }
 

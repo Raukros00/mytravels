@@ -63,4 +63,28 @@
       }
     }
   }
+
+  @if (showPreferences()) {
+    <div class="push-prefs" role="group" aria-labelledby="push-prefs-title">
+      <p id="push-prefs-title" class="push-prefs-title">{{ 'profile.push_prefs_title' | translate }}</p>
+      <p class="push-prefs-hint">{{ 'profile.push_prefs_hint' | translate }}</p>
+      @for (category of categories; track category) {
+        <div class="push-row push-pref" [attr.data-category]="category">
+          <div class="push-row-text">
+            <p class="push-row-label">{{ 'profile.push_pref_' + categoryKey[category] | translate }}</p>
+            <p class="push-row-desc">{{ 'profile.push_pref_' + categoryKey[category] + '_desc' | translate }}</p>
+          </div>
+          <button type="button" class="switch push-pref-switch" role="switch"
+                  [class.switch--on]="prefs.preferences()![category]"
+                  [attr.aria-checked]="prefs.preferences()![category]"
+                  [attr.aria-busy]="prefs.saving() === category"
+                  [disabled]="prefs.saving() !== null"
+                  [attr.aria-label]="'profile.push_pref_' + categoryKey[category] | translate"
+                  (click)="toggleCategory(category)">
+            <span class="switch-knob"></span>
+          </button>
+        </div>
+      }
+    </div>
+  }
 </section>
