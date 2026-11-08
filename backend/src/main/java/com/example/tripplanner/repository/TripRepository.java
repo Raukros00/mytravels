@@ -17,6 +17,8 @@ public interface TripRepository extends JpaRepository<Trip, String> {
 
     List<Trip> findByGroupId(String groupId);
 
+    List<Trip> findByGroupIdIn(java.util.Collection<String> groupIds);
+
     /**
      * Il viaggio con la riga bloccata fino alla fine della transazione (SELECT ... FOR UPDATE):
      * le operazioni che leggono e riscrivono lo stesso viaggio (es. i voti) vengono eseguite

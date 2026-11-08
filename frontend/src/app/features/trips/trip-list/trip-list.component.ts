@@ -3,6 +3,7 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TripService } from '../../../core/services/trip.service';
 import { GroupService } from '../../../core/services/group.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { Trip, TripStatus, deriveTripStatus, isProposal } from '../../../core/models/trip.model';
 import { todayIso } from '../../../core/utils/date.utils';
@@ -33,6 +34,8 @@ interface TripCardVm {
   budget: string | null;
   tags: string[];
   groupName: string;
+  /** Solo gli admin del gruppo possono eliminare il viaggio. */
+  canDelete: boolean;
 }
 
 interface CurrentTripVm {
@@ -58,6 +61,7 @@ export class TripListComponent {
   private router = inject(Router);
   public tripService = inject(TripService);
   public groupService = inject(GroupService);
+  private authService = inject(AuthService);
 
   public searchQuery = signal('');
   public selectedStatus = signal<TripStatus | 'all'>('all');
@@ -84,6 +88,14 @@ export class TripListComponent {
   private readonly groupNames = computed(() =>
     new Map(this.groupService.userGroups().map(g => [g.id, g.name]))
   );
+
+  /** Gruppi in cui l'utente è admin: solo lì può eliminare i viaggi. */
+  private readonly adminGroupIds = computed(() => {
+    const me = this.authService.currentUser()?.id;
+    return new Set(this.groupService.userGroups()
+      .filter(g => g.members.some(m => m.id === me && m.role === 'admin'))
+      .map(g => g.id));
+  });
 
   protected readonly groupsCount = computed(() => new Set(this.allTrips().map(t => t.groupId)).size);
 
@@ -136,7 +148,8 @@ export class TripListComponent {
         duration: this.calculateDuration(trip.startDate, trip.endDate),
         budget: trip.budgetEstimate ? `${trip.budgetEstimate} ${trip.currency || 'EUR'}` : null,
         tags: trip.tags.slice(0, 3),
-        groupName: this.groupNames().get(trip.groupId) ?? ''
+        groupName: this.groupNames().get(trip.groupId) ?? '',
+        canDelete: this.adminGroupIds().has(trip.groupId)
       }));
   });
 
