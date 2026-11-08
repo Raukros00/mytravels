@@ -49,6 +49,12 @@ services:
       RATE_LIMIT_TEST_ENDPOINT: "true"
       PHOTON_URL: http://api-stubs:8000/photon/api
       WIKIDATA_URL: http://api-stubs:8000/wikidata/w/api.php
+      # Notifiche push: chiavi VAPID SOLO per i test (generate apposta, non usate altrove).
+      # Le subscription dei test puntano al finto push service dello stub (http://api-stubs:8000/push/...).
+      PUSH_VAPID_PUBLIC_KEY: BDj5qCEpNwBdu5yOHGiIH0LpAkk4dp-PYWp-6_d5QsfAr7OCuuPpHT54Rkrc-6LxFxRTx3c7p6eFCzFKnqJxW_A
+      PUSH_VAPID_PRIVATE_KEY: bM25IC9TmVgiGQd2JstZ6N7wUBPjo7UIjIYlQGk7IE4
+      PUSH_VAPID_SUBJECT: mailto:e2e@example.com
+      PUSH_ALLOW_INSECURE_ENDPOINTS: "true"
     depends_on:
       postgres:
         condition: service_healthy

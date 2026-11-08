@@ -14,6 +14,27 @@ Questo repository contiene il frontend (Angular PWA), il backend (Spring Boot) e
 Variabili obbligatorie nel `.env` di ogni ambiente (vedi `.env.example`): `POSTGRES_PASSWORD`, `JWT_SECRET` (diverso per ambiente, `openssl rand -hex 32`).
 Il backend espone `GET /actuator/health`, usato dall'healthcheck Docker. Postgres è escluso dagli aggiornamenti automatici di Watchtower.
 
+### Notifiche push (facoltative)
+
+Le notifiche push (Web Push, standard dei browser: nessun servizio a pagamento) richiedono una coppia di chiavi **VAPID**
+per ambiente, generata **una sola volta** (cambiandola, i dispositivi già abbonati smettono di ricevere le notifiche):
+
+```bash
+npx web-push generate-vapid-keys
+```
+
+e tre variabili nel `.env` dell'ambiente (vedi `.env.example`):
+
+| Variabile | Valore |
+| :--- | :--- |
+| `PUSH_VAPID_PUBLIC_KEY` | "Public Key" stampata dal comando (base64url) |
+| `PUSH_VAPID_PRIVATE_KEY` | "Private Key" stampata dal comando (base64url, segreta) |
+| `PUSH_VAPID_SUBJECT` | contatto per i push service: `mailto:indirizzo@dominio` oppure `https://dominio-del-sito` |
+
+Se ne manca anche una sola le push sono disattivate e l'app funziona come prima. Dopo averle aggiunte serve
+`docker compose pull && docker compose up -d` (Watchtower aggiorna le immagini ma non rilegge il `.env`).
+Le chiavi in `docker-compose.e2e.yml` sono solo per i test end-to-end (push service finto in `e2e/api-stubs.py`).
+
 Per collegarsi al database da un altro PC usare un tunnel SSH, es. `ssh -L 5433:localhost:5433 alessandrodominici@192.168.0.36`.
 
 Entrambi gli ambienti hanno nomi di container, network e volumi Docker distinti, permettendo l'esecuzione simultanea sullo stesso server senza conflitti.

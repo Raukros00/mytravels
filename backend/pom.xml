@@ -86,6 +86,14 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Web Push (VAPID + cifratura aes128gcm, RFC 8030/8291/8292): nessuna dipendenza transitiva,
+             usa solo la crittografia del JDK; le richieste partono con java.net.http.HttpClient. -->
+        <dependency>
+            <groupId>com.zerodeplibs</groupId>
+            <artifactId>zerodep-web-push-java</artifactId>
+            <version>2.1.5</version>
+        </dependency>
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
