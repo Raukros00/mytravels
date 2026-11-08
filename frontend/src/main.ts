@@ -4,7 +4,7 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
 
-// Needed by the `date` pipe with the 'it' locale (e.g. "Membro dal" in the profile):
+// Needed by the `date` pipe with the 'it' locale (e.g. dates in the profile when the app is in Italian):
 // without it the pipe throws NG0701 and the rest of the template is not rendered.
 registerLocaleData(localeIt);
 
