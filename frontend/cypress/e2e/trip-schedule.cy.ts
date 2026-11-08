@@ -8,7 +8,7 @@ import { GROUPS, TRIPS } from '../support/users';
  */
 
 /** Richiesta autenticata che non fallisce sugli status di errore, per verificarli. */
-function rawApi(user: 'admin' | 'luca', method: string, url: string, body?: unknown) {
+function rawApi(user: 'admin' | 'luca', method: string, url: string, body?: Cypress.RequestBody) {
   return cy.apiToken(user).then(token =>
     cy.request({ method, url, body, failOnStatusCode: false, headers: { Authorization: `Bearer ${token}` } }),
   );
@@ -86,7 +86,7 @@ describe('Orari delle tappe – API', () => {
       .its('status').should('eq', 400);
   });
 
-  it('salva l\'ordine del giorno; rifiuta tappe di altri giorni (400) e chi non è del gruppo (403)', () => {
+  it('salva l\'ordine del giorno; rifiuta tappe di altri giorni (400) e chi non è del gruppo (404)', () => {
     createDayTrip().then(trip => {
       cy.api<any>('admin', 'GET', `/api/v1/trips/${trip.id}`).then(t => {
         const duomo = t.activities.find((a: any) => a.name === 'Duomo');
@@ -94,7 +94,7 @@ describe('Orari delle tappe – API', () => {
         const url = `/api/v1/trips/${trip.id}/days/1/order`;
         const items = [{ type: 'food', id: trattoria.id }, { type: 'activity', id: duomo.id }];
 
-        rawApi('luca', 'PUT', url, { items }).its('status').should('eq', 403);
+        rawApi('luca', 'PUT', url, { items }).its('status').should('eq', 404); // come per #76: per chi non è del gruppo il viaggio non esiste
         rawApi('admin', 'PUT', `/api/v1/trips/${trip.id}/days/2/order`, { items }).its('status').should('eq', 400);
         rawApi('admin', 'PUT', url, { items: [{ type: 'altro', id: duomo.id }] }).its('status').should('eq', 400);
         rawApi('admin', 'PUT', url, { items: [items[0], items[0]] }).its('status').should('eq', 400);

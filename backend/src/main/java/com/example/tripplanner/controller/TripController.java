@@ -134,23 +134,15 @@ public class TripController {
 
     /**
      * Salva l'ordine delle tappe (attività e ristoranti) del giorno {@code day}, nell'ordine dell'elenco
-     * {@code {"items":[{"type":"activity"|"food","id":"..."}]}}. Solo per i membri del gruppo del viaggio.
-     * 400 se una tappa non è del viaggio o non è in quel giorno.
+     * {@code {"items":[{"type":"activity"|"food","id":"..."}]}}. Solo per i membri del gruppo del viaggio
+     * (per gli altri 404, come le altre sotto-risorse). 400 se una tappa non è del viaggio o non è in quel giorno.
      */
     @PutMapping("/{id}/days/{day}/order")
-    public ResponseEntity<?> reorderDay(@PathVariable String id,
-                                        @PathVariable int day,
-                                        @RequestBody DayOrderRequest body,
-                                        Authentication auth) {
-        Optional<Trip> trip = tripService.getTrip(id);
-        if (trip.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        if (groupAccess.memberGroup(trip.get().getGroupId(), auth).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Forbidden", "message", "Solo i membri del gruppo possono modificare il viaggio"));
-        }
-        return tripService.reorderDay(id, day, body != null ? body.items() : null)
-                .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    public ResponseEntity<Trip> reorderDay(@PathVariable String id,
+                                           @PathVariable int day,
+                                           @RequestBody DayOrderRequest body,
+                                           Authentication auth) {
+        return ifMember(id, auth, () -> orNotFound(tripService.reorderDay(id, day, body != null ? body.items() : null)));
     }
 
     // Sub-resources: Flights, Transfers, Accommodation
