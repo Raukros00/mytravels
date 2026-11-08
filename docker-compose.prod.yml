@@ -40,6 +40,8 @@ services:
       UNSPLASH_ACCESS_KEY: ${UNSPLASH_ACCESS_KEY:-}
       # Suggerimenti di città (username GeoNames): vuoto = destinazione a testo libero.
       GEONAMES_USERNAME: ${GEONAMES_USERNAME:-}
+      # Suggerimenti di attrazioni e indirizzi (Photon, dati OpenStreetMap): default l'istanza pubblica, vuoto = testo libero.
+      PHOTON_URL: ${PHOTON_URL-https://photon.komoot.io/api}
       # Prod parte sempre senza dati demo.
       SEED_DEMO_DATA: "false"
     depends_on:

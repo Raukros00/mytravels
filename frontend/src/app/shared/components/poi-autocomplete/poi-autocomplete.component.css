@@ -1,0 +1,96 @@
+:host {
+  display: block;
+}
+
+.poi-field {
+  position: relative;
+}
+
+.poi-dropdown {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  padding: 0.35rem;
+  background: var(--wb-surface-0, #fff);
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius-md);
+  box-shadow: var(--wb-shadow-md, 0 8px 24px rgba(0, 0, 0, 0.12));
+}
+
+.poi-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.poi-option {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--wb-radius-sm, 8px);
+  cursor: pointer;
+}
+
+.poi-option .material-symbols-outlined {
+  flex: none;
+  font-size: 20px;
+  color: var(--wb-primary);
+}
+
+.poi-option--active {
+  background: var(--wb-surface-1);
+}
+
+.poi-option-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.poi-option-text strong {
+  font-size: 0.9rem;
+  color: var(--wb-text-primary);
+}
+
+.poi-option-text small {
+  font-size: 0.78rem;
+  color: var(--wb-text-secondary);
+}
+
+.poi-attribution {
+  margin: 0;
+  padding: 0.35rem 0.6rem 0.15rem;
+  font-size: 0.7rem;
+  color: var(--wb-text-tertiary);
+}
+
+.poi-attribution a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+/* Su mobile: voci più grandi e leggibili, comode da toccare. */
+@media (max-width: 767px) {
+  .poi-option {
+    min-height: 48px;
+    padding: 0.6rem;
+  }
+
+  .poi-option-text strong {
+    font-size: 1rem;
+  }
+
+  .poi-option-text small {
+    font-size: 0.875rem;
+  }
+
+  .poi-attribution {
+    font-size: 0.8rem;
+  }
+}

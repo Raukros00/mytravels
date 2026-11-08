@@ -145,6 +145,7 @@
 <!-- Modals -->
 <app-trip-activity-modal
   [isOpen]="isActivityModalOpen()"
+  [near]="destinationPoint()"
   (closed)="isActivityModalOpen.set(false)"
   (saved)="saveActivity($event)" />
 
