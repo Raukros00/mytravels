@@ -6,6 +6,7 @@ import { TripService } from '../../../core/services/trip.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { GroupService } from '../../../core/services/group.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ClockService } from '../../../core/services/clock.service';
 import {
   AirportTransfer,
   FlightDetails,
@@ -74,6 +75,7 @@ export class TripDetailComponent {
   private readonly toastService = inject(ToastService);
   private readonly groupService = inject(GroupService);
   private readonly authService = inject(AuthService);
+  private readonly clock = inject(ClockService);
 
   private readonly tripId = toSignal(
     this.route.paramMap.pipe(map(params => params.get('id'))),
@@ -157,7 +159,8 @@ export class TripDetailComponent {
 
   protected readonly currentTripStatus = computed<TripStatus>(() => {
     const t = this.trip();
-    return t ? deriveTripStatus(t) : 'planning';
+    // Con l'ora dell'app (simulabile fuori produzione, vedi ClockService).
+    return t ? deriveTripStatus(t, this.clock.now()) : 'planning';
   });
 
   /** Tappe del giorno in sequenza: ordine scelto, poi orari (pranzo e cena con l'orario indicativo). */

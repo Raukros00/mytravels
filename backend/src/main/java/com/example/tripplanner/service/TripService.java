@@ -281,6 +281,7 @@ public class TripService {
         a.setStartTime(r.start());
         a.setEndTime(r.end());
         if (a.getAssignedDay() == null) a.setDayOrder(null);
+        if (a.getIsSkipped() == null) a.setIsSkipped(false); // colonna NOT NULL (#103)
         a.setCoordinates(validCoordinates(a.getCoordinates()));
     }
 
@@ -289,6 +290,7 @@ public class TripService {
         p.setStartTime(r.start());
         p.setEndTime(r.end());
         if (p.getAssignedDay() == null) p.setDayOrder(null);
+        if (p.getIsSkipped() == null) p.setIsSkipped(false); // colonna NOT NULL (#103)
         p.setCoordinates(validCoordinates(p.getCoordinates()));
     }
 
