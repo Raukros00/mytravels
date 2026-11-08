@@ -21,13 +21,16 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
+    private final GroupPushNotifier pushNotifier;
 
     public NotificationService(NotificationRepository notificationRepository,
                                GroupRepository groupRepository,
-                               UserRepository userRepository) {
+                               UserRepository userRepository,
+                               GroupPushNotifier pushNotifier) {
         this.notificationRepository = notificationRepository;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
+        this.pushNotifier = pushNotifier;
     }
 
     public List<Notification> getNotificationsForUser(String recipientId) {
@@ -90,6 +93,8 @@ public class NotificationService {
                         newMember.setGroup(group);
                         group.getMembers().add(newMember);
                         groupRepository.save(group);
+                        // #98: agli altri membri (se hanno attivato "nuovi membri"); partono dopo il commit.
+                        pushNotifier.memberJoined(group, newMember.getId(), newMember.getName(), List.of());
                     }
                 }
             }

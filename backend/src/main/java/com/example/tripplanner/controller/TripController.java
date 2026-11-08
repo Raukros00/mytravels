@@ -4,6 +4,7 @@ import com.example.tripplanner.dto.CreateTripRequest;
 import com.example.tripplanner.dto.UpdateTripRequest;
 import com.example.tripplanner.model.*;
 import com.example.tripplanner.security.GroupAccess;
+import com.example.tripplanner.service.GroupPushNotifier;
 import com.example.tripplanner.service.TripService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -29,10 +30,12 @@ public class TripController {
 
     private final TripService tripService;
     private final GroupAccess groupAccess;
+    private final GroupPushNotifier pushNotifier;
 
-    public TripController(TripService tripService, GroupAccess groupAccess) {
+    public TripController(TripService tripService, GroupAccess groupAccess, GroupPushNotifier pushNotifier) {
         this.tripService = tripService;
         this.groupAccess = groupAccess;
+        this.pushNotifier = pushNotifier;
     }
 
     /** Solo nei gruppi di cui si è membri (404 altrimenti). L'autore della proposta è chi la crea. */
@@ -40,8 +43,11 @@ public class TripController {
     public ResponseEntity<Trip> createTrip(@Valid @RequestBody CreateTripRequest request, Authentication auth) {
         Optional<User> me = groupAccess.currentUser(auth);
         if (me.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        if (groupAccess.memberGroup(request.getGroupId(), auth).isEmpty()) return notFound();
+        Optional<Group> group = groupAccess.memberGroup(request.getGroupId(), auth);
+        if (group.isEmpty()) return notFound();
         Trip created = tripService.createTrip(request, me.get().getId());
+        // #98: una nuova proposta va votata dagli altri membri.
+        if ("proposal".equals(created.getDecision())) pushNotifier.tripProposed(group.get(), created, me.get());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -214,6 +220,10 @@ public class TripController {
         Set<String> memberIds = group.get().getMembers().stream().map(GroupMember::getId).collect(Collectors.toSet());
 
         TripService.VoteResult result = tripService.vote(id, me.get().getId(), memberIds, voted);
+        // #98: la maggioranza appena raggiunta conferma il viaggio: avvisati tutti i membri.
+        if (result.outcome() == TripService.VoteOutcome.OK && result.approved()) {
+            pushNotifier.tripApproved(group.get(), result.trip());
+        }
         return switch (result.outcome()) {
             case OK -> ResponseEntity.ok(result.trip());
             case NOT_FOUND -> notFound();

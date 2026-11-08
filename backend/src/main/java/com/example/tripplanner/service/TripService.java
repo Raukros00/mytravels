@@ -438,8 +438,9 @@ public class TripService {
 
     public enum VoteOutcome { OK, NOT_FOUND, NOT_PROPOSAL }
 
-    public record VoteResult(VoteOutcome outcome, Trip trip) {
-        static VoteResult of(VoteOutcome outcome) { return new VoteResult(outcome, null); }
+    /** {@code approved}: è stato questo voto a far raggiungere la maggioranza (proposta appena confermata). */
+    public record VoteResult(VoteOutcome outcome, Trip trip, boolean approved) {
+        static VoteResult of(VoteOutcome outcome) { return new VoteResult(outcome, null, false); }
     }
 
     /**
@@ -462,8 +463,9 @@ public class TripService {
         if (!want && has) trip.getVotes().removeIf(userId::equals);
 
         long validVotes = trip.getVotes().stream().distinct().filter(memberIds::contains).count();
-        if (validVotes >= memberIds.size() / 2 + 1) trip.setDecision("confirmed");
+        boolean approved = validVotes >= memberIds.size() / 2 + 1;
+        if (approved) trip.setDecision("confirmed");
 
-        return new VoteResult(VoteOutcome.OK, tripRepository.save(trip));
+        return new VoteResult(VoteOutcome.OK, tripRepository.save(trip), approved);
     }
 }
