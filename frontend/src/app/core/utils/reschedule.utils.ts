@@ -67,17 +67,18 @@ export function parseClosingDays(text: string | null | undefined): Set<number> {
   return result;
 }
 
-const HOURS_RE = /(\d{1,2})[:.](\d{2})\s*[-–—]\s*(\d{1,2})[:.](\d{2})/g;
+/** "9:00-19:00", "09.00 – 13.00", ma anche solo ore: "9-17" (non dentro numeri più lunghi o date). */
+const HOURS_RE = /(?<![\d:.\/-])(\d{1,2})(?:[:.](\d{2}))?\s*[-–—]\s*(\d{1,2})(?:[:.](\d{2}))?(?![\d\/-])/g;
 
 /**
- * Orari di apertura scritti a mano ("9:00-19:00", "09.00–13.00, 15.00–19.30") → fasce `HH:mm`.
+ * Orari di apertura scritti a mano ("9:00-19:00", "09.00–13.00, 15.00–19.30", "9-17") → fasce `HH:mm`.
  * `null` se non si riconosce nessuna fascia (es. "sempre aperto"): in quel caso non si danno avvisi.
  */
 export function parseOpeningHours(text: string | null | undefined): TimeRange[] | null {
   if (!text) return null;
   const ranges: TimeRange[] = [];
   for (const m of text.matchAll(HOURS_RE)) {
-    const [h1, m1, h2, m2] = [m[1], m[2], m[3], m[4]].map(Number);
+    const [h1, m1, h2, m2] = [m[1], m[2] ?? '0', m[3], m[4] ?? '0'].map(Number);
     if (h1 > 23 || h2 > 24 || m1 > 59 || m2 > 59) continue;
     const start = `${pad(h1)}:${pad(m1)}`;
     const end = h2 === 24 ? '23:59' : `${pad(h2)}:${pad(m2)}`;

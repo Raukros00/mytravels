@@ -206,5 +206,62 @@
     "push_pref_reminders": "Reminders before departure",
     "push_pref_reminders_desc": "3 days before and the day before a confirmed trip.",
     "push_prefs_error": "Could not save the preference. Please try again."
+  },
+  "live": {
+    "suggest": {
+      "title": "Suggestions",
+      "start": "Now: {{name}}, then {{next}}.",
+      "start_last": "Now: {{name}}, the last stop of the day.",
+      "meal_planned": "Time for {{meal}}: how about {{name}}, as planned?",
+      "meal_none": "Time for {{meal}}: you have {{count}} saved places.",
+      "meal_none_near": "Time for {{meal}}: you have {{count}} saved places near you.",
+      "meal_none_empty": "Time for {{meal}}! You haven't picked a place to eat yet.",
+      "booking": "{{name}} needs a reservation: have you made it?",
+      "booking_food": "The restaurant {{name}} needs a reservation: have you made it?",
+      "tickets": "You need tickets for {{name}}.",
+      "tickets_price": "You need tickets for {{name}} ({{price}}).",
+      "closing_soon": "{{name}} closes at {{time}}: {{minutes}} min left.",
+      "closes_before_end": "{{name}} closes at {{time}}, before your planned visit ends.",
+      "closed_hours": "{{name}} is closed at the planned time (hours: {{hours}}).",
+      "closed_today": "{{name}} is closed today ({{weekday}}).",
+      "late": "You're {{minutes}} min behind schedule: move {{name}} to another day?",
+      "day_end": "Day done! Get some rest, more tomorrow.",
+      "day_end_home": "Day done! Head back to {{name}}.",
+      "places_title": "Saved places",
+      "place_today": "today",
+      "place_pick": "Pick",
+      "dismiss": "Dismiss suggestion",
+      "actions": {
+        "directions": "Directions",
+        "go": "Let's go",
+        "done": "Done",
+        "skip": "Skip it",
+        "move": "Move to another day",
+        "choose": "Pick another",
+        "list": "List",
+        "booked": "Yes",
+        "ignore": "Ignore",
+        "link": "Open link",
+        "hide_list": "Hide"
+      },
+      "meals": {
+        "breakfast": "breakfast",
+        "lunch": "lunch",
+        "aperitivo": "an aperitivo",
+        "dinner": "dinner",
+        "snack": "a snack"
+      },
+      "weekdays": {
+        "0": "Sunday",
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday"
+      },
+      "picked": "{{name}} added to today for {{meal}}.",
+      "picked_instead": "{{name}} instead of {{old}}: enjoy your meal!"
+    }
   }
 }
