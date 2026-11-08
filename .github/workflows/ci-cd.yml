@@ -155,9 +155,8 @@ jobs:
 
   e2e:
     name: E2E Cypress (regressione)
-    # Disattivato temporaneamente: per riattivarlo togliere questa riga.
-    # In locale la suite resta disponibile (frontend/: npm run e2e:stack && npm run e2e).
-    if: ${{ false }}
+    # Suite completa contro lo stack e2e (backend + Postgres + servizi esterni finti), senza rete esterna
+    # (blockHosts in cypress.config.ts). In locale: ./scripts/e2e-ui.sh --run
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -167,10 +166,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 20
+      - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
@@ -184,8 +183,11 @@ jobs:
           start: npm run e2e:serve
           # IPv4 esplicito: sul runner `localhost` può risolversi in ::1, dove ng serve non ascolta.
           wait-on: 'http://127.0.0.1:4300'
-          wait-on-timeout: 240
-          browser: electron
+          wait-on-timeout: 300
+          # Chrome (preinstallato sui runner) regge meglio di Electron le run lunghe.
+          browser: chrome
+        # Una run appesa fallisce entro questo limite invece di arrivare al timeout del job.
+        timeout-minutes: 20
 
       - name: Log del backend
         if: failure()

@@ -19,8 +19,25 @@ Angular e apre Cypress. Chiudendo Cypress (o con Ctrl+C) spegne tutto. Opzioni:
 | :--- | :--- |
 | `--keep` | alla chiusura lascia acceso lo stack Docker (il riavvio successivo è più veloce) |
 | `--fresh` | riparte da un database pulito con i soli dati demo |
-| `--browser chrome` | apre direttamente quel browser (`chrome`, `electron`, `firefox`, `edge`) |
+| `--browser chrome` | usa quel browser (`chrome`, `electron`, `firefox`, `edge`) |
 | `--run` | niente interfaccia: esegue tutta la suite headless |
+
+### Run headless (`--run`): limiti di tempo e browser
+
+- **Browser**: se non si passa `--browser`, la suite usa **Chrome** quando è installato (più stabile di Electron
+  sulle run lunghe), altrimenti Electron incluso in Cypress.
+- **Tempo massimo della suite**: 15 minuti (una run completa ne richiede 3–4). Se scade, un watchdog chiude
+  Cypress e il browser, lo script spegne app e stack Docker ed esce con errore
+  (`✖ La suite Cypress ha superato il limite di 15 minuti…`). Si cambia con `E2E_TIMEOUT_MIN`
+  (es. `E2E_TIMEOUT_MIN=30 ./scripts/e2e-ui.sh --run`; `0` = nessun limite).
+- **Avvio dell'app Angular**: massimo 300 s (`E2E_APP_TIMEOUT_S`). Se `ng serve` si chiude o non risponde,
+  lo script mostra le ultime righe del log (`$TMPDIR/wanderbite-e2e-serve.log`) ed esce. Se la porta 4300 è
+  occupata da un processo che non risponde (es. un `ng serve` rimasto appeso) lo dice subito, con il PID.
+- **Niente rete esterna**: `blockHosts` in `cypress.config.ts` blocca Google Fonts, Unsplash, le tile di
+  OpenStreetMap e Google; i servizi esterni del backend sono già finti (`e2e/api-stubs.py`). La suite passa anche
+  offline e non resta in attesa di risorse lente.
+- In run headless Cypress non tiene in memoria gli snapshot dei test passati (`numTestsKeptInMemory: 0`) e usa
+  `experimentalMemoryManagement`; ogni test fallito viene ritentato una volta (`retries.runMode: 1`).
 
 ## Avvio in locale (passo per passo)
 
