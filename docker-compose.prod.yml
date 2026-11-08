@@ -42,6 +42,8 @@ services:
       GEONAMES_USERNAME: ${GEONAMES_USERNAME:-}
       # Suggerimenti di attrazioni e indirizzi (Photon, dati OpenStreetMap): default l'istanza pubblica, vuoto = testo libero.
       PHOTON_URL: ${PHOTON_URL-https://photon.komoot.io/api}
+      # Monumenti e attrazioni con il nome in italiano (Wikidata): default l'API pubblica, vuoto = solo Photon.
+      WIKIDATA_URL: ${WIKIDATA_URL-https://www.wikidata.org/w/api.php}
       # Prod parte sempre senza dati demo.
       SEED_DEMO_DATA: "false"
     depends_on:

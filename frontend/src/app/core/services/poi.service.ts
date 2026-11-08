@@ -3,17 +3,24 @@ import { Observable } from 'rxjs';
 import { GeoPoint } from '../models/trip.model';
 import { ApiService } from './api.service';
 
-/** Luogo suggerito (attrazione, locale, indirizzo) da OpenStreetMap, tramite il backend (Photon). */
+/**
+ * Luogo suggerito (attrazione, locale, indirizzo) tramite il backend: da Wikidata (monumenti con il nome
+ * nella lingua dell'utente) o da OpenStreetMap (Photon).
+ */
 export interface Poi {
   id: string | null;
-  /** Nome del luogo, es. "Basílica de la Sagrada Família". */
+  /** Nome nella lingua dell'utente se noto (es. "Torre Eiffel"), altrimenti quello locale. */
   name: string;
-  /** Indirizzo leggibile: via e civico, CAP e città, nazione. */
+  /** Nome locale, se diverso da `name`: es. "Tour Eiffel". */
+  localName?: string | null;
+  /** Indirizzo leggibile: via e civico, CAP e città, nazione (può essere vuoto). */
   address: string;
   lat: number;
   lng: number;
   /** Categoria OpenStreetMap, es. "museum", "place_of_worship". */
   category: string;
+  /** Fonte: Wikidata o OpenStreetMap (Photon). */
+  source?: 'wikidata' | 'osm';
 }
 
 export interface PoiSearchResult {
@@ -23,6 +30,7 @@ export interface PoiSearchResult {
 }
 
 export const OSM_COPYRIGHT_LINK = 'https://www.openstreetmap.org/copyright';
+export const WIKIDATA_LINK = 'https://www.wikidata.org/';
 
 @Injectable({ providedIn: 'root' })
 export class PoiService {

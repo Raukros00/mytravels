@@ -42,6 +42,7 @@ services:
       GEONAMES_USERNAME: e2e
       GEONAMES_API_URL: http://api-stubs:8000
       PHOTON_URL: http://api-stubs:8000/photon/api
+      WIKIDATA_URL: http://api-stubs:8000/wikidata/w/api.php
     depends_on:
       postgres:
         condition: service_healthy

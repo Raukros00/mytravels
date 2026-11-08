@@ -63,6 +63,11 @@
   color: var(--wb-text-secondary);
 }
 
+/* Nome locale, es. "Tour Eiffel" sotto "Torre Eiffel". */
+.poi-option-text .poi-option-local {
+  font-style: italic;
+}
+
 .poi-attribution {
   margin: 0;
   padding: 0.35rem 0.6rem 0.15rem;
