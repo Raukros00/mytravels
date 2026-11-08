@@ -167,7 +167,7 @@ public class DataInitializer implements CommandLineRunner {
         req.setDecision("confirmed");
         req.setTags(tags);
         req.setNotes(notes);
-        Trip trip = tripService.createTrip(req);
+        Trip trip = tripService.createTrip(req, null);
         // set status (createTrip defaults to "planning")
         if (!"planning".equals(status)) {
             tripService.updateTrip(trip.getId(), buildStatusUpdate(status));

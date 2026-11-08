@@ -36,8 +36,17 @@ export class TripService {
    */
   private readonly deletedIds = new Set<string>();
 
-  /** Elementi (attività, locali, spese) appena aggiunti e non ancora confermati dal server. */
-  private readonly pendingCreates = new Map<string, Promise<boolean>>();
+  /**
+   * Elementi (attività, locali, spese) appena aggiunti e non ancora confermati dal server,
+   * per id locale: la promessa dà l'id assegnato dal server (null se la creazione è fallita).
+   */
+  private readonly pendingCreates = new Map<string, Promise<string | null>>();
+
+  /**
+   * Id locale → id del server. L'id degli elementi lo decide sempre il server: chi ha ancora
+   * in mano l'id locale (es. una modale aperta prima della risposta) deve trovare l'elemento.
+   */
+  private readonly savedIds = new Map<string, string>();
 
   // Viaggi con id provvisorio (trip_<timestamp>) lasciati in cache da versioni precedenti:
   // non esistono sul server, quindi non vanno mostrati (i dati demo locali usano lo stesso prefisso).
@@ -140,8 +149,7 @@ export class TripService {
     const { asProposal, ...fields } = dto;
     return this.apiService.post<Trip>('/api/v1/trips', {
       ...fields,
-      decision: asProposal ? 'proposal' : 'confirmed',
-      proposedBy: asProposal ? this.authService.currentUser()?.id : undefined
+      decision: asProposal ? 'proposal' : 'confirmed'
     }).pipe(
       tap({
         next: (created) => {
@@ -344,7 +352,9 @@ export class TripService {
           list.splice(Math.min(index, list.length), 0, found);
           this.setLocalTrips(list);
         }
-        this.warnFailure('eliminare il viaggio', err, `Non è stato possibile eliminare il viaggio "${found.title}". Riprova.`);
+        this.warnFailure('eliminare il viaggio', err, err?.status === 403
+          ? `Solo gli amministratori del gruppo possono eliminare il viaggio "${found.title}".`
+          : `Non è stato possibile eliminare il viaggio "${found.title}". Riprova.`);
       }
     });
   }
@@ -464,73 +474,90 @@ export class TripService {
    * una modifica immediata altrimenti arriverebbe prima della creazione (404).
    * Se la creazione è fallita l'elemento non esiste più e la modifica viene scartata.
    */
-  private afterSaved<T>(itemId: string, request: () => Observable<T>): Observable<T> {
+  private afterSaved<T>(itemId: string, request: (savedId: string) => Observable<T>): Observable<T> {
     const pending = this.pendingCreates.get(itemId);
-    if (!pending) return request();
-    return from(pending).pipe(switchMap(saved => saved ? request() : EMPTY));
+    if (!pending) return request(this.serverId(itemId));
+    return from(pending).pipe(switchMap(savedId => savedId ? request(savedId) : EMPTY));
+  }
+
+  /** L'id del server per un id forse ancora locale (vedi `savedIds`). */
+  private serverId(id: string): string {
+    return this.savedIds.get(id) ?? id;
   }
 
   private addChild<K extends ChildKey>(tripId: string, key: K, item: ChildOf<K>, msg: SyncMessages): void {
     if (!this.getTripById(tripId)) return;
     this.patchChildren(tripId, key, items => [...items, item]);
 
-    let settle: (saved: boolean) => void = () => undefined;
-    this.pendingCreates.set(item.id, new Promise<boolean>(resolve => settle = resolve));
-    this.apiService.post<ChildOf<K>>(`/api/v1/trips/${tripId}/${CHILD_PATHS[key]}`, item).pipe(
+    let settle: (savedId: string | null) => void = () => undefined;
+    this.pendingCreates.set(item.id, new Promise<string | null>(resolve => settle = resolve));
+    // L'id locale non viene inviato: lo assegna il server.
+    const { id: _localId, ...body } = item;
+    this.apiService.post<ChildOf<K>>(`/api/v1/trips/${tripId}/${CHILD_PATHS[key]}`, body).pipe(
       finalize(() => this.pendingCreates.delete(item.id))
     ).subscribe({
       next: (saved) => {
-        // I dati locali prevalgono: l'elemento può essere già stato modificato nel frattempo.
-        this.patchChildren(tripId, key, items => items.map(i => i.id === item.id ? { ...saved, ...i } : i));
+        this.savedIds.set(item.id, saved.id);
+        // I dati locali prevalgono (l'elemento può essere già stato modificato nel frattempo),
+        // tranne l'id, che diventa quello del server. Una copia del server arrivata nel
+        // frattempo può già contenerlo: niente doppioni.
+        this.patchChildren(tripId, key, items => items
+          .filter(i => i.id !== saved.id)
+          .map(i => i.id === item.id ? { ...saved, ...i, id: saved.id } : i));
         this.toastService.success(msg.success);
-        settle(true);
+        settle(saved.id);
       },
       error: (err) => {
         this.patchChildren(tripId, key, items => items.filter(i => i.id !== item.id));
         this.warnFailure(msg.action, err);
-        settle(false);
+        settle(null);
       }
     });
   }
 
   private updateChild<K extends ChildKey>(tripId: string, key: K, itemId: string, partial: Partial<ChildOf<K>>, msg: SyncMessages): void {
-    const target = ((this.getTripById(tripId)?.[key] ?? []) as ChildOf<K>[]).find(i => i.id === itemId);
+    const knownId = this.serverId(itemId);
+    const target = ((this.getTripById(tripId)?.[key] ?? []) as ChildOf<K>[]).find(i => i.id === knownId);
     if (!target) return;
     const merged = { ...target, ...partial } as ChildOf<K>;
-    this.patchChildren(tripId, key, items => items.map(i => i.id === itemId ? merged : i));
+    this.patchChildren(tripId, key, items => items.map(i => i.id === knownId ? merged : i));
+    // Se l'elemento è ancora in creazione, nel frattempo il suo id diventa quello del server.
+    const current = () => this.serverId(knownId);
 
-    this.afterSaved(itemId, () =>
-      this.apiService.put<ChildOf<K>>(`/api/v1/trips/${tripId}/${CHILD_PATHS[key]}/${itemId}`, merged)
+    this.afterSaved(knownId, savedId =>
+      this.apiService.put<ChildOf<K>>(`/api/v1/trips/${tripId}/${CHILD_PATHS[key]}/${savedId}`, { ...merged, id: savedId })
     ).subscribe({
       next: () => {
         // Riapplicata: una copia del server arrivata nel frattempo potrebbe averla sovrascritta.
-        this.patchChildren(tripId, key, items => items.map(i => i.id === itemId ? merged : i));
+        this.patchChildren(tripId, key, items => items.map(i => i.id === current() ? { ...merged, id: current() } : i));
         this.toastService.success(msg.success);
       },
       error: (err) => {
-        this.patchChildren(tripId, key, items => items.map(i => i.id === itemId ? target : i));
+        this.patchChildren(tripId, key, items => items.map(i => i.id === current() ? { ...target, id: current() } : i));
         this.warnFailure(msg.action, err);
       }
     });
   }
 
   private deleteChild<K extends ChildKey>(tripId: string, key: K, itemId: string, msg: SyncMessages): void {
+    const knownId = this.serverId(itemId);
     const before = (this.getTripById(tripId)?.[key] ?? []) as ChildOf<K>[];
-    const index = before.findIndex(i => i.id === itemId);
+    const index = before.findIndex(i => i.id === knownId);
     if (index < 0) return;
     const target = before[index];
-    this.patchChildren(tripId, key, items => items.filter(i => i.id !== itemId));
+    this.patchChildren(tripId, key, items => items.filter(i => i.id !== knownId));
 
-    this.afterSaved(itemId, () =>
-      this.apiService.delete(`/api/v1/trips/${tripId}/${CHILD_PATHS[key]}/${itemId}`)
+    this.afterSaved(knownId, savedId =>
+      this.apiService.delete(`/api/v1/trips/${tripId}/${CHILD_PATHS[key]}/${savedId}`)
     ).subscribe({
       next: () => this.toastService.info(msg.success),
       error: (err) => {
         if (err?.status === 404) return; // già rimosso sul server
+        const id = this.serverId(knownId);
         this.patchChildren(tripId, key, items => {
-          if (items.some(i => i.id === itemId)) return items;
+          if (items.some(i => i.id === id)) return items;
           const restored = [...items];
-          restored.splice(Math.min(index, restored.length), 0, target);
+          restored.splice(Math.min(index, restored.length), 0, { ...target, id });
           return restored;
         });
         this.warnFailure(msg.action, err);
@@ -569,7 +596,7 @@ const CHILD_PATHS: Record<ChildKey, string> = {
   expenses: 'expenses'
 };
 
-/** Id generato nel browser (il backend lo mantiene): con una parte casuale, per non collidere tra utenti. */
+/** Id provvisorio, solo nel browser: il server assegna quello definitivo (vedi `savedIds`). */
 function localId(prefix: string): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }

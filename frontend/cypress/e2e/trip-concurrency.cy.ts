@@ -44,8 +44,8 @@ describe('Viaggi – voto sul server', () => {
         vote('sofia', proposal.id, { voted: true }).its('votes').should('deep.eq', [sofia.id]);
       }));
 
-      // Chi non è nel gruppo non può votare.
-      rawApi('giulia', 'POST', `/api/v1/trips/${proposal.id}/vote`, {}).its('status').should('eq', 403);
+      // Chi non è nel gruppo non può votare: per lui il viaggio non esiste (404, #76).
+      rawApi('giulia', 'POST', `/api/v1/trips/${proposal.id}/vote`, {}).its('status').should('eq', 404);
 
       // I voti non si cambiano con il PUT del viaggio.
       rawApi('sofia', 'PUT', `/api/v1/trips/${proposal.id}`, { votes: [] }).its('status').should('eq', 200);
