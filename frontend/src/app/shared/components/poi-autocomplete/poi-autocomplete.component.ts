@@ -6,13 +6,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Subject, catchError, debounceTime, map, of, switchMap } from 'rxjs';
 import { GeoPoint } from '../../../core/models/trip.model';
-import { OSM_COPYRIGHT_LINK, Poi, PoiService } from '../../../core/services/poi.service';
+import { OSM_COPYRIGHT_LINK, Poi, PoiService, WIKIDATA_LINK } from '../../../core/services/poi.service';
 
 const MIN_QUERY = 3;
 const DEBOUNCE_MS = 300;
 
 /**
- * Campo di testo con suggerimenti di luoghi (OpenStreetMap, tramite il backend).
+ * Campo di testo con suggerimenti di luoghi (Wikidata e OpenStreetMap, tramite il backend).
  * Riutilizzabile per attrazioni, ristoranti, alloggio: il testo resta sempre libero,
  * i suggerimenti sono un aiuto. Combobox ARIA: frecce per muoversi, Invio per scegliere,
  * Esc per chiudere l'elenco (senza chiudere la modale).
@@ -45,6 +45,7 @@ export class PoiAutocompleteComponent {
   protected readonly open = signal(false);
   protected readonly active = signal(-1);
   protected readonly osmLink = OSM_COPYRIGHT_LINK;
+  protected readonly wikidataLink = WIKIDATA_LINK;
 
   /** Solo il testo scritto dall'utente: i valori impostati dal form (reset, scelta) non cercano. */
   private readonly typed$ = new Subject<string>();

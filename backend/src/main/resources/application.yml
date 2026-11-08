@@ -57,6 +57,15 @@ photon:
   # User-Agent generico dell'app (uso corretto dell'istanza pubblica).
   user-agent: ${PHOTON_USER_AGENT:WanderBite/1.0 (+https://test.alessandrodominici.dev)}
 
+wikidata:
+  # Ricerca di monumenti e attrazioni con il nome nella lingua dell'utente ("Torre Eiffel", "Colosseo"),
+  # in parallelo a Photon (dati CC0, nessuna chiave). Vuota = solo Photon.
+  url: ${WIKIDATA_URL:https://www.wikidata.org/w/api.php}
+
+places:
+  # Raggio (km) attorno alla destinazione del viaggio entro cui cercare attrazioni e indirizzi.
+  search-radius-km: ${PLACES_SEARCH_RADIUS_KM:40}
+
 jwt:
   # Obbligatorio: almeno 32 caratteri, diverso per ogni ambiente (es. `openssl rand -hex 32`).
   secret: ${JWT_SECRET}

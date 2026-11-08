@@ -29,13 +29,19 @@
             <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
             <span class="poi-option-text">
               <strong>{{ p.name }}</strong>
-              <small>{{ p.address }}</small>
+              @if (p.localName) {
+                <small class="poi-option-local">{{ p.localName }}</small>
+              }
+              @if (p.address) {
+                <small class="poi-option-address">{{ p.address }}</small>
+              }
             </span>
           </li>
         }
       </ul>
       <p class="poi-attribution">
         Dati © <a [href]="osmLink" target="_blank" rel="noopener">OpenStreetMap contributors</a>
+        · <a [href]="wikidataLink" target="_blank" rel="noopener">Wikidata</a>
       </p>
     </div>
   }
