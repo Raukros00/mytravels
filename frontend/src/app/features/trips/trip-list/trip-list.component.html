@@ -105,19 +105,21 @@
               </span>
             </a>
 
-            <div class="card-menu-wrapper">
-              <button type="button" class="card-menu-btn" aria-label="Azioni viaggio" (click)="toggleMenu(vm.trip.id, $event)">
-                <span class="material-symbols-outlined">more_vert</span>
-              </button>
-              @if (openMenuId() === vm.trip.id) {
-                <div class="card-dropdown" (click)="$event.stopPropagation()">
-                  <button type="button" class="dropdown-item dropdown-item--danger" (click)="deleteTrip(vm.trip.id, vm.trip.title, $event)">
-                    <span class="material-symbols-outlined">delete_outline</span>
-                    Elimina viaggio
-                  </button>
-                </div>
-              }
-            </div>
+            @if (vm.canDelete) {
+              <div class="card-menu-wrapper">
+                <button type="button" class="card-menu-btn" aria-label="Azioni viaggio" (click)="toggleMenu(vm.trip.id, $event)">
+                  <span class="material-symbols-outlined">more_vert</span>
+                </button>
+                @if (openMenuId() === vm.trip.id) {
+                  <div class="card-dropdown" (click)="$event.stopPropagation()">
+                    <button type="button" class="dropdown-item dropdown-item--danger" (click)="deleteTrip(vm.trip.id, vm.trip.title, $event)">
+                      <span class="material-symbols-outlined">delete_outline</span>
+                      Elimina viaggio
+                    </button>
+                  </div>
+                }
+              </div>
+            }
 
             <a class="trip-body" [routerLink]="['/trips', vm.trip.id]">
               <h3 class="trip-title">{{ vm.trip.title }}</h3>
