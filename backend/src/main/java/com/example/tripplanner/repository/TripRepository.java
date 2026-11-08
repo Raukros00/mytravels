@@ -19,6 +19,9 @@ public interface TripRepository extends JpaRepository<Trip, String> {
 
     List<Trip> findByGroupIdIn(java.util.Collection<String> groupIds);
 
+    /** Viaggi con la decisione e la data di partenza indicate (promemoria prima della partenza). */
+    List<Trip> findByDecisionAndStartDate(String decision, String startDate);
+
     /**
      * Il viaggio con la riga bloccata fino alla fine della transazione (SELECT ... FOR UPDATE):
      * le operazioni che leggono e riscrivono lo stesso viaggio (es. i voti) vengono eseguite
