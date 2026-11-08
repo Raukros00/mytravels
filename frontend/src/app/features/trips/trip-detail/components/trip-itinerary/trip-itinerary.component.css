@@ -571,3 +571,29 @@ ol.timeline-stream {
   flex-wrap: wrap;
   gap: 0.35rem;
 }
+
+/* ── Posizione mancante (#102) ──────────────────────────────────────────── */
+.timeline-no-location {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0 0 0.55rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: var(--wb-radius-sm);
+  border: 1px dashed var(--wb-border-strong);
+  background: var(--wb-surface-1);
+}
+
+.timeline-no-location-text {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--wb-text-secondary);
+}
+
+.timeline-no-location-text .material-symbols-outlined {
+  font-size: 16px;
+}

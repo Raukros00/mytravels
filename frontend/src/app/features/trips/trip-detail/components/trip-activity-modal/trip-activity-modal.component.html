@@ -26,6 +26,7 @@
         listLabel="Indirizzi suggeriti"
         placeholder="Es. Carrer de Mallorca 401, Barcellona"
         (picked)="pickPlace($event, 'address')" />
+      <app-place-status [place]="place" [near]="near()" (located)="located($event)" />
     </div>
 
     <div class="form-group">

@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, effect, inject, input, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivityCategory, GeoPoint, TripActivity } from '../../../../../core/models/trip.model';
 import { Poi } from '../../../../../core/services/poi.service';
 import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
 import { PoiAutocompleteComponent } from '../../../../../shared/components/poi-autocomplete/poi-autocomplete.component';
+import { PlaceCoordinates } from '../../../../../shared/components/poi-autocomplete/place-coordinates';
+import { PlaceStatusComponent } from '../../../../../shared/components/poi-autocomplete/place-status.component';
 
 /** Valori del form; `coordinates` solo se l'indirizzo viene da un luogo suggerito. */
 export type NewActivityValue = Omit<TripActivity, 'id' | 'tripId' | 'assignedDay'>;
@@ -12,7 +13,7 @@ export type NewActivityValue = Omit<TripActivity, 'id' | 'tripId' | 'assignedDay
 @Component({
   selector: 'app-trip-activity-modal',
   standalone: true,
-  imports: [ReactiveFormsModule, ModalComponent, PoiAutocompleteComponent],
+  imports: [ReactiveFormsModule, ModalComponent, PoiAutocompleteComponent, PlaceStatusComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './trip-activity-modal.component.html',
   styleUrls: ['../shared/form-helpers.css', './trip-activity-modal.component.css']
@@ -37,22 +38,21 @@ export class TripActivityModalComponent {
     notes: ['']
   });
 
-  /** Luogo scelto dai suggerimenti: le sue coordinate valgono finché l'indirizzo resta quello. */
-  private readonly pickedPlace = signal<{ address: string; coordinates: GeoPoint } | null>(null);
+  /** Coordinate del luogo scelto o trovato: valgono finché l'indirizzo resta quello. */
+  protected readonly place = new PlaceCoordinates(this.form.controls.address);
 
   constructor() {
     effect(() => {
       if (this.isOpen()) {
         this.form.reset();
-        this.pickedPlace.set(null);
+        this.place.clear();
       }
     });
+  }
 
-    // Indirizzo modificato a mano dopo la scelta: le coordinate non sono più affidabili.
-    this.form.controls.address.valueChanges.pipe(takeUntilDestroyed(inject(DestroyRef))).subscribe(address => {
-      const picked = this.pickedPlace();
-      if (picked && address !== picked.address) this.pickedPlace.set(null);
-    });
+  /** "Trova sulla mappa": l'indirizzo scritto resta, si aggiungono le coordinate confermate. */
+  protected located(poi: Poi): void {
+    this.place.set(this.form.controls.address.value, { lat: poi.lat, lng: poi.lng });
   }
 
   /**
@@ -60,7 +60,7 @@ export class TripActivityModalComponent {
    * Dal campo nome il nome diventa quello del luogo; dal campo indirizzo solo se il nome è vuoto.
    */
   protected pickPlace(poi: Poi, from: 'name' | 'address'): void {
-    this.pickedPlace.set({ address: poi.address, coordinates: { lat: poi.lat, lng: poi.lng } });
+    this.place.set(poi.address, { lat: poi.lat, lng: poi.lng });
     const name = this.form.controls.name.value.trim();
     this.form.patchValue({
       address: poi.address,
@@ -75,7 +75,7 @@ export class TripActivityModalComponent {
       name: val.name,
       category: val.category || 'monument',
       address: val.address || '',
-      coordinates: this.pickedPlace()?.coordinates,
+      coordinates: this.place.coordinates(),
       ticketsRequired: !!val.ticketsRequired,
       ticketPrice: Number(val.ticketPrice) || 0,
       currency: 'EUR',
