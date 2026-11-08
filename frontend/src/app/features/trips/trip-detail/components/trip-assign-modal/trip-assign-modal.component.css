@@ -1,2 +1,6 @@
 .assign-form{display:flex;flex-direction:column;gap:.45rem}
 .assign-intro{font-size:.85rem;color:var(--wb-text-secondary);margin:0}
+/* Inizio e fine affiancati anche su mobile: sono campi corti. */
+.assign-times{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+.assign-hint{font-size:.78rem;color:var(--wb-text-secondary);margin:-.2rem 0 .2rem}
+.assign-error{font-size:.8rem;font-weight:600;color:var(--wb-error);margin:-.2rem 0 .2rem}

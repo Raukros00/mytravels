@@ -457,3 +457,117 @@
     padding: 0.75rem 0.9rem;
   }
 }
+/* ── Ordine e orari delle tappe (#101) ──────────────────────────────────── */
+ol.timeline-stream {
+  list-style: none;
+  margin-top: 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.timeline-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+
+.timeline-time {
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline-time-default {
+  text-transform: none;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--wb-text-tertiary);
+}
+
+.order-btn {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius-sm);
+  background: var(--wb-surface-0);
+  color: var(--wb-text-secondary);
+  cursor: pointer;
+  padding: 0;
+}
+
+.order-btn:hover:not(:disabled) {
+  color: var(--wb-primary);
+  border-color: var(--wb-primary);
+  background: var(--wb-primary-surface);
+}
+
+.order-btn:focus-visible {
+  outline: 2px solid var(--wb-border-focus);
+  outline-offset: 1px;
+}
+
+.order-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.order-btn .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.timeline-drag-handle {
+  font-size: 20px;
+  color: var(--wb-text-tertiary);
+  cursor: grab;
+}
+
+/* Il trascinamento è solo per il mouse: sui touch restano le frecce. */
+@media (hover: none), (max-width: 860px) {
+  .timeline-drag-handle {
+    display: none;
+  }
+}
+
+.timeline-entry--dragging {
+  opacity: 0.45;
+}
+
+.timeline-entry--drop-target .timeline-card {
+  border-color: var(--wb-primary);
+  box-shadow: 0 0 0 2px var(--wb-primary-surface);
+}
+
+.timeline-overlap {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0 0 0.45rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: var(--wb-radius-sm);
+  background: var(--wb-accent-surface);
+  border: 1px solid var(--wb-accent-border);
+  color: var(--wb-accent-dark);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.timeline-overlap .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.timeline-footer-row {
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}

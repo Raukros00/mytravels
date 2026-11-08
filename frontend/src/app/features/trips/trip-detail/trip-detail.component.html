@@ -82,7 +82,9 @@
             [startDate]="t.startDate"
             (daySelected)="selectedDay.set($event)"
             (addStep)="openPlanFromBacklogModal()"
-            (unassignItem)="unassignFromDay($event)" />
+            (unassignItem)="unassignFromDay($event)"
+            (editTime)="editStopTime($event)"
+            (reorder)="reorderDay($event)" />
         }
 
         @case ('food') {
@@ -168,8 +170,7 @@
   [itemName]="assigningItemName()"
   [days]="tripDaysNumbers()"
   [startDate]="trip()?.startDate"
-  [initialDay]="assignInitialDay()"
-  [initialTimeSlot]="assignInitialTimeSlot()"
+  [initial]="assignInitial()"
   (closed)="isAssignModalOpen.set(false)"
   (confirmed)="confirmAssignDay($event)" />
 

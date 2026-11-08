@@ -22,8 +22,9 @@ import {
   AssignDayResult,
   DetailTab,
   TimelineItem,
+  buildDayTimeline,
   generateFallbackCoords,
-  getMealDefaultTime
+  mealOf
 } from './trip-detail.utils';
 import { TripHeroComponent } from './components/trip-hero/trip-hero.component';
 import { TripExpensesTabComponent } from './components/trip-expenses-tab/trip-expenses-tab.component';
@@ -35,7 +36,7 @@ import { TripActivitiesTabComponent } from './components/trip-activities-tab/tri
 import { LogisticsSubTab, TripLogisticsTabComponent } from './components/trip-logistics-tab/trip-logistics-tab.component';
 import { NewActivityValue, TripActivityModalComponent } from './components/trip-activity-modal/trip-activity-modal.component';
 import { NewPlaceValue, TripPlaceModalComponent } from './components/trip-place-modal/trip-place-modal.component';
-import { TripAssignModalComponent } from './components/trip-assign-modal/trip-assign-modal.component';
+import { AssignInitial, TripAssignModalComponent } from './components/trip-assign-modal/trip-assign-modal.component';
 import { TripFlightsModalComponent } from './components/trip-flights-modal/trip-flights-modal.component';
 import { TripTransfersModalComponent } from './components/trip-transfers-modal/trip-transfers-modal.component';
 import {
@@ -131,8 +132,18 @@ export class TripDetailComponent {
   // Assign Day state
   private readonly currentAssigningItem = signal<{ item: TripActivity | TripPlaceToEat; type: 'activity' | 'food' } | null>(null);
   protected readonly assigningItemName = computed(() => this.currentAssigningItem()?.item.name ?? '');
-  protected readonly assignInitialDay = computed(() => this.currentAssigningItem()?.item.assignedDay || this.selectedDay());
-  protected readonly assignInitialTimeSlot = computed(() => this.currentAssigningItem()?.item.timeSlot || '');
+  protected readonly assignInitial = computed<AssignInitial>(() => {
+    const ctx = this.currentAssigningItem();
+    if (!ctx) return { day: this.selectedDay() };
+    const { item } = ctx;
+    return {
+      day: item.assignedDay || this.selectedDay(),
+      startTime: item.startTime,
+      endTime: item.endTime,
+      timeSlot: item.timeSlot,
+      meal: ctx.type === 'food' ? mealOf(item as TripPlaceToEat) : null
+    };
+  });
 
   // Days [1, 2, 3, ...]
   protected readonly tripDaysNumbers = computed(() => {
@@ -150,44 +161,11 @@ export class TripDetailComponent {
     return t ? deriveTripStatus(t) : 'planning';
   });
 
+  /** Tappe del giorno in sequenza: ordine scelto, poi orari (pranzo e cena con l'orario indicativo). */
   protected readonly selectedDayTimelineItems = computed(() => {
     const t = this.trip();
-    const day = this.selectedDay();
     if (!t) return [];
-
-    const items: TimelineItem[] = [];
-
-    (t.activities || []).filter(a => a.assignedDay === day).forEach(a => {
-      items.push({
-        id: a.id,
-        type: 'activity',
-        name: a.name,
-        timeSlot: a.timeSlot,
-        address: a.address,
-        notes: a.notes,
-        priceInfo: a.ticketsRequired ? (a.ticketPrice ? `€${a.ticketPrice}` : 'A pagamento') : 'Gratis',
-        bookingInfo: a.bookingRequired ? '⚠️ Prenotare' : undefined,
-        isCompleted: a.isCompleted,
-        raw: a
-      });
-    });
-
-    (t.placesToEat || []).filter(p => p.assignedDay === day).forEach(p => {
-      items.push({
-        id: p.id,
-        type: 'food',
-        name: p.name,
-        timeSlot: p.timeSlot || getMealDefaultTime(p.assignedMeal || p.category),
-        address: p.address,
-        notes: p.specialties ? `Specialità: ${p.specialties}` : p.notes,
-        priceInfo: p.priceRange,
-        bookingInfo: p.bookingRequired ? '⚠️ Prenotare' : undefined,
-        isCompleted: p.isVisited,
-        raw: p
-      });
-    });
-
-    return items;
+    return buildDayTimeline(t.activities || [], t.placesToEat || [], this.selectedDay());
   });
 
   protected readonly selectedDayFoodCount = computed(() =>
@@ -200,7 +178,6 @@ export class TripDetailComponent {
 
   protected readonly selectedDayMapStops = computed(() => {
     const t = this.trip();
-    const day = this.selectedDay();
     if (!t) return [];
 
     const stops: MapStopPoint[] = [];
@@ -218,33 +195,20 @@ export class TripDetailComponent {
       });
     }
 
-    (t.activities || []).filter(a => a.assignedDay === day).forEach(a => {
-      const coords = a.coordinates || generateFallbackCoords(t.destination, a.id);
+    // Nello stesso ordine dell'itinerario: la linea sulla mappa segue la sequenza della giornata.
+    for (const item of this.selectedDayTimelineItems()) {
+      const coords = item.raw.coordinates || generateFallbackCoords(t.destination, item.id);
       stops.push({
-        id: a.id,
-        name: a.name,
-        category: 'activity',
+        id: item.id,
+        name: item.name,
+        category: item.type,
         lat: coords.lat,
         lng: coords.lng,
-        address: a.address,
-        timeSlot: a.timeSlot,
-        details: a.notes
+        address: item.address,
+        timeSlot: item.timeLabel,
+        details: item.type === 'food' ? (item.raw as TripPlaceToEat).specialties : item.raw.notes
       });
-    });
-
-    (t.placesToEat || []).filter(p => p.assignedDay === day).forEach(p => {
-      const coords = p.coordinates || generateFallbackCoords(t.destination, p.id);
-      stops.push({
-        id: p.id,
-        name: p.name,
-        category: 'food',
-        lat: coords.lat,
-        lng: coords.lng,
-        address: p.address,
-        timeSlot: p.timeSlot || getMealDefaultTime(p.assignedMeal || p.category),
-        details: p.specialties
-      });
-    });
+    }
 
     return stops;
   });
@@ -333,7 +297,18 @@ export class TripDetailComponent {
     const ctx = this.currentAssigningItem();
     if (!t || !ctx) return;
 
-    const changes = { assignedDay: result.day, timeSlot: result.timeSlot };
+    const { item } = ctx;
+    const moved = result.day !== (item.assignedDay ?? null)
+      || result.startTime !== (item.startTime ?? null)
+      || result.endTime !== (item.endTime ?? null);
+    const changes = {
+      assignedDay: result.day,
+      startTime: result.startTime,
+      endTime: result.endTime,
+      timeSlot: result.timeSlot,
+      // Cambiati giorno od orari: la tappa si reinserisce nella giornata in base all'orario.
+      dayOrder: moved ? null : item.dayOrder ?? null
+    };
     if (ctx.type === 'activity') {
       this.tripService.updateActivity(t.id, ctx.item.id, changes);
     } else {
@@ -346,12 +321,24 @@ export class TripDetailComponent {
     const t = this.trip();
     if (!t) return;
 
-    const changes = { assignedDay: null, timeSlot: '' };
+    const changes = { assignedDay: null, timeSlot: '', startTime: null, endTime: null, dayOrder: null };
     if (item.type === 'activity') {
       this.tripService.updateActivity(t.id, item.id, changes);
     } else {
       this.tripService.updatePlaceToEat(t.id, item.id, changes);
     }
+  }
+
+  /** Modifica dell'orario dall'itinerario: stessa modale della pianificazione. */
+  protected editStopTime(item: TimelineItem): void {
+    this.openAssignDayModal(item.raw, item.type);
+  }
+
+  /** Nuova sequenza della giornata (frecce o trascinamento): salvata in una volta. */
+  protected reorderDay(items: TimelineItem[]): void {
+    const t = this.trip();
+    if (!t) return;
+    this.tripService.reorderDayStops(t.id, this.selectedDay(), items.map(i => ({ type: i.type, id: i.id })));
   }
 
   // Logistics actions

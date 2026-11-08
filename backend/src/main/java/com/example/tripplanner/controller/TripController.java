@@ -127,6 +127,24 @@ public class TripController {
         return ifMember(id, auth, () -> deleted(tripService.deletePlaceToEat(id, placeId), "Place to eat deleted successfully"));
     }
 
+    // Ordine delle tappe nella giornata (#101)
+
+    public record DayOrderRequest(List<TripService.DayStopRef> items) {
+    }
+
+    /**
+     * Salva l'ordine delle tappe (attività e ristoranti) del giorno {@code day}, nell'ordine dell'elenco
+     * {@code {"items":[{"type":"activity"|"food","id":"..."}]}}. Solo per i membri del gruppo del viaggio
+     * (per gli altri 404, come le altre sotto-risorse). 400 se una tappa non è del viaggio o non è in quel giorno.
+     */
+    @PutMapping("/{id}/days/{day}/order")
+    public ResponseEntity<Trip> reorderDay(@PathVariable String id,
+                                           @PathVariable int day,
+                                           @RequestBody DayOrderRequest body,
+                                           Authentication auth) {
+        return ifMember(id, auth, () -> orNotFound(tripService.reorderDay(id, day, body != null ? body.items() : null)));
+    }
+
     // Sub-resources: Flights, Transfers, Accommodation
     @PutMapping("/{id}/flights")
     public ResponseEntity<Trip> updateFlights(@PathVariable String id, @RequestBody FlightDetails flights,

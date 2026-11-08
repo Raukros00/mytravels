@@ -52,4 +52,11 @@ public class TripActivity {
     @Column(name = "assigned_day")  private Integer assignedDay;
     @Column(name = "time_slot")     private String timeSlot;
     @Column(name = "is_completed")  private Boolean isCompleted;
+
+    /** Orari strutturati 'HH:mm' (facoltativi; la fine solo dopo l'inizio). {@code timeSlot} resta come testo libero. */
+    @Column(name = "start_time") private String startTime;
+    @Column(name = "end_time")   private String endTime;
+
+    /** Posizione nella giornata decisa dall'utente; null = posizionata in base all'orario. */
+    @Column(name = "day_order")  private Integer dayOrder;
 }
