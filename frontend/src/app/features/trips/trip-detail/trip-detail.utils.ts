@@ -18,6 +18,8 @@ export interface TimelineItem {
   priceInfo?: string;
   bookingInfo?: string;
   isCompleted?: boolean;
+  /** Saltata durante il viaggio (#103). */
+  isSkipped?: boolean;
   raw: TripActivity | TripPlaceToEat;
 }
 
@@ -53,6 +55,7 @@ export function buildDayTimeline(activities: TripActivity[], places: TripPlaceTo
         priceInfo: a.ticketsRequired ? (a.ticketPrice ? `€${a.ticketPrice}` : 'A pagamento') : 'Gratis',
         bookingInfo: a.bookingRequired ? '⚠️ Prenotare' : undefined,
         isCompleted: a.isCompleted,
+        isSkipped: !a.isCompleted && !!a.isSkipped,
         raw: a
       }
     })),
@@ -68,6 +71,7 @@ export function buildDayTimeline(activities: TripActivity[], places: TripPlaceTo
         priceInfo: p.priceRange,
         bookingInfo: p.bookingRequired ? '⚠️ Prenotare' : undefined,
         isCompleted: p.isVisited,
+        isSkipped: !p.isVisited && !!p.isSkipped,
         raw: p
       }
     }))

@@ -53,6 +53,11 @@ public class TripActivity {
     @Column(name = "time_slot")     private String timeSlot;
     @Column(name = "is_completed")  private Boolean isCompleted;
 
+    /** Saltata durante il viaggio (#103): non fatta, da recuperare in un altro giorno (#112). */
+    @Column(name = "is_skipped", nullable = false)
+    @Builder.Default
+    private Boolean isSkipped = false;
+
     /** Orari strutturati 'HH:mm' (facoltativi; la fine solo dopo l'inizio). {@code timeSlot} resta come testo libero. */
     @Column(name = "start_time") private String startTime;
     @Column(name = "end_time")   private String endTime;

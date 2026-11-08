@@ -37,6 +37,8 @@ export interface TripActivity {
   /** Posizione nella giornata scelta dall'utente; assente = in base all'orario. */
   dayOrder?: number | null;
   isCompleted?: boolean;
+  /** Saltata durante il viaggio ("Salta" nella guida della giornata, #103): da recuperare (#112). */
+  isSkipped?: boolean;
 }
 
 export interface TripPlaceToEat {
@@ -59,6 +61,8 @@ export interface TripPlaceToEat {
   endTime?: string | null;
   dayOrder?: number | null;
   isVisited?: boolean;
+  /** Saltato durante il viaggio (vedi TripActivity.isSkipped). */
+  isSkipped?: boolean;
 }
 
 export interface FlightInfo {
