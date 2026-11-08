@@ -1,5 +1,6 @@
 package com.example.tripplanner.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.domain.Persistable;
@@ -40,6 +41,8 @@ public class User implements Persistable<String> {
     @Column(nullable = false, unique = true)
     private String email;
 
+    /** Hash BCrypt: non deve mai uscire dal server (rete di sicurezza oltre a UserResponse). */
+    @JsonIgnore
     private String password;
     private String avatar;
     private String color;

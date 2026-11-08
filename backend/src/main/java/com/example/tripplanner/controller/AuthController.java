@@ -2,6 +2,7 @@ package com.example.tripplanner.controller;
 
 import com.example.tripplanner.dto.LoginDto;
 import com.example.tripplanner.dto.RegisterDto;
+import com.example.tripplanner.dto.UserResponse;
 import com.example.tripplanner.model.User;
 import com.example.tripplanner.security.JwtUtil;
 import com.example.tripplanner.service.AuthService;
@@ -35,7 +36,7 @@ public class AuthController {
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
         return ResponseEntity.ok(Map.of(
                 "token", token,
-                "user", user
+                "user", UserResponse.from(user)
         ));
     }
 
@@ -46,7 +47,7 @@ public class AuthController {
             String token = jwtUtil.generateToken(created.getEmail(), created.getRole());
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                     "token", token,
-                    "user", created
+                    "user", UserResponse.from(created)
             ));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
@@ -59,7 +60,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         Optional<User> userOpt = authService.findByEmail(authentication.getName());
-        return userOpt.map(ResponseEntity::ok)
+        return userOpt.<ResponseEntity<?>>map(u -> ResponseEntity.ok(UserResponse.from(u)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 }
