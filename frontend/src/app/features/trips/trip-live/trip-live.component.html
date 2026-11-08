@@ -55,6 +55,9 @@
         }
 
         @case ('during') {
+          <app-live-suggestions [result]="suggestions()" [urlFor]="suggestionUrl" [placeUrl]="placeUrl"
+            (act)="onSuggestionAction($event)" (pick)="onSuggestionPick($event)" />
+
           @switch (live().phase) {
             @case ('empty') {
               <section class="live-card live-message" data-cy="live-empty">

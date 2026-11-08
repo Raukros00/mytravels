@@ -206,5 +206,62 @@
     "push_pref_reminders": "Promemoria prima della partenza",
     "push_pref_reminders_desc": "3 giorni prima e il giorno prima di un viaggio confermato.",
     "push_prefs_error": "Non è stato possibile salvare la preferenza. Riprova."
+  },
+  "live": {
+    "suggest": {
+      "title": "Suggerimenti",
+      "start": "Ora: {{name}}, poi {{next}}.",
+      "start_last": "Ora: {{name}}, l'ultima tappa di oggi.",
+      "meal_planned": "È ora di {{meal}}: che ne dici di {{name}}, come programmato?",
+      "meal_none": "È ora di {{meal}}: hai {{count}} locali salvati.",
+      "meal_none_near": "È ora di {{meal}}: hai {{count}} locali salvati vicino a te.",
+      "meal_none_empty": "È ora di {{meal}}! Non hai ancora scelto dove mangiare.",
+      "booking": "{{name}} richiede la prenotazione: l'hai fatta?",
+      "booking_food": "Il ristorante {{name}} richiede la prenotazione: l'hai fatta?",
+      "tickets": "Per {{name}} servono i biglietti.",
+      "tickets_price": "Per {{name}} servono i biglietti ({{price}}).",
+      "closing_soon": "{{name}} chiude alle {{time}}: ti restano {{minutes}} min.",
+      "closes_before_end": "{{name}} chiude alle {{time}}, prima della fine della visita in programma.",
+      "closed_hours": "All'orario in programma {{name}} è chiuso (orari: {{hours}}).",
+      "closed_today": "Oggi {{name}} è chiuso ({{weekday}}).",
+      "late": "Sei in ritardo di {{minutes}} min: vuoi spostare {{name}} a un altro giorno?",
+      "day_end": "Giornata finita! Riposati, domani si riparte.",
+      "day_end_home": "Giornata finita! Torna all'alloggio: {{name}}.",
+      "places_title": "Locali salvati",
+      "place_today": "di oggi",
+      "place_pick": "Scegli",
+      "dismiss": "Chiudi il suggerimento",
+      "actions": {
+        "directions": "Indicazioni",
+        "go": "Andiamo",
+        "done": "Fatto",
+        "skip": "Saltiamo",
+        "move": "Sposta a un altro giorno",
+        "choose": "Scegli un altro",
+        "list": "Lista",
+        "booked": "Sì",
+        "ignore": "Ignora",
+        "link": "Apri link",
+        "hide_list": "Nascondi"
+      },
+      "meals": {
+        "breakfast": "colazione",
+        "lunch": "pranzo",
+        "aperitivo": "aperitivo",
+        "dinner": "cena",
+        "snack": "uno spuntino"
+      },
+      "weekdays": {
+        "0": "domenica",
+        "1": "lunedì",
+        "2": "martedì",
+        "3": "mercoledì",
+        "4": "giovedì",
+        "5": "venerdì",
+        "6": "sabato"
+      },
+      "picked": "{{name}} aggiunto a oggi per {{meal}}.",
+      "picked_instead": "{{name}} al posto di {{old}}: buon appetito!"
+    }
   }
 }

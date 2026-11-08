@@ -1,0 +1,59 @@
+@if (all().length) {
+  <section class="suggest" data-cy="live-suggestions" [attr.aria-label]="'live.suggest.title' | translate">
+    @for (s of all(); track s.id; let first = $first) {
+      @let meal = s.params['meal'] !== undefined ? (('live.suggest.meals.' + s.params['meal']) | translate) : '';
+      @let weekday = s.params['weekday'] !== undefined ? (('live.suggest.weekdays.' + s.params['weekday']) | translate) : '';
+      <article class="suggest-card" [class.suggest-card--primary]="first" [attr.data-kind]="s.kind" [attr.data-tone]="s.tone"
+        [attr.data-cy]="first ? 'suggest-primary' : 'suggest-secondary'">
+        <div class="suggest-head">
+          <span class="material-symbols-outlined suggest-icon" aria-hidden="true">{{ kindIcons[s.kind] }}</span>
+          <p class="suggest-text" [attr.role]="first ? 'status' : null">{{ ('live.suggest.' + s.text) | translate: params(s, meal, weekday) }}</p>
+        </div>
+
+        @if (s.actions.length) {
+          <div class="suggest-actions">
+            @for (a of s.actions; track a) {
+              @let url = urlFor()(s, a);
+              @if (url) {
+                <a class="suggest-action" [class.suggest-action--main]="$first" [href]="url" target="_blank" rel="noopener"
+                  [attr.data-action]="a">
+                  <span class="material-symbols-outlined" aria-hidden="true">{{ actionIcons[a] }}</span>
+                  {{ ('live.suggest.actions.' + a) | translate }}
+                </a>
+              } @else {
+                <button type="button" class="suggest-action" [class.suggest-action--main]="$first" [attr.data-action]="a"
+                  [attr.aria-expanded]="a === 'choose' || a === 'list' ? openList() === s.id : null"
+                  (click)="onAction(s, a)">
+                  <span class="material-symbols-outlined" aria-hidden="true">{{ actionIcons[a] }}</span>
+                  {{ ((a === 'choose' || a === 'list') && openList() === s.id ? 'live.suggest.actions.hide_list' : 'live.suggest.actions.' + a) | translate }}
+                </button>
+              }
+            }
+          </div>
+        }
+
+        @if (openList() === s.id && s.places?.length) {
+          <ul class="suggest-places" data-cy="suggest-places" [attr.aria-label]="'live.suggest.places_title' | translate">
+            @for (p of s.places; track p.id) {
+              <li class="suggest-place">
+                <div class="suggest-place-text">
+                  <span class="suggest-place-name">{{ p.name }}</span>
+                  <span class="suggest-place-meta">
+                    @if (p.distance !== null) { <span class="suggest-distance">{{ distance(p) }}</span> }
+                    @if (p.today) { <span>{{ 'live.suggest.place_today' | translate }}</span> }
+                    @if (p.address) { <span>{{ p.address }}</span> }
+                  </span>
+                </div>
+                <a class="suggest-place-btn" [href]="placeUrl()(p)" target="_blank" rel="noopener"
+                  [attr.aria-label]="('live.suggest.actions.directions' | translate) + ': ' + p.name">
+                  <span class="material-symbols-outlined" aria-hidden="true">directions</span>
+                </a>
+                <button type="button" class="btn btn-secondary btn-sm" (click)="onPick(s, p)">{{ 'live.suggest.place_pick' | translate }}</button>
+              </li>
+            }
+          </ul>
+        }
+      </article>
+    }
+  </section>
+}
