@@ -1,6 +1,9 @@
 package com.example.tripplanner.service;
 
+import com.example.tripplanner.model.PushCategory;
+import com.example.tripplanner.model.PushPreferences;
 import com.example.tripplanner.model.PushSubscription;
+import com.example.tripplanner.repository.PushPreferencesRepository;
 import com.example.tripplanner.repository.PushSubscriptionRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,6 +45,8 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +61,8 @@ import java.util.function.Function;
  * valide le push sono disattivate: l'app funziona come prima e gli invii vengono ignorati.
  *
  * Gli invii sono asincroni (pool dedicato) e, se chiamati dentro una transazione, partono solo
- * dopo il commit. Su 404/410 il push service dice che l'abbonamento non esiste più: viene cancellato.
+ * dopo il commit. Gli invii con una categoria (#97) rispettano le preferenze di ciascun destinatario:
+ * chi ha disattivato la categoria non riceve nulla (il silenziamento dei gruppi lo applica GroupPushNotifier). Su 404/410 il push service dice che l'abbonamento non esiste più: viene cancellato.
  */
 @Service
 public class PushService {
@@ -70,6 +76,7 @@ public class PushService {
     private static final int MAX_DEVICES_PER_USER = 10;
 
     private final PushSubscriptionRepository repository;
+    private final PushPreferencesRepository preferencesRepository;
     private final ObjectMapper objectMapper;
     private final String publicKey;
     private final String subject;
@@ -80,6 +87,7 @@ public class PushService {
     private final ThreadPoolExecutor executor;
 
     public PushService(PushSubscriptionRepository repository,
+                       PushPreferencesRepository preferencesRepository,
                        ObjectMapper objectMapper,
                        @Value("${push.vapid.public-key:}") String publicKey,
                        @Value("${push.vapid.private-key:}") String privateKey,
@@ -87,6 +95,7 @@ public class PushService {
                        @Value("${push.allow-insecure-endpoints:false}") boolean allowInsecureEndpoints,
                        @Value("${push.ttl-seconds:86400}") long ttlSeconds) {
         this.repository = repository;
+        this.preferencesRepository = preferencesRepository;
         this.objectMapper = objectMapper;
         this.allowInsecureEndpoints = allowInsecureEndpoints;
         this.ttlSeconds = ttlSeconds;
@@ -188,6 +197,34 @@ public class PushService {
         return null;
     }
 
+    // ---------------------------------------------------------------- preferenze (#97)
+
+    /** Preferenze dell'utente (i valori predefiniti se non le ha mai cambiate). */
+    public PushPreferences preferencesOf(String userId) {
+        return preferencesRepository.findById(userId).orElseGet(() -> PushPreferences.defaults(userId));
+    }
+
+    /** Aggiorna solo le categorie presenti (null = invariata). */
+    public PushPreferences updatePreferences(String userId, Boolean invites, Boolean proposals, Boolean newMembers, Boolean reminders) {
+        PushPreferences prefs = preferencesOf(userId);
+        if (invites != null) prefs.setInvites(invites);
+        if (proposals != null) prefs.setProposals(proposals);
+        if (newMembers != null) prefs.setNewMembers(newMembers);
+        if (reminders != null) prefs.setReminders(reminders);
+        prefs.setUpdatedAt(Instant.now());
+        return preferencesRepository.save(prefs);
+    }
+
+    /** Gli utenti, tra quelli indicati, che vogliono le push della categoria. */
+    public List<String> acceptingUsers(Collection<String> userIds, PushCategory category) {
+        if (userIds.isEmpty()) return List.of();
+        Map<String, PushPreferences> saved = preferencesRepository.findByUserIdIn(Set.copyOf(userIds)).stream()
+                .collect(Collectors.toMap(PushPreferences::getUserId, p -> p));
+        return userIds.stream()
+                .filter(id -> saved.getOrDefault(id, PushPreferences.defaults(id)).allows(category))
+                .toList();
+    }
+
     // ---------------------------------------------------------------- invio
 
     /** Invia la notifica a tutti i dispositivi dell'utente (asincrono, dopo il commit se in transazione). */
@@ -201,9 +238,26 @@ public class PushService {
     }
 
     public void sendToUsers(Collection<String> userIds, Function<String, PushMessage> messageForLang) {
+        sendToUsers(userIds, null, messageForLang);
+    }
+
+    /**
+     * Invio di una notifica di una categoria: solo agli utenti che non l'hanno disattivata nelle
+     * preferenze (lette al momento dell'invio). Categoria null = sempre (es. notifica di prova).
+     */
+    public void sendToUsers(Collection<String> userIds, PushCategory category, Function<String, PushMessage> messageForLang) {
         if (!isEnabled() || userIds == null || userIds.isEmpty()) return;
         List<String> ids = List.copyOf(userIds);
-        Runnable task = () -> executor.execute(() -> ids.forEach(id -> deliver(id, messageForLang)));
+        Runnable task = () -> executor.execute(() -> {
+            List<String> targets;
+            try {
+                targets = category == null ? ids : acceptingUsers(ids, category);
+            } catch (Exception e) {
+                log.warn("Notifiche push: lettura preferenze non riuscita: {}", e.getMessage());
+                return;
+            }
+            targets.forEach(id -> deliver(id, messageForLang));
+        });
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override

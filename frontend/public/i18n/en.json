@@ -175,7 +175,7 @@
     "field_color": "Profile colour",
     "logout": "Log out",
     "push_title": "Phone notifications",
-    "push_desc": "Get group invitations and requests even when the app is closed.",
+    "push_desc": "Get news from your groups and trips even when the app is closed.",
     "push_loading": "Checking…",
     "push_toggle_label": "Notifications on this device",
     "push_status_on": "On: you'll get them even when the app is closed.",
@@ -194,6 +194,17 @@
     "push_ios_step1": "In Safari, tap Share",
     "push_ios_step2": "Choose \"Add to Home Screen\"",
     "push_ios_step3": "Open WanderBite from your Home Screen and turn on notifications here",
-    "push_ios_hint": "Requires iOS 16.4 or later."
+    "push_ios_hint": "Requires iOS 16.4 or later.",
+    "push_prefs_title": "What you want to receive",
+    "push_prefs_hint": "Applies to all your devices. Muted groups never send notifications.",
+    "push_pref_invites": "Invitations and join requests",
+    "push_pref_invites_desc": "Group invitations, join requests and their outcome.",
+    "push_pref_proposals": "Trip proposals and votes",
+    "push_pref_proposals_desc": "New proposals to vote on and trips chosen by the group.",
+    "push_pref_new_members": "New members in my groups",
+    "push_pref_new_members_desc": "When someone joins one of your groups.",
+    "push_pref_reminders": "Reminders before departure",
+    "push_pref_reminders_desc": "3 days before and the day before a confirmed trip.",
+    "push_prefs_error": "Could not save the preference. Please try again."
   }
 }

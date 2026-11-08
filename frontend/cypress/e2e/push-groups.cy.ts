@@ -1,5 +1,5 @@
 import { uniq } from '../support/e2e';
-import { PushDevice, expectNoPush, rawPushes, receivedPushes, subscribeDevice } from '../support/push';
+import { PushDevice, expectNoPush, rawPushes, receivedPushes, resetPushPreferences, subscribeDevice } from '../support/push';
 import { USERS } from '../support/users';
 
 /**
@@ -18,6 +18,8 @@ const expectOpens = (n: any, url: string) => {
 };
 
 describe('Notifiche push – inviti e richieste di ingresso', () => {
+  beforeEach(() => resetPushPreferences('admin', 'sofia', 'marco', 'giulia', 'luca'));
+
   it('invito in un gruppo: push all\'invitato (nella lingua del suo dispositivo), non a chi invita', () => {
     const name = uniq('E2E Push invito');
     cy.createGroup('admin', name).then(group => {

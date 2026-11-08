@@ -175,7 +175,7 @@
     "field_color": "Colore profilo",
     "logout": "Disconnetti",
     "push_title": "Notifiche sul telefono",
-    "push_desc": "Ricevi inviti e richieste dei gruppi anche ad app chiusa.",
+    "push_desc": "Ricevi le novità dei tuoi gruppi e viaggi anche ad app chiusa.",
     "push_loading": "Verifica in corso…",
     "push_toggle_label": "Notifiche su questo dispositivo",
     "push_status_on": "Attive: le riceverai anche ad app chiusa.",
@@ -194,6 +194,17 @@
     "push_ios_step1": "In Safari tocca Condividi",
     "push_ios_step2": "Scegli \"Aggiungi alla schermata Home\"",
     "push_ios_step3": "Apri WanderBite dalla Home e attiva le notifiche da qui",
-    "push_ios_hint": "Serve iOS 16.4 o successivo."
+    "push_ios_hint": "Serve iOS 16.4 o successivo.",
+    "push_prefs_title": "Cosa vuoi ricevere",
+    "push_prefs_hint": "Vale per tutti i tuoi dispositivi. I gruppi silenziati non inviano notifiche.",
+    "push_pref_invites": "Inviti e richieste di ingresso",
+    "push_pref_invites_desc": "Inviti nei gruppi, richieste di ingresso e il loro esito.",
+    "push_pref_proposals": "Proposte di viaggio e voti",
+    "push_pref_proposals_desc": "Nuove proposte da votare e viaggi scelti dal gruppo.",
+    "push_pref_new_members": "Nuovi membri nei miei gruppi",
+    "push_pref_new_members_desc": "Quando qualcuno entra in uno dei tuoi gruppi.",
+    "push_pref_reminders": "Promemoria prima della partenza",
+    "push_pref_reminders_desc": "3 giorni prima e il giorno prima di un viaggio confermato.",
+    "push_prefs_error": "Non è stato possibile salvare la preferenza. Riprova."
   }
 }
