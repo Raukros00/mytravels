@@ -15,9 +15,6 @@
 .main-grid > .section-card {
   margin-bottom: 0;
 }
-.right-col > .section-card {
-  margin-bottom: 0;
-}
 @media (max-width: 760px) {
   .main-grid {
     grid-template-columns: 1fr;
