@@ -389,6 +389,69 @@ describe('Autenticazione (modale)', () => {
     });
   });
 
+  describe('email senza distinzione tra maiuscole e minuscole', () => {
+    const base = () => ({ firstName: 'Mario', lastName: 'Maiuscolo', birthDate: '1990-01-01', password: 'Segreta123!' });
+    const stamp = () => `${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+    it('registrazione con maiuscole e accesso in minuscolo con uno spazio finale', () => {
+      const mixed = `Mario.E2E.${stamp()}@Esempio.IT`;
+      const lower = mixed.toLowerCase();
+      cy.request('POST', '/auth/register', { ...base(), email: mixed }).then(res => {
+        expect(res.status).to.eq(201);
+        expect(res.body.user.email).to.eq(lower);
+      });
+      cy.request('POST', '/auth/login', { email: `${lower} `, password: 'Segreta123!' }).then(res => {
+        expect(res.status).to.eq(200);
+        expect(res.body.user.email).to.eq(lower);
+        cy.request({ url: '/auth/me', headers: { Authorization: `Bearer ${res.body.token}` } })
+          .its('body.email').should('eq', lower);
+      });
+      cy.request('POST', '/auth/login', { email: `  ${mixed.toUpperCase()}`, password: 'Segreta123!' })
+        .its('status').should('eq', 200);
+    });
+
+    it('non si può registrare la stessa email con maiuscole diverse', () => {
+      const email = `doppio.${stamp()}@example.com`;
+      const again = (variant: string) =>
+        cy.request({ method: 'POST', url: '/auth/register', body: { ...base(), email: variant }, failOnStatusCode: false });
+      cy.request('POST', '/auth/register', { ...base(), email }).its('status').should('eq', 201);
+      again(email.toUpperCase()).its('status').should('eq', 409);
+      again(` ${email} `).its('status').should('eq', 409);
+      again(USERS.admin.email.toUpperCase()).its('status').should('eq', 409);
+    });
+
+    it('la ricerca utenti per email ignora maiuscole e spazi', () => {
+      cy.api<any[]>('admin', 'GET', `/api/v1/users/search?q=${encodeURIComponent(` ${USERS.sofia.email.toUpperCase()} `)}`)
+        .then(results => expect(results.map(r => r.name)).to.include(USERS.sofia.name));
+    });
+
+    it('dalla modale si accede scrivendo l\'email con maiuscole e spazi', () => {
+      cy.intercept('POST', '/auth/login').as('login');
+      cy.visit('/explore');
+      cy.get('header button[aria-label="Accedi o registrati"]').click();
+      authModal().find('#auth-login-email')
+        .should('have.attr', 'autocapitalize', 'off')
+        .and('have.attr', 'autocorrect', 'off')
+        .and('have.attr', 'spellcheck', 'false');
+      fillLogin(` ${USERS.admin.email.toUpperCase()} `, USERS.admin.password);
+      cy.wait('@login').then(({ request, response }) => {
+        expect(request.body.email).to.eq(USERS.admin.email.toUpperCase());
+        expect(response?.statusCode).to.eq(200);
+        expect(response?.body.user.email).to.eq(USERS.admin.email);
+      });
+      cy.get('[role="dialog"]').should('not.exist');
+      cy.toast(`Bentornato, ${USERS.admin.name}!`).should('be.visible');
+    });
+
+    it('il campo email della registrazione non ha maiuscola automatica né correttore', () => {
+      cy.visit('/register');
+      authModal().find('#auth-register-email')
+        .should('have.attr', 'autocapitalize', 'off')
+        .and('have.attr', 'autocorrect', 'off')
+        .and('have.attr', 'spellcheck', 'false');
+    });
+  });
+
   describe('sessione', () => {
     beforeEach(() => cy.login('admin'));
 

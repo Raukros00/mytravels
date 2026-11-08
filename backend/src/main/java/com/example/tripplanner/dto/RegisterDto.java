@@ -1,5 +1,6 @@
 package com.example.tripplanner.dto;
 
+import com.example.tripplanner.util.Emails;
 import com.example.tripplanner.validation.MinAge;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -32,6 +33,11 @@ public class RegisterDto {
     @NotBlank
     @Email
     private String email;
+
+    /** Email normalizzata (trim + minuscolo) già alla lettura del JSON, prima della validazione. */
+    public void setEmail(String email) {
+        this.email = Emails.normalize(email);
+    }
 
     @NotBlank
     @Size(min = 6, max = 128)

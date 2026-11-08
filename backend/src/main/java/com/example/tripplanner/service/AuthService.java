@@ -1,6 +1,7 @@
 package com.example.tripplanner.service;
 
 import com.example.tripplanner.util.AppDates;
+import com.example.tripplanner.util.Emails;
 import com.example.tripplanner.dto.RegisterDto;
 import com.example.tripplanner.model.User;
 import com.example.tripplanner.repository.UserRepository;
@@ -23,7 +24,7 @@ public class AuthService {
     }
 
     public User authenticate(String email, String rawPassword) {
-        Optional<User> opt = userRepository.findByEmail(email);
+        Optional<User> opt = findByEmail(email);
         if (opt.isPresent() && passwordEncoder.matches(rawPassword, opt.get().getPassword())) {
             return opt.get();
         }
@@ -32,8 +33,9 @@ public class AuthService {
 
     @Transactional
     public User register(RegisterDto dto) {
-        if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new IllegalArgumentException("Email already exists: " + dto.getEmail());
+        String email = Emails.normalize(dto.getEmail());
+        if (userRepository.existsByEmailIgnoringCase(email)) {
+            throw new IllegalArgumentException("Email already exists: " + email);
         }
         User user = User.builder()
                 .id(UUID.randomUUID().toString())
@@ -42,7 +44,7 @@ public class AuthService {
                 .lastName(dto.getLastName().trim())
                 .birthDate(dto.getBirthDate())
                 .profileImage(dto.getProfileImage() == null || dto.getProfileImage().isBlank() ? null : dto.getProfileImage())
-                .email(dto.getEmail())
+                .email(email)
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .avatar(dto.getAvatar() != null ? dto.getAvatar() : "🚀")
                 .color(dto.getColor() != null ? dto.getColor() : "#6366f1")
@@ -53,8 +55,9 @@ public class AuthService {
     }
 
     @Transactional
-    public User createDemoUser(String email, String rawPassword, String name) {
-        return userRepository.findByEmail(email).orElseGet(() -> {
+    public User createDemoUser(String rawEmail, String rawPassword, String name) {
+        String email = Emails.normalize(rawEmail);
+        return findByEmail(email).orElseGet(() -> {
             User user = User.builder()
                     .id(UUID.randomUUID().toString())
                     .name(name)
@@ -70,8 +73,20 @@ public class AuthService {
         });
     }
 
+    /**
+     * Utente per email, senza distinzione tra maiuscole/minuscole e spazi.
+     * Prima si cerca l'email esatta (senza spazi), poi la forma canonica in minuscolo con cui sono
+     * salvate le email (registrazione e migrazione V8). L'ordine conta per gli account lasciati invariati
+     * dalla V8 perché in conflitto tra loro (es. "Mario@x.it" e "mario@x.it"): il principal del JWT è
+     * l'email esatta salvata, quindi ogni token resta legato al proprio account.
+     */
     public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        if (email == null) return Optional.empty();
+        String trimmed = email.trim();
+        Optional<User> exact = userRepository.findByEmail(trimmed);
+        if (exact.isPresent()) return exact;
+        String canonical = Emails.normalize(trimmed);
+        return canonical.equals(trimmed) ? Optional.empty() : userRepository.findByEmail(canonical);
     }
 
     public Optional<User> findById(String id) {

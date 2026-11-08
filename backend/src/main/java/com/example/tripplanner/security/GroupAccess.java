@@ -7,6 +7,7 @@ import com.example.tripplanner.service.GroupService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -39,6 +40,13 @@ public class GroupAccess {
     public Optional<Group> adminGroup(String groupId, Authentication authentication) {
         return currentUser(authentication)
                 .flatMap(me -> groupService.getGroup(groupId).filter(g -> isAdmin(g, me.getId())));
+    }
+
+    /** I gruppi di cui l'utente autenticato è membro (vuoto se non autenticato). */
+    public List<Group> myGroups(Authentication authentication) {
+        return currentUser(authentication)
+                .map(me -> groupService.getGroupsByUser(me.getId()).stream().filter(g -> isMember(g, me.getId())).toList())
+                .orElse(List.of());
     }
 
     public static boolean isMember(Group group, String userId) {

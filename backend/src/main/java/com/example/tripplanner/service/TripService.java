@@ -20,6 +20,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class TripService {
@@ -39,8 +41,12 @@ public class TripService {
         this.expenseRepository = expenseRepository;
     }
 
+    /**
+     * Crea il viaggio. {@code proposedBy} è l'utente autenticato (solo per le proposte): quello
+     * eventualmente inviato dal client viene ignorato, come i voti (si votano con /vote).
+     */
     @Transactional
-    public Trip createTrip(CreateTripRequest request) {
+    public Trip createTrip(CreateTripRequest request, String currentUserId) {
         TripDates.validate(request.getStartDate(), request.getEndDate());
         String decision = request.getDecision();
         if (decision == null) {
@@ -66,8 +72,8 @@ public class TripService {
                 .destinationLng(request.getDestinationLng())
                 .status("planning")
                 .decision(decision)
-                .proposedBy(request.getProposedBy())
-                .votes(request.getVotes() != null ? new ArrayList<>(request.getVotes()) : new ArrayList<>())
+                .proposedBy("proposal".equals(decision) ? currentUserId : null)
+                .votes(new ArrayList<>())
                 .budgetEstimate(request.getBudgetEstimate() != null ? request.getBudgetEstimate() : 0.0)
                 .currency(request.getCurrency() != null ? request.getCurrency() : "EUR")
                 .tags(request.getTags() != null && !request.getTags().isEmpty()
@@ -91,8 +97,10 @@ public class TripService {
         return tripRepository.findByGroupId(groupId);
     }
 
-    public List<Trip> getAllTrips() {
-        return tripRepository.findAll();
+    /** I viaggi dei gruppi indicati (i gruppi dell'utente). */
+    public List<Trip> getTripsByGroupIds(List<String> groupIds) {
+        if (groupIds.isEmpty()) return List.of();
+        return tripRepository.findByGroupIdIn(groupIds);
     }
 
     @Transactional
@@ -120,7 +128,7 @@ public class TripService {
             }
             if (request.getStatus() != null)      existing.setStatus(request.getStatus());
             if (request.getDecision() != null)    existing.setDecision(request.getDecision());
-            if (request.getProposedBy() != null)  existing.setProposedBy(request.getProposedBy());
+            // proposedBy non si modifica: è l'autore della proposta, deciso in creazione.
             if (request.getBudgetEstimate() != null) existing.setBudgetEstimate(request.getBudgetEstimate());
             if (request.getCurrency() != null)    existing.setCurrency(request.getCurrency());
             if (request.getNotes() != null)       existing.setNotes(request.getNotes().trim());
@@ -136,12 +144,15 @@ public class TripService {
                 existing.getTags().addAll(request.getTags());
             }
 
-            // Replace activities via clear+addAll — must set back-reference on each new item
+            // Le liste (oggi non inviate dal frontend) sostituiscono quelle del viaggio. Un id che
+            // non è già di questo viaggio viene rigenerato: con l'id di un elemento di un altro
+            // viaggio il salvataggio lo sposterebbe qui.
             if (request.getActivities() != null) {
+                Set<String> own = idsOf(existing.getActivities(), TripActivity::getId);
                 existing.getActivities().clear();
                 for (TripActivity a : request.getActivities()) {
-                    if (a.getId() == null || a.getId().isBlank()) {
-                        a.setId("act_" + UUID.randomUUID().toString().substring(0, 8));
+                    if (a.getId() == null || !own.contains(a.getId())) {
+                        a.setId(newId("act"));
                     }
                     normalizeSchedule(a);
                     a.setTripId(existing.getId());
@@ -152,10 +163,11 @@ public class TripService {
 
             // Replace placesToEat via clear+addAll
             if (request.getPlacesToEat() != null) {
+                Set<String> own = idsOf(existing.getPlacesToEat(), TripPlaceToEat::getId);
                 existing.getPlacesToEat().clear();
                 for (TripPlaceToEat p : request.getPlacesToEat()) {
-                    if (p.getId() == null || p.getId().isBlank()) {
-                        p.setId("eat_" + UUID.randomUUID().toString().substring(0, 8));
+                    if (p.getId() == null || !own.contains(p.getId())) {
+                        p.setId(newId("eat"));
                     }
                     normalizeSchedule(p);
                     p.setTripId(existing.getId());
@@ -166,10 +178,11 @@ public class TripService {
 
             // Replace expenses via clear+addAll
             if (request.getExpenses() != null) {
+                Set<String> own = idsOf(existing.getExpenses(), TripExpense::getId);
                 existing.getExpenses().clear();
                 for (TripExpense e : request.getExpenses()) {
-                    if (e.getId() == null || e.getId().isBlank()) {
-                        e.setId("exp_" + UUID.randomUUID().toString().substring(0, 8));
+                    if (e.getId() == null || !own.contains(e.getId())) {
+                        e.setId(newId("exp"));
                     }
                     e.setTripId(existing.getId());
                     e.setTrip(existing);
@@ -196,9 +209,7 @@ public class TripService {
     public Optional<TripActivity> addActivity(String tripId, TripActivity activity) {
         normalizeSchedule(activity);
         return tripRepository.findById(tripId).map(trip -> {
-            if (activity.getId() == null || activity.getId().isBlank()) {
-                activity.setId("act_" + UUID.randomUUID().toString().substring(0, 8));
-            }
+            activity.setId(newId("act")); // sempre del server: un id inviato potrebbe essere di un altro viaggio
             activity.setTripId(tripId);
             activity.setTrip(trip);
             trip.getActivities().add(activity);
@@ -233,9 +244,7 @@ public class TripService {
     public Optional<TripPlaceToEat> addPlaceToEat(String tripId, TripPlaceToEat place) {
         normalizeSchedule(place);
         return tripRepository.findById(tripId).map(trip -> {
-            if (place.getId() == null || place.getId().isBlank()) {
-                place.setId("eat_" + UUID.randomUUID().toString().substring(0, 8));
-            }
+            place.setId(newId("eat")); // sempre del server: un id inviato potrebbe essere di un altro viaggio
             place.setTripId(tripId);
             place.setTrip(trip);
             trip.getPlacesToEat().add(place);
@@ -360,9 +369,7 @@ public class TripService {
     @Transactional
     public Optional<TripExpense> addExpense(String tripId, TripExpense expense) {
         return tripRepository.findById(tripId).map(trip -> {
-            if (expense.getId() == null || expense.getId().isBlank()) {
-                expense.setId("exp_" + UUID.randomUUID().toString().substring(0, 8));
-            }
+            expense.setId(newId("exp")); // sempre del server: un id inviato potrebbe essere di un altro viaggio
             expense.setTripId(tripId);
             expense.setTrip(trip);
             trip.getExpenses().add(expense);
@@ -388,6 +395,15 @@ public class TripService {
             expenseRepository.deleteById(expenseId);
             return true;
         }).orElse(false);
+    }
+
+    /** Id nuovo per un elemento del viaggio (attività, locale, spesa). */
+    private static String newId(String prefix) {
+        return prefix + "_" + UUID.randomUUID();
+    }
+
+    private static <T> Set<String> idsOf(List<T> items, Function<T, String> id) {
+        return items.stream().map(id).filter(Objects::nonNull).collect(Collectors.toSet());
     }
 
     // ── Voting ────────────────────────────────────────────────────────────────
