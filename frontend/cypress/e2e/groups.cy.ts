@@ -430,3 +430,78 @@ describe('Gruppi – inviti tramite notifica', () => {
     });
   });
 });
+
+describe('Gruppi – dettaglio: card Viaggi e Membri allineate (#61)', () => {
+  /** Il bordo superiore delle card Viaggi e Membri è alla stessa altezza (tolleranza di 1 px). */
+  function expectCardsAligned() {
+    cy.get('.group-trips-card').should('be.visible').then($trips => {
+      cy.get('.group-members-card').should('be.visible').then($members => {
+        const trips = $trips[0].getBoundingClientRect();
+        const members = $members[0].getBoundingClientRect();
+        expect(members.left, 'Membri a destra di Viaggi').to.be.greaterThan(trips.right);
+        expect(Math.abs(members.top - trips.top), 'differenza tra i bordi superiori').to.be.at.most(1);
+      });
+    });
+  }
+
+  it('senza richieste di accesso in attesa le due card partono alla stessa altezza', () => {
+    const name = uniq('E2E Allineate');
+    cy.createGroup('marco', name).then(group => {
+      cy.login('marco');
+      cy.visit(`/groups/${group.id}`);
+      cy.contains('.group-hero-name', name).should('be.visible');
+      cy.contains('.section-title', t.join_requests_title).should('not.exist');
+      expectCardsAligned();
+    });
+  });
+
+  it('con richieste in attesa le richieste stanno sopra la griglia e le card restano allineate', () => {
+    const name = uniq('E2E Allineate richieste');
+    cy.createGroup('marco', name).then(group => {
+      cy.api('luca', 'POST', `/api/v1/groups/invite/${group.inviteCode}/request`);
+      cy.api('sofia', 'POST', `/api/v1/groups/invite/${group.inviteCode}/request`);
+      cy.login('marco');
+      cy.visit(`/groups/${group.id}`);
+      cy.contains('.section-title', t.join_requests_title).closest('.section-card').as('requests');
+      cy.get('@requests').find('.jr-name').should('have.length', 2);
+      expectCardsAligned();
+
+      // Richieste a tutta larghezza, sopra entrambe le card.
+      cy.get('@requests').then($req => {
+        cy.get('.main-grid').then($grid => {
+          const req = $req[0].getBoundingClientRect();
+          const grid = $grid[0].getBoundingClientRect();
+          expect(req.bottom, 'richieste sopra la griglia').to.be.at.most(grid.top);
+          expect(Math.abs(req.width - grid.width), 'richieste larghe quanto la griglia').to.be.at.most(1);
+        });
+      });
+
+      // Gestita una richiesta (resta l'altra), l'allineamento non cambia.
+      cy.get('@requests').contains('.jr-row', 'Luca').contains('button', t.join_requests_approve).click();
+      cy.toast('Luca è entrato nel gruppo.').should('be.visible');
+      cy.get('.jr-name').should('have.length', 1);
+      expectCardsAligned();
+    });
+  });
+
+  it('su mobile l\'ordine è: richieste di accesso, Viaggi, Membri', () => {
+    const name = uniq('E2E Ordine mobile');
+    cy.viewport('iphone-x');
+    cy.createGroup('marco', name).then(group => {
+      cy.api('luca', 'POST', `/api/v1/groups/invite/${group.inviteCode}/request`);
+      cy.login('marco');
+      cy.visit(`/groups/${group.id}`);
+      cy.contains('.section-title', t.join_requests_title).closest('.section-card').then($req => {
+        cy.get('.group-trips-card').then($trips => {
+          cy.get('.group-members-card').then($members => {
+            const req = $req[0].getBoundingClientRect();
+            const trips = $trips[0].getBoundingClientRect();
+            const members = $members[0].getBoundingClientRect();
+            expect(trips.top, 'Viaggi sotto le richieste').to.be.greaterThan(req.bottom);
+            expect(members.top, 'Membri sotto Viaggi').to.be.greaterThan(trips.bottom);
+          });
+        });
+      });
+    });
+  });
+});

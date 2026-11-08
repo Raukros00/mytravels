@@ -1,3 +1,8 @@
+/* A tutta larghezza sopra la griglia Viaggi/Membri del dettaglio gruppo (#61). */
+:host {
+  display: block;
+}
+
 /* Stessi stili delle sezioni del dettaglio gruppo (gli stili del padre non arrivano ai figli). */
 .section-card {
   padding: 1.25rem 1.5rem;

@@ -15,11 +15,15 @@
         (edit)="isEditModalOpen.set(true)"
         (invite)="shareModalVisible.set(true)" />
 
-      <!-- Viaggi + Membri (two-column grid) -->
+      <!-- Richieste di accesso (solo admin, se ce ne sono): a tutta larghezza sopra la griglia,
+           così restano in evidenza senza spostare in basso la card Membri rispetto a Viaggi. -->
+      <app-group-join-requests [groupId]="g.id" [isAdmin]="isCurrentUserAdmin()" />
+
+      <!-- Viaggi + Membri (two-column grid): le due card partono sempre alla stessa altezza -->
       <div class="main-grid">
 
         <!-- Viaggi (sinistra) -->
-        <div class="section-card card">
+        <div class="section-card card group-trips-card">
           <app-group-trips
             [groupId]="g.id"
             [members]="g.members"
@@ -27,34 +31,28 @@
             [proposals]="groupProposals()" />
         </div>
 
-        <!-- Colonna destra: richieste di accesso (admin) + Membri -->
-        <div class="right-col">
-          <app-group-join-requests [groupId]="g.id" [isAdmin]="isCurrentUserAdmin()" />
-
-          <div class="section-card card">
-            <div class="section-header">
-              <span class="material-symbols-outlined section-icon">group</span>
-              <div>
-                <h2 class="section-title">{{ 'groups.members_title' | translate }}</h2>
-              </div>
-              <span class="trip-counter">{{ g.members.length }}</span>
+        <!-- Membri (destra) -->
+        <div class="section-card card group-members-card">
+          <div class="section-header">
+            <span class="material-symbols-outlined section-icon">group</span>
+            <div>
+              <h2 class="section-title">{{ 'groups.members_title' | translate }}</h2>
             </div>
-
-            <app-group-members-list
-              [groupId]="g.id"
-              [members]="g.members"
-              [limit]="6"
-              [currentUserId]="currentUserId()"
-              [isAdmin]="isCurrentUserAdmin()"
-              (leave)="openLeaveConfirm()" />
-
-            <button type="button" class="link-btn link-btn--right" (click)="membersModalVisible.set(true)">
-              {{ 'groups.members_manage' | translate }}
-              <span class="material-symbols-outlined">arrow_forward</span>
-            </button>
-
+            <span class="trip-counter">{{ g.members.length }}</span>
           </div>
 
+          <app-group-members-list
+            [groupId]="g.id"
+            [members]="g.members"
+            [limit]="6"
+            [currentUserId]="currentUserId()"
+            [isAdmin]="isCurrentUserAdmin()"
+            (leave)="openLeaveConfirm()" />
+
+          <button type="button" class="link-btn link-btn--right" (click)="membersModalVisible.set(true)">
+            {{ 'groups.members_manage' | translate }}
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </button>
         </div>
 
       </div>
