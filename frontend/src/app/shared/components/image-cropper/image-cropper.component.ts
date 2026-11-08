@@ -51,6 +51,8 @@ export class ImageCropperComponent {
   protected readonly zoom = signal(1);
   private readonly offset = signal({ x: 0, y: 0 });
   private readonly natural = signal({ w: 0, h: 0 });
+  /** L'immagine è caricata: prima non c'è nulla da ritagliare e "Usa questa foto" resta disattivato. */
+  protected readonly loaded = computed(() => this.natural().w > 0 && this.natural().h > 0);
 
   private readonly imgEl = viewChild<ElementRef<HTMLImageElement>>('img');
   private drag: { pointerId: number; startX: number; startY: number; origin: { x: number; y: number } } | null = null;
@@ -80,6 +82,7 @@ export class ImageCropperComponent {
       this.loadError.set(false);
       this.zoom.set(1);
       this.offset.set({ x: 0, y: 0 });
+      this.natural.set({ w: 0, h: 0 });
       onCleanup(() => URL.revokeObjectURL(url));
     });
   }
