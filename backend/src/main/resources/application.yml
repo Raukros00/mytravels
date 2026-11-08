@@ -34,6 +34,11 @@ management:
       show-details: never
 
 app:
+  cors:
+    # Origini consentite (lista separata da virgole, es. "https://a.example,http://localhost:4200").
+    # Vuota = default nel codice: prod, test, localhost/127.0.0.1 sulle porte 4200 e 4300.
+    # Se impostata SOSTITUISCE i default: per aggiungere un'origine elencare anche quelle di default.
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:}
   # Dati demo (utenti/gruppi/viaggi di esempio). Disattivato di default; true solo in locale/test.
   seed-demo-data: ${SEED_DEMO_DATA:false}
 

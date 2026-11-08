@@ -35,6 +35,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-tripplanner}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tripplanner}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET non impostata nel .env}
+      # Origini CORS consentite: in locale l'app è servita dal container frontend sulla FRONTEND_PORT.
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:${FRONTEND_PORT:-8081},http://127.0.0.1:${FRONTEND_PORT:-8081},http://localhost:4200,http://127.0.0.1:4200}
       # Copertine suggerite (Unsplash, "Access Key"): vuota = funzione disattivata.
       UNSPLASH_ACCESS_KEY: ${UNSPLASH_ACCESS_KEY:-}
       # Suggerimenti di città (username GeoNames): vuoto = destinazione a testo libero.

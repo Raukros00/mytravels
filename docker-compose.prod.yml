@@ -36,6 +36,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER non impostata nel .env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD non impostata nel .env}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET non impostata nel .env}
+      # Origini CORS consentite (lista separata da virgole): vuota = default (prod, test, sviluppo locale).
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-}
       # Copertine suggerite (Unsplash, "Access Key"): vuota = funzione disattivata.
       UNSPLASH_ACCESS_KEY: ${UNSPLASH_ACCESS_KEY:-}
       # Suggerimenti di città (username GeoNames): vuoto = destinazione a testo libero.
