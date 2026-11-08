@@ -20,7 +20,13 @@ export class GroupIconPickerComponent {
 
   private readonly fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
 
-  readonly emojiPresets = ['✈️', '🍕', '🍜', '🍷', '🏖️', '🎒', '🏰', '🍣', '🍦', '☕', '🏕️', '🌮', '🍸', '🏔️', '🚂', '🥐'];
+  /** La foto è la copertina del dettaglio gruppo: ritaglio orizzontale 2:1, 1000×500. */
+  protected readonly coverAspect = 2;
+  protected readonly coverWidth = 1000;
+  /** Sotto il limite del backend per l'icona (400.000 caratteri di data URL). */
+  protected readonly coverMaxLength = 380_000;
+
+  readonly emojiPresets =['✈️', '🍕', '🍜', '🍷', '🏖️', '🎒', '🏰', '🍣', '🍦', '☕', '🏕️', '🌮', '🍸', '🏔️', '🚂', '🥐'];
 
   readonly showEmojiPicker = signal(false);
   /** Immagine scelta, in fase di ritaglio da parte dell'utente. */

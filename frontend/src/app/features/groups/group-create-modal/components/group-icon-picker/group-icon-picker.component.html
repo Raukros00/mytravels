@@ -46,7 +46,10 @@
 @if (cropFile(); as file) {
   <div class="icon-cropper">
     @defer (on immediate) {
-      <app-image-cropper [file]="file" (cropped)="onCropped($event)" (cancelled)="cropFile.set(null)" />
+      <!-- Formato orizzontale 2:1, come la copertina nel dettaglio gruppo -->
+      <p class="icon-cropper-hint">La foto diventa la copertina del gruppo: scegli la parte da mostrare.</p>
+      <app-image-cropper [file]="file" [aspect]="coverAspect" [outputWidth]="coverWidth" shape="rect"
+        [maxLength]="coverMaxLength" (cropped)="onCropped($event)" (cancelled)="cropFile.set(null)" />
     } @loading {
       <p class="icon-cropper-loading">Caricamento editor foto…</p>
     }

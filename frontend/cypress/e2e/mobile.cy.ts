@@ -111,17 +111,25 @@ describe('Mobile – header e barra in basso', () => {
     bottomNav().contains('button', 'Accedi').should('be.visible');
   });
 
-  it('nel dettaglio gruppo i pulsanti stanno sotto il testo, senza sovrapporsi', () => {
+  it('nel dettaglio gruppo la copertina è in cima, poi il testo e sotto i pulsanti, senza sovrapporsi', () => {
     cy.groupByName('admin', GROUPS.esploratori).then(g => cy.visit(`/groups/${g.id}`));
-    cy.get('.group-hero-icon').then($icon => {
-      const r = $icon[0].getBoundingClientRect();
-      expect(Math.round(r.width)).to.eq(64);
-      expect(Math.round(r.height)).to.eq(64);
-    });
-    cy.get('.group-hero-info').then($info => {
-      const infoBottom = $info[0].getBoundingClientRect().bottom;
-      cy.get('.hero-actions').then($actions => {
-        expect($actions[0].getBoundingClientRect().top).to.be.gte(infoBottom);
+    cy.get('.group-hero').then($card => {
+      const card = $card[0].getBoundingClientRect();
+      cy.get('.group-hero-cover').should('be.visible').then($cover => {
+        const cover = $cover[0].getBoundingClientRect();
+        // Copertina a tutta larghezza della card (meno il bordo), alta 160–180 px.
+        expect(cover.width).to.be.closeTo(card.width, 3);
+        expect(cover.top).to.be.closeTo(card.top, 2);
+        expect(cover.height).to.be.within(160, 180);
+        cy.get('.group-hero-info').then($info => {
+          const info = $info[0].getBoundingClientRect();
+          expect(info.top).to.be.gte(cover.bottom);
+          cy.get('.hero-actions').then($actions => {
+            const actions = $actions[0].getBoundingClientRect();
+            expect(actions.top).to.be.gte(info.bottom);
+            expect(actions.right).to.be.lte(card.right);
+          });
+        });
       });
     });
   });

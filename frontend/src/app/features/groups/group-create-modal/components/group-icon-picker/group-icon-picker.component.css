@@ -116,6 +116,13 @@
   background: var(--wb-surface-1);
 }
 
+.icon-cropper-hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: var(--wb-text-secondary);
+  text-align: center;
+}
+
 .icon-cropper-loading {
   margin: 0;
   font-size: 0.85rem;

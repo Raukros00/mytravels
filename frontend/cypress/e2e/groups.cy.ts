@@ -505,3 +505,100 @@ describe('Gruppi – dettaglio: card Viaggi e Membri allineate (#61)', () => {
     });
   });
 });
+
+describe('Gruppi – dettaglio: immagine del gruppo come copertina (#62)', () => {
+  /** JPEG quadrato generato nel browser, come le foto salvate prima della copertina (ritaglio 1:1). */
+  function squarePhoto(): Cypress.Chainable<string> {
+    return cy.window().then(win => {
+      const canvas = win.document.createElement('canvas');
+      canvas.width = 320;
+      canvas.height = 320;
+      const ctx = canvas.getContext('2d')!;
+      ctx.fillStyle = '#0ea5e9';
+      ctx.fillRect(0, 0, 320, 320);
+      ctx.fillStyle = '#f97316';
+      ctx.fillRect(110, 110, 100, 100);
+      return canvas.toDataURL('image/jpeg', 0.8);
+    });
+  }
+
+  /** La copertina occupa la parte alta della card, a tutta larghezza; testo e pulsanti stanno sotto. */
+  function expectCoverLayout(minHeight: number, maxHeight: number) {
+    cy.get('.group-hero').then($card => {
+      const card = $card[0].getBoundingClientRect();
+      cy.get('.group-hero-cover').should('be.visible').then($cover => {
+        const cover = $cover[0].getBoundingClientRect();
+        expect(cover.width, 'larghezza copertina').to.be.closeTo(card.width, 3);
+        expect(cover.top, 'copertina in cima').to.be.closeTo(card.top, 2);
+        expect(cover.height, 'altezza copertina').to.be.within(minHeight, maxHeight);
+        cy.get('.group-hero-name').then($name => {
+          expect($name[0].getBoundingClientRect().top, 'nome sotto la copertina').to.be.gte(cover.bottom);
+        });
+        cy.get('.hero-actions').then($actions => {
+          expect($actions[0].getBoundingClientRect().top, 'pulsanti sotto la copertina').to.be.gte(cover.bottom);
+        });
+      });
+    });
+  }
+
+  it('con la foto: copertina larga con ritaglio centrale anche per le foto quadrate già salvate', () => {
+    const name = uniq('E2E Copertina foto');
+    squarePhoto().then(photo => {
+      cy.createGroup('marco', name, { icon: photo }).then(group => {
+        cy.login('marco');
+        cy.visit(`/groups/${group.id}`);
+        cy.get('.group-hero-cover').should('have.class', 'group-hero-cover--image');
+        cy.get('.group-hero-cover img.group-hero-img')
+          .should('have.attr', 'src', photo)
+          .and('have.css', 'object-fit', 'cover')
+          .and($img => expect(($img[0] as HTMLImageElement).naturalWidth).to.eq(320));
+        expectCoverLayout(200, 260);
+        cy.contains('.group-hero-name', name).should('be.visible');
+        cy.contains('.hero-actions button', t.edit_btn).should('be.visible');
+        cy.contains('.hero-actions button', t.invite_btn).should('be.visible');
+        cy.get('.group-hero-emoji').should('not.exist');
+      });
+    });
+  });
+
+  it('senza foto: copertina nel colore del gruppo con l\'emoji grande al centro', () => {
+    const name = uniq('E2E Copertina emoji');
+    cy.createGroup('marco', name, { icon: '🏖️', color: '#10b981' }).then(group => {
+      cy.login('marco');
+      cy.visit(`/groups/${group.id}`);
+      cy.get('.group-hero-cover').should('not.have.class', 'group-hero-cover--image')
+        .and('have.css', 'background-image').and('contain', 'linear-gradient').and('contain', 'rgb(16, 185, 129)');
+      cy.get('.group-hero-img').should('not.exist');
+      cy.contains('.group-hero-emoji', '🏖️').should('be.visible').then($emoji => {
+        cy.get('.group-hero-cover').then($cover => {
+          const e = $emoji[0].getBoundingClientRect();
+          const c = $cover[0].getBoundingClientRect();
+          expect(parseFloat(getComputedStyle($emoji[0]).fontSize), 'emoji grande').to.be.at.least(64);
+          expect(e.left + e.width / 2, 'emoji centrata').to.be.closeTo(c.left + c.width / 2, 4);
+          expect(e.top + e.height / 2, 'emoji centrata').to.be.closeTo(c.top + c.height / 2, 4);
+        });
+      });
+      expectCoverLayout(200, 260);
+    });
+  });
+
+  it('su mobile la copertina è più bassa e i pulsanti stanno su una riga sotto il testo', () => {
+    const name = uniq('E2E Copertina mobile');
+    cy.viewport('iphone-x');
+    squarePhoto().then(photo => {
+      cy.createGroup('marco', name, { icon: photo, description: 'Una descrizione abbastanza lunga da andare a capo su telefono' })
+        .then(group => {
+          cy.login('marco');
+          cy.visit(`/groups/${group.id}`);
+          expectCoverLayout(160, 180);
+          cy.get('.group-hero-info').then($info => {
+            cy.get('.hero-actions').then($actions => {
+              expect($actions[0].getBoundingClientRect().top).to.be.gte($info[0].getBoundingClientRect().bottom);
+            });
+          });
+          // Niente scorrimento orizzontale della pagina.
+          cy.document().then(doc => expect(doc.documentElement.scrollWidth).to.be.at.most(doc.documentElement.clientWidth));
+        });
+    });
+  });
+});

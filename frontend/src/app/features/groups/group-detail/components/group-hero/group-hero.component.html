@@ -1,13 +1,16 @@
 @let g = group();
 <div class="group-hero card">
-  <div class="group-hero-top">
-    <div #heroIcon class="group-hero-icon" [class.group-hero-icon--image]="isImageIcon()">
-      @if (isImageIcon()) {
-        <img [src]="g.icon" class="group-hero-img" alt="">
-      } @else {
-        {{ g.icon }}
-      }
-    </div>
+  <!-- Copertina: foto del gruppo (ritaglio centrale) oppure emoji grande sul colore del gruppo -->
+  <div class="group-hero-cover" [class.group-hero-cover--image]="isImageIcon()"
+       [style.--group-color]="g.color || '#4f46e5'">
+    @if (isImageIcon()) {
+      <img [src]="g.icon" class="group-hero-img" alt="">
+    } @else {
+      <span class="group-hero-emoji" aria-hidden="true">{{ g.icon || '✈️' }}</span>
+    }
+  </div>
+
+  <div class="group-hero-body">
     <div class="group-hero-info">
       <h1 class="group-hero-name">{{ g.name }}</h1>
       @if (g.description) {

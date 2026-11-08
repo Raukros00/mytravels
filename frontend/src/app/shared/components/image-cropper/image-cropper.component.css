@@ -42,6 +42,12 @@
   pointer-events: none;
 }
 
+/* Ritaglio rettangolare (copertina): tutto il riquadro finisce nell'immagine. */
+.cropper-mask--rect {
+  border-radius: inherit;
+  box-shadow: none;
+}
+
 .cropper-zoom {
   display: flex;
   align-items: center;
