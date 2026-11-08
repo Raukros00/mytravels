@@ -162,8 +162,8 @@ describe('Viaggi – modifiche con errori del server', () => {
     cy.contains('.filter-pill-btn', 'Alloggio').click();
     cy.contains('.sub-section-title', 'Struttura & Prenotazione').parent().find('button').click();
     cy.dialog('Dettagli Alloggio & Hotel').within(() => {
-      cy.get('input[formControlName="name"]').clear().type('Hotel Mai Salvato');
-      cy.get('input[formControlName="address"]').clear().type('Via Roma, 1, Torino');
+      cy.get('#accom_name').clear().type('Hotel Mai Salvato');
+      cy.get('#accom_address').clear().type('Via Roma, 1, Torino');
       cy.contains('button', 'Salva Alloggio').click();
     });
     cy.wait('@save');

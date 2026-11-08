@@ -93,7 +93,9 @@
             (addStep)="openPlanFromBacklogModal()"
             (unassignItem)="unassignFromDay($event)"
             (editTime)="editStopTime($event)"
-            (reorder)="reorderDay($event)" />
+            (reorder)="reorderDay($event)"
+            [near]="destinationPoint()"
+            (locate)="locateStop($event)" />
         }
 
         @case ('food') {
@@ -162,6 +164,7 @@
 
 <app-trip-place-modal
   [isOpen]="isPlaceModalOpen()"
+  [near]="destinationPoint()"
   (closed)="isPlaceModalOpen.set(false)"
   (saved)="savePlaceToEat($event)" />
 

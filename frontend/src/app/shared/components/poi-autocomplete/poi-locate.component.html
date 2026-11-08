@@ -1,0 +1,30 @@
+@if (found(); as poi) {
+  <div class="locate-box" role="group" aria-label="Posizione trovata">
+    <p class="locate-text" role="status">
+      <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+      <span>Trovato: <strong>{{ poi.name }}</strong>
+        @if (poi.address) {
+          <small>{{ poi.address }}</small>
+        }
+      </span>
+    </p>
+    <div class="locate-actions">
+      <button type="button" class="btn btn-primary btn-sm" (click)="confirm(poi)">Usa questa posizione</button>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="cancel()">Annulla</button>
+    </div>
+    <small class="locate-attribution">Dati © <a [href]="osmLink" target="_blank" rel="noopener">OpenStreetMap contributors</a></small>
+  </div>
+} @else {
+  <div class="locate-row">
+    <button type="button" class="btn btn-secondary btn-sm locate-btn"
+      [disabled]="!query().trim() || state().kind === 'searching'"
+      [attr.aria-label]="stopName() ? 'Trova sulla mappa: ' + stopName() : null"
+      (click)="search()">
+      <span class="material-symbols-outlined" aria-hidden="true">travel_explore</span>
+      {{ state().kind === 'searching' ? 'Cerco…' : 'Trova sulla mappa' }}
+    </button>
+    @if (state().kind === 'not-found') {
+      <span class="locate-miss" role="status">Nessun luogo trovato per questo indirizzo.</span>
+    }
+  </div>
+}

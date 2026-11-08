@@ -138,6 +138,16 @@
 
                 <h4 class="timeline-name">{{ item.name }}</h4>
 
+                @if (!item.hasLocation) {
+                  <div class="timeline-no-location">
+                    <p class="timeline-no-location-text">
+                      <span class="material-symbols-outlined" aria-hidden="true">location_off</span>
+                      Posizione mancante: aggiungila per avere le indicazioni.
+                    </p>
+                    <app-poi-locate [query]="locateQuery(item)" [near]="near()" [stopName]="item.name" (located)="located(item, $event)" />
+                  </div>
+                }
+
                 @if (item.overlapsWith.length) {
                   <p class="timeline-overlap" role="note">
                     <span class="material-symbols-outlined" aria-hidden="true">warning</span>

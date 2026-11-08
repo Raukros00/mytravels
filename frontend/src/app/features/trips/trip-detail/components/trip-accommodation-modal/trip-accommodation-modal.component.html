@@ -6,12 +6,25 @@
 
   <form [formGroup]="form" (ngSubmit)="save()">
     <div class="form-group">
-      <label class="form-label">Nome Hotel / Struttura *</label>
-      <input type="text" formControlName="name" class="form-input">
+      <label class="form-label" for="accom_name">Nome Hotel / Struttura *</label>
+      <app-poi-autocomplete
+        inputId="accom_name"
+        [control]="form.controls.name"
+        [near]="near()"
+        listLabel="Strutture suggerite per il nome"
+        placeholder="Es. Hotel Arts Barcelona"
+        (picked)="pickPlace($event, 'name')" />
     </div>
     <div class="form-group">
-      <label class="form-label">Indirizzo Completo *</label>
-      <input type="text" formControlName="address" class="form-input">
+      <label class="form-label" for="accom_address">Indirizzo Completo *</label>
+      <app-poi-autocomplete
+        inputId="accom_address"
+        [control]="form.controls.address"
+        [near]="near()"
+        listLabel="Indirizzi suggeriti"
+        placeholder="Es. Carrer de la Marina 19, Barcellona"
+        (picked)="pickPlace($event, 'address')" />
+      <app-place-status [place]="place" [near]="near()" (located)="located($event)" />
     </div>
     <div class="form-grid-2">
       <div class="form-group">

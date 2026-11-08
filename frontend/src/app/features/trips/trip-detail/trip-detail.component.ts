@@ -8,10 +8,10 @@ import { GroupService } from '../../../core/services/group.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ClockService } from '../../../core/services/clock.service';
 import {
-  AccommodationDetails,
   AirportTransfer,
   FlightDetails,
   FoodCategory,
+  GeoPoint,
   TripActivity,
   TripExpense,
   TripPlaceToEat,
@@ -24,7 +24,6 @@ import {
   DetailTab,
   TimelineItem,
   buildDayTimeline,
-  generateFallbackCoords,
   mealOf
 } from './trip-detail.utils';
 import { TripHeroComponent } from './components/trip-hero/trip-hero.component';
@@ -200,7 +199,9 @@ export class TripDetailComponent {
 
     // Nello stesso ordine dell'itinerario: la linea sulla mappa segue la sequenza della giornata.
     for (const item of this.selectedDayTimelineItems()) {
-      const coords = item.raw.coordinates || generateFallbackCoords(t.destination, item.id);
+      // Solo posizioni vere: le tappe senza coordinate sono segnalate nell'itinerario, non inventate sulla mappa.
+      const coords = item.raw.coordinates;
+      if (coords?.lat == null || coords?.lng == null) continue;
       stops.push({
         id: item.id,
         name: item.name,
@@ -272,7 +273,6 @@ export class TripDetailComponent {
     if (!t) return;
     this.tripService.addPlaceToEat(t.id, {
       ...val,
-      coordinates: generateFallbackCoords(t.destination, val.name),
       assignedDay: null
     });
     this.isPlaceModalOpen.set(false);
@@ -344,6 +344,18 @@ export class TripDetailComponent {
     this.tripService.reorderDayStops(t.id, this.selectedDay(), items.map(i => ({ type: i.type, id: i.id })));
   }
 
+  /** Posizione trovata a posteriori ("Trova sulla mappa" nell'itinerario), confermata dall'utente. */
+  protected locateStop(event: { item: TimelineItem; coordinates: GeoPoint }): void {
+    const t = this.trip();
+    if (!t) return;
+    const changes = { coordinates: event.coordinates };
+    if (event.item.type === 'activity') {
+      this.tripService.updateActivity(t.id, event.item.id, changes);
+    } else {
+      this.tripService.updatePlaceToEat(t.id, event.item.id, changes);
+    }
+  }
+
   // Logistics actions
   protected saveFlights(flights: FlightDetails): void {
     const t = this.trip();
@@ -362,11 +374,7 @@ export class TripDetailComponent {
   protected saveAccommodation(val: AccommodationFormValue): void {
     const t = this.trip();
     if (!t) return;
-    const accommodation: AccommodationDetails = {
-      ...val,
-      coordinates: generateFallbackCoords(t.destination, val.name)
-    };
-    this.tripService.updateAccommodation(t.id, accommodation);
+    this.tripService.updateAccommodation(t.id, val);
     this.isAccommodationModalOpen.set(false);
   }
 

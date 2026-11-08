@@ -134,7 +134,7 @@ public class TripService {
             if (request.getNotes() != null)       existing.setNotes(request.getNotes().trim());
             if (request.getFlights() != null)     existing.setFlights(request.getFlights());
             if (request.getTransfers() != null)   existing.setTransfers(request.getTransfers());
-            if (request.getAccommodation() != null) existing.setAccommodation(request.getAccommodation());
+            if (request.getAccommodation() != null) existing.setAccommodation(withValidCoordinates(request.getAccommodation()));
 
             // I voti non si modificano da qui: cambiano solo con POST /trips/{id}/vote (vedi vote()).
 
@@ -282,6 +282,7 @@ public class TripService {
         a.setEndTime(r.end());
         if (a.getAssignedDay() == null) a.setDayOrder(null);
         if (a.getIsSkipped() == null) a.setIsSkipped(false); // colonna NOT NULL (#103)
+        a.setCoordinates(validCoordinates(a.getCoordinates()));
     }
 
     private static void normalizeSchedule(TripPlaceToEat p) {
@@ -290,6 +291,30 @@ public class TripService {
         p.setEndTime(r.end());
         if (p.getAssignedDay() == null) p.setDayOrder(null);
         if (p.getIsSkipped() == null) p.setIsSkipped(false); // colonna NOT NULL (#103)
+        p.setCoordinates(validCoordinates(p.getCoordinates()));
+    }
+
+    /**
+     * Coordinate di una tappa o dell'alloggio (#102): entrambe o nessuna, nei limiti della Terra.
+     *
+     * @return null se assenti
+     * @throws IllegalArgumentException coordinate incomplete o fuori scala
+     */
+    static GeoPoint validCoordinates(GeoPoint point) {
+        if (point == null || (point.getLat() == null && point.getLng() == null)) return null;
+        if (point.getLat() == null || point.getLng() == null) {
+            throw new IllegalArgumentException("coordinates: indicare sia lat sia lng");
+        }
+        if (!Double.isFinite(point.getLat()) || Math.abs(point.getLat()) > 90
+                || !Double.isFinite(point.getLng()) || Math.abs(point.getLng()) > 180) {
+            throw new IllegalArgumentException("coordinates: lat tra -90 e 90, lng tra -180 e 180");
+        }
+        return point;
+    }
+
+    private static AccommodationDetails withValidCoordinates(AccommodationDetails accommodation) {
+        if (accommodation != null) accommodation.setCoordinates(validCoordinates(accommodation.getCoordinates()));
+        return accommodation;
     }
 
     /** Una tappa della giornata: {@code type} è "activity" o "food". */
@@ -356,6 +381,7 @@ public class TripService {
 
     @Transactional
     public Optional<Trip> updateAccommodation(String tripId, AccommodationDetails accommodation) {
+        withValidCoordinates(accommodation);
         return tripRepository.findById(tripId).map(trip -> {
             trip.setAccommodation(accommodation);
             return tripRepository.save(trip);

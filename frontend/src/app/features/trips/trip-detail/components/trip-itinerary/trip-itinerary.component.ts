@@ -3,11 +3,14 @@ import { TimelineItem, formatDayDate, getNavigationUrl } from '../../trip-detail
 import { moveStop } from '../../../../../core/utils/day-schedule.utils';
 import { InteractiveMapComponent, MapStopPoint } from '../../../../../shared/components/map/interactive-map.component';
 import { EmptyStateComponent } from '../../../../../shared/components/empty-state/empty-state.component';
+import { PoiLocateComponent } from '../../../../../shared/components/poi-autocomplete/poi-locate.component';
+import { GeoPoint } from '../../../../../core/models/trip.model';
+import { Poi } from '../../../../../core/services/poi.service';
 
 @Component({
   selector: 'app-trip-itinerary',
   standalone: true,
-  imports: [InteractiveMapComponent, EmptyStateComponent],
+  imports: [InteractiveMapComponent, EmptyStateComponent, PoiLocateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './trip-itinerary.component.html',
   styleUrl: './trip-itinerary.component.css'
@@ -22,6 +25,8 @@ export class TripItineraryComponent {
   readonly dayFoodCount = input(0);
   readonly dayActivityCount = input(0);
   readonly startDate = input<string | undefined>();
+  /** Destinazione del viaggio: "Trova sulla mappa" preferisce i luoghi vicini. */
+  readonly near = input<GeoPoint | null>(null);
 
   readonly daySelected = output<number>();
   readonly addStep = output<void>();
@@ -29,6 +34,8 @@ export class TripItineraryComponent {
   readonly editTime = output<TimelineItem>();
   /** Nuova sequenza delle tappe del giorno (frecce o trascinamento). */
   readonly reorder = output<TimelineItem[]>();
+  /** Posizione trovata e confermata per una tappa che non l'aveva. */
+  readonly locate = output<{ item: TimelineItem; coordinates: GeoPoint }>();
 
   /** Trascinamento solo con il mouse: sui touch (dove il trascinamento HTML non funziona) ci sono le frecce. */
   protected readonly canDrag = typeof matchMedia === 'function' && matchMedia('(hover: hover) and (pointer: fine)').matches;
@@ -45,6 +52,15 @@ export class TripItineraryComponent {
 
   protected navUrl(name: string, address?: string): string {
     return getNavigationUrl(name, address);
+  }
+
+  /** Testo da cercare sulla mappa: l'indirizzo, o il nome se manca. */
+  protected locateQuery(item: TimelineItem): string {
+    return item.address?.trim() || item.name;
+  }
+
+  protected located(item: TimelineItem, poi: Poi): void {
+    this.locate.emit({ item, coordinates: { lat: poi.lat, lng: poi.lng } });
   }
 
   protected move(index: number, delta: number): void {
