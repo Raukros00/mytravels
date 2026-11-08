@@ -103,6 +103,27 @@ public class GroupPushNotifier {
                 : new PushMessage("Nuovo membro", who + " è entrato in «" + name + "»", url, tag("new-member", group)));
     }
 
+    /**
+     * Promemoria prima della partenza (#99) ai destinatari indicati (membri attuali, già filtrati dal
+     * job per l'invio unico): "Mancano 3 giorni a …" o "Domani si parte per …". Si apre il viaggio.
+     */
+    public void tripReminder(Group group, Trip trip, boolean tomorrow, List<String> recipients) {
+        String place = trip.getDestination() == null || trip.getDestination().isBlank() ? trip.getTitle() : trip.getDestination();
+        String title = trip.getTitle();
+        String url = "/trips/" + trip.getId();
+        String tag = "reminder:" + trip.getId();
+        send(group, Set.of(), recipients, PushCategory.REMINDERS, lang -> {
+            if ("en".equals(lang)) {
+                return tomorrow
+                        ? new PushMessage(title, "Tomorrow you leave for " + place + "!", url, tag)
+                        : new PushMessage(title, "3 days to go until " + place + " ✈️", url, tag);
+            }
+            return tomorrow
+                    ? new PushMessage(title, "Domani si parte per " + place + "!", url, tag)
+                    : new PushMessage(title, "Mancano 3 giorni a " + place + " ✈️", url, tag);
+        });
+    }
+
     private static List<String> memberIds(Group group) {
         return group.getMembers().stream().map(GroupMember::getId).toList();
     }

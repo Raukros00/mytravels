@@ -55,6 +55,10 @@ services:
       PUSH_VAPID_PRIVATE_KEY: bM25IC9TmVgiGQd2JstZ6N7wUBPjo7UIjIYlQGk7IE4
       PUSH_VAPID_SUBJECT: mailto:e2e@example.com
       PUSH_ALLOW_INSECURE_ENDPOINTS: "true"
+      # Promemoria prima della partenza: niente giri automatici durante i test; lo spec
+      # push-reminders.cy.ts esegue il job a comando simulando la data (endpoint solo e2e).
+      PUSH_REMINDERS_ENABLED: "false"
+      PUSH_REMINDERS_TEST_ENDPOINT: "true"
     depends_on:
       postgres:
         condition: service_healthy
