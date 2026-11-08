@@ -79,9 +79,19 @@
 
       <!-- Timeline Stream -->
       @if (timelineItems().length > 0) {
-        <div class="timeline-stream">
-          @for (item of timelineItems(); track item.id) {
-            <div class="timeline-entry" [class.timeline-entry--completed]="item.isCompleted">
+        <p class="sr-only" aria-live="polite">{{ moveAnnouncement() }}</p>
+        <ol class="timeline-stream" aria-label="Tappe del Giorno {{ selectedDay() }} in ordine">
+          @for (item of timelineItems(); track item.id; let i = $index, first = $first, last = $last) {
+            <li class="timeline-entry"
+              [class.timeline-entry--completed]="item.isCompleted"
+              [class.timeline-entry--dragging]="dragIndex() === i"
+              [class.timeline-entry--drop-target]="dropIndex() === i && dragIndex() !== i"
+              [attr.data-stop-id]="item.id"
+              [attr.draggable]="canDrag ? 'true' : null"
+              (dragstart)="onDragStart($event, i)"
+              (dragover)="onDragOver($event, i)"
+              (drop)="onDrop($event, i)"
+              (dragend)="onDragEnd()">
               <!-- Timeline Node Icon -->
               <div class="timeline-node" [class.timeline-node--food]="item.type === 'food'" [class.timeline-node--activity]="item.type === 'activity'">
                 <span class="material-symbols-outlined">{{ item.type === 'food' ? 'restaurant' : 'explore' }}</span>
@@ -92,19 +102,42 @@
                 <div class="timeline-header-row">
                   <div class="timeline-slot-pill" [class.timeline-slot-pill--food]="item.type === 'food'">
                     <span class="material-symbols-outlined">schedule</span>
-                    <span>{{ item.timeSlot || 'Orario Flessibile' }}</span>
+                    <span class="timeline-time">{{ item.timeLabel || 'Orario Flessibile' }}</span>
+                    @if (item.isDefaultTime) {
+                      <span class="timeline-time-default" title="Orario indicativo del pasto: impostalo con «Orario»">indicativo</span>
+                    }
                     <span class="timeline-sep">·</span>
                     <span>{{ item.type === 'food' ? 'Pasto' : 'Visita' }}</span>
                   </div>
-                  @if (item.isCompleted) {
-                    <span class="badge-completed">
-                      <span class="material-symbols-outlined">check_circle</span>
-                      Completato
-                    </span>
-                  }
+                  <div class="timeline-header-actions">
+                    @if (item.isCompleted) {
+                      <span class="badge-completed">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        Completato
+                      </span>
+                    }
+                    <span class="timeline-drag-handle material-symbols-outlined" aria-hidden="true" title="Trascina per riordinare">drag_indicator</span>
+                    <button type="button" class="order-btn" [disabled]="first"
+                      [attr.aria-label]="'Sposta prima: ' + item.name" title="Sposta prima"
+                      (click)="move(i, -1)">
+                      <span class="material-symbols-outlined" aria-hidden="true">arrow_upward</span>
+                    </button>
+                    <button type="button" class="order-btn" [disabled]="last"
+                      [attr.aria-label]="'Sposta dopo: ' + item.name" title="Sposta dopo"
+                      (click)="move(i, 1)">
+                      <span class="material-symbols-outlined" aria-hidden="true">arrow_downward</span>
+                    </button>
+                  </div>
                 </div>
 
                 <h4 class="timeline-name">{{ item.name }}</h4>
+
+                @if (item.overlapsWith.length) {
+                  <p class="timeline-overlap" role="note">
+                    <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+                    Orario sovrapposto con {{ item.overlapsWith.join(', ') }}
+                  </p>
+                }
 
                 @if (item.address) {
                   <p class="timeline-address">
@@ -136,15 +169,19 @@
                     <span class="material-symbols-outlined">directions_car</span>
                     Naviga
                   </a>
+                  <button type="button" class="link-btn" (click)="editTime.emit(item)" [attr.aria-label]="'Orario: ' + item.name">
+                    <span class="material-symbols-outlined">schedule</span>
+                    Orario
+                  </button>
                   <button type="button" class="link-btn" (click)="unassignItem.emit(item)">
                     <span class="material-symbols-outlined">undo</span>
                     Sposta nel Backlog
                   </button>
                 </div>
               </div>
-            </div>
+            </li>
           }
-        </div>
+        </ol>
       } @else {
         <div class="empty-state-wrapper">
           <app-empty-state

@@ -8,8 +8,8 @@
     <p class="assign-intro">Seleziona a quale giornata assegnare <strong>{{ itemName() }}</strong>:</p>
 
     <div class="form-group mt-2">
-      <label class="form-label">Scegli Giorno *</label>
-      <select [ngModel]="day()" (ngModelChange)="day.set($event)" class="form-select">
+      <label class="form-label" for="assign_day">Scegli Giorno *</label>
+      <select id="assign_day" [ngModel]="day()" (ngModelChange)="day.set($event)" class="form-select">
         <option [value]="0">Mantieni nel Backlog</option>
         @for (d of days(); track d) {
           <option [value]="d">Giorno {{ d }} ({{ dayLabel(d) }})</option>
@@ -17,14 +17,39 @@
       </select>
     </div>
 
+    <div class="assign-times">
+      <div class="form-group">
+        <label class="form-label" for="assign_start">Inizio</label>
+        <input type="time" id="assign_start" class="form-input"
+          [ngModel]="startTime()" (ngModelChange)="startTime.set($event ?? '')"
+          [attr.aria-invalid]="!!error()" aria-describedby="assign_time_hint">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="assign_end">Fine</label>
+        <input type="time" id="assign_end" class="form-input"
+          [ngModel]="endTime()" (ngModelChange)="endTime.set($event ?? '')"
+          [attr.aria-invalid]="!!error()" aria-describedby="assign_time_hint">
+      </div>
+    </div>
+    @if (error(); as message) {
+      <p id="assign_time_hint" class="assign-error" role="alert">{{ message }}</p>
+    } @else {
+      <p id="assign_time_hint" class="assign-hint">
+        Facoltativi.
+        @if (mealDefault(); as def) {
+          Senza orario vale quello indicativo del pasto ({{ def }}).
+        }
+      </p>
+    }
+
     <div class="form-group">
-      <label class="form-label">Fascia Oraria</label>
-      <input type="text" [ngModel]="timeSlot()" (ngModelChange)="timeSlot.set($event)" class="form-input" placeholder="Es. 10:00 - 12:30">
+      <label class="form-label" for="assign_note">Nota sull'orario</label>
+      <input type="text" id="assign_note" [ngModel]="note()" (ngModelChange)="note.set($event)" class="form-input" placeholder="Es. mattina, al tramonto">
     </div>
   </div>
 
   <div modal-footer>
     <button type="button" class="btn btn-secondary" (click)="closed.emit()">Annulla</button>
-    <button type="button" class="btn btn-primary" (click)="confirm()">Conferma</button>
+    <button type="button" class="btn btn-primary" [disabled]="!!error()" (click)="confirm()">Conferma</button>
   </div>
 </app-modal>

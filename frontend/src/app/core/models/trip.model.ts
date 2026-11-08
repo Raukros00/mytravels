@@ -30,7 +30,12 @@ export interface TripActivity {
   closingDays?: string;
   notes?: string;
   assignedDay?: number | null; // null = in backlog, number = assigned to Day X
-  timeSlot?: string;          // e.g. "10:00 - 12:00"
+  timeSlot?: string;          // testo libero, es. "10:00 - 12:00" o "mattina"
+  /** Orari strutturati `HH:mm` (facoltativi): vedi core/utils/day-schedule.utils.ts. */
+  startTime?: string | null;
+  endTime?: string | null;
+  /** Posizione nella giornata scelta dall'utente; assente = in base all'orario. */
+  dayOrder?: number | null;
   isCompleted?: boolean;
 }
 
@@ -50,6 +55,9 @@ export interface TripPlaceToEat {
   assignedDay?: number | null; // null = in backlog, number = Day X
   assignedMeal?: FoodCategory | null;
   timeSlot?: string;
+  startTime?: string | null;
+  endTime?: string | null;
+  dayOrder?: number | null;
   isVisited?: boolean;
 }
 

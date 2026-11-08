@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { TimelineItem, formatDayDate, getNavigationUrl } from '../../trip-detail.utils';
+import { moveStop } from '../../../../../core/utils/day-schedule.utils';
 import { InteractiveMapComponent, MapStopPoint } from '../../../../../shared/components/map/interactive-map.component';
 import { EmptyStateComponent } from '../../../../../shared/components/empty-state/empty-state.component';
 
@@ -14,6 +15,7 @@ import { EmptyStateComponent } from '../../../../../shared/components/empty-stat
 export class TripItineraryComponent {
   readonly tripDays = input.required<number[]>();
   readonly selectedDay = input.required<number>();
+  /** Tappe del giorno, già nella sequenza della giornata. */
   readonly timelineItems = input.required<TimelineItem[]>();
   readonly mapStops = input.required<MapStopPoint[]>();
   readonly mapCenter = input.required<[number, number]>();
@@ -24,6 +26,18 @@ export class TripItineraryComponent {
   readonly daySelected = output<number>();
   readonly addStep = output<void>();
   readonly unassignItem = output<TimelineItem>();
+  readonly editTime = output<TimelineItem>();
+  /** Nuova sequenza delle tappe del giorno (frecce o trascinamento). */
+  readonly reorder = output<TimelineItem[]>();
+
+  /** Trascinamento solo con il mouse: sui touch (dove il trascinamento HTML non funziona) ci sono le frecce. */
+  protected readonly canDrag = typeof matchMedia === 'function' && matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  /** Tappa trascinata e posizione su cui si trova. */
+  protected readonly dragIndex = signal<number | null>(null);
+  protected readonly dropIndex = signal<number | null>(null);
+  /** Annuncio per gli screen reader dopo uno spostamento. */
+  protected readonly moveAnnouncement = signal('');
 
   protected dayDate(dayNum: number): string {
     return formatDayDate(this.startDate(), dayNum);
@@ -31,5 +45,41 @@ export class TripItineraryComponent {
 
   protected navUrl(name: string, address?: string): string {
     return getNavigationUrl(name, address);
+  }
+
+  protected move(index: number, delta: number): void {
+    const items = this.timelineItems();
+    const target = index + delta;
+    if (target < 0 || target >= items.length) return;
+    this.reorder.emit(moveStop(items, index, target));
+    this.moveAnnouncement.set(`${items[index].name} spostata in posizione ${target + 1} di ${items.length}.`);
+  }
+
+  protected onDragStart(event: DragEvent, index: number): void {
+    this.dragIndex.set(index);
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', this.timelineItems()[index].id);
+    }
+  }
+
+  protected onDragOver(event: DragEvent, index: number): void {
+    if (this.dragIndex() === null) return;
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+    this.dropIndex.set(index);
+  }
+
+  protected onDrop(event: DragEvent, index: number): void {
+    const from = this.dragIndex();
+    event.preventDefault();
+    this.onDragEnd();
+    if (from === null || from === index) return;
+    this.reorder.emit(moveStop(this.timelineItems(), from, index));
+  }
+
+  protected onDragEnd(): void {
+    this.dragIndex.set(null);
+    this.dropIndex.set(null);
   }
 }

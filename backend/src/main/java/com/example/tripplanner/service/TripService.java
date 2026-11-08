@@ -1,6 +1,7 @@
 package com.example.tripplanner.service;
 
 import com.example.tripplanner.util.AppDates;
+import com.example.tripplanner.util.TimeSlots;
 import com.example.tripplanner.dto.CreateTripRequest;
 import com.example.tripplanner.dto.UpdateTripRequest;
 import com.example.tripplanner.model.*;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -141,6 +143,7 @@ public class TripService {
                     if (a.getId() == null || a.getId().isBlank()) {
                         a.setId("act_" + UUID.randomUUID().toString().substring(0, 8));
                     }
+                    normalizeSchedule(a);
                     a.setTripId(existing.getId());
                     a.setTrip(existing);
                     existing.getActivities().add(a);
@@ -154,6 +157,7 @@ public class TripService {
                     if (p.getId() == null || p.getId().isBlank()) {
                         p.setId("eat_" + UUID.randomUUID().toString().substring(0, 8));
                     }
+                    normalizeSchedule(p);
                     p.setTripId(existing.getId());
                     p.setTrip(existing);
                     existing.getPlacesToEat().add(p);
@@ -190,6 +194,7 @@ public class TripService {
 
     @Transactional
     public Optional<TripActivity> addActivity(String tripId, TripActivity activity) {
+        normalizeSchedule(activity);
         return tripRepository.findById(tripId).map(trip -> {
             if (activity.getId() == null || activity.getId().isBlank()) {
                 activity.setId("act_" + UUID.randomUUID().toString().substring(0, 8));
@@ -204,6 +209,7 @@ public class TripService {
 
     @Transactional
     public Optional<TripActivity> updateActivity(String tripId, String activityId, TripActivity updated) {
+        normalizeSchedule(updated);
         return activityRepository.findById(activityId).flatMap(existing -> {
             if (!tripId.equals(existing.getTripId())) return Optional.empty();
             updated.setId(activityId);
@@ -225,6 +231,7 @@ public class TripService {
 
     @Transactional
     public Optional<TripPlaceToEat> addPlaceToEat(String tripId, TripPlaceToEat place) {
+        normalizeSchedule(place);
         return tripRepository.findById(tripId).map(trip -> {
             if (place.getId() == null || place.getId().isBlank()) {
                 place.setId("eat_" + UUID.randomUUID().toString().substring(0, 8));
@@ -239,6 +246,7 @@ public class TripService {
 
     @Transactional
     public Optional<TripPlaceToEat> updatePlaceToEat(String tripId, String placeId, TripPlaceToEat updated) {
+        normalizeSchedule(updated);
         return placeRepository.findById(placeId).flatMap(existing -> {
             if (!tripId.equals(existing.getTripId())) return Optional.empty();
             updated.setId(placeId);
@@ -254,6 +262,67 @@ public class TripService {
             placeRepository.deleteById(placeId);
             return true;
         }).orElse(false);
+    }
+
+    // ── Orari e ordine delle tappe nella giornata (#101) ─────────────────────
+
+    /** Orari validati (o ricavati dalla fascia scritta a mano); senza giorno non c'è posizione nella giornata. */
+    private static void normalizeSchedule(TripActivity a) {
+        TimeSlots.Range r = TimeSlots.normalize(a.getStartTime(), a.getEndTime(), a.getTimeSlot());
+        a.setStartTime(r.start());
+        a.setEndTime(r.end());
+        if (a.getAssignedDay() == null) a.setDayOrder(null);
+    }
+
+    private static void normalizeSchedule(TripPlaceToEat p) {
+        TimeSlots.Range r = TimeSlots.normalize(p.getStartTime(), p.getEndTime(), p.getTimeSlot());
+        p.setStartTime(r.start());
+        p.setEndTime(r.end());
+        if (p.getAssignedDay() == null) p.setDayOrder(null);
+    }
+
+    /** Una tappa della giornata: {@code type} è "activity" o "food". */
+    public record DayStopRef(String type, String id) {
+    }
+
+    /**
+     * Salva in una volta l'ordine delle tappe del giorno {@code day}: la posizione nell'elenco diventa
+     * {@code dayOrder}. Tutte le tappe devono essere del viaggio e assegnate a quel giorno.
+     * Le tappe del giorno non elencate restano come sono.
+     *
+     * @return vuoto se il viaggio non esiste
+     * @throws IllegalArgumentException tappa sconosciuta, di un altro giorno, ripetuta o di tipo non valido
+     */
+    @Transactional
+    public Optional<Trip> reorderDay(String tripId, int day, List<DayStopRef> stops) {
+        Optional<Trip> found = tripRepository.findById(tripId);
+        if (found.isEmpty()) return Optional.empty();
+        if (stops == null) throw new IllegalArgumentException("items: elenco delle tappe mancante");
+
+        Set<String> seen = new HashSet<>();
+        for (int i = 0; i < stops.size(); i++) {
+            DayStopRef ref = stops.get(i);
+            if (ref == null || ref.id() == null || !seen.add(ref.type() + ":" + ref.id())) {
+                throw new IllegalArgumentException("items: tappa mancante o ripetuta");
+            }
+            final int position = i;
+            if ("activity".equals(ref.type())) {
+                TripActivity a = activityRepository.findById(ref.id())
+                        .filter(x -> tripId.equals(x.getTripId()) && Objects.equals(x.getAssignedDay(), day))
+                        .orElseThrow(() -> new IllegalArgumentException("items: attività non presente nel giorno " + day));
+                a.setDayOrder(position);
+                activityRepository.save(a);
+            } else if ("food".equals(ref.type())) {
+                TripPlaceToEat p = placeRepository.findById(ref.id())
+                        .filter(x -> tripId.equals(x.getTripId()) && Objects.equals(x.getAssignedDay(), day))
+                        .orElseThrow(() -> new IllegalArgumentException("items: locale non presente nel giorno " + day));
+                p.setDayOrder(position);
+                placeRepository.save(p);
+            } else {
+                throw new IllegalArgumentException("items: tipo di tappa non valido (activity o food)");
+            }
+        }
+        return tripRepository.findById(tripId);
     }
 
     // ── Logistics ─────────────────────────────────────────────────────────────
