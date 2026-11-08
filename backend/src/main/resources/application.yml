@@ -41,6 +41,20 @@ app:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:}
   # Dati demo (utenti/gruppi/viaggi di esempio). Disattivato di default; true solo in locale/test.
   seed-demo-data: ${SEED_DEMO_DATA:false}
+  # Limiti ai tentativi (in memoria, per singola istanza). I default valgono anche in produzione.
+  # Durate in formato Spring (es. 15m, 1h, 60s). Superato il limite: 429 con Retry-After.
+  rate-limit:
+    login: # tentativi di accesso falliti, per email e per IP
+      max-attempts: ${RATE_LIMIT_LOGIN_MAX_ATTEMPTS:5}
+      window: ${RATE_LIMIT_LOGIN_WINDOW:15m}
+    register: # registrazioni per IP
+      max-attempts: ${RATE_LIMIT_REGISTER_MAX_ATTEMPTS:5}
+      window: ${RATE_LIMIT_REGISTER_WINDOW:1h}
+    invite-preview: # anteprime di codici invito per IP
+      max-attempts: ${RATE_LIMIT_INVITE_PREVIEW_MAX_ATTEMPTS:30}
+      window: ${RATE_LIMIT_INVITE_PREVIEW_WINDOW:1m}
+    # Solo e2e: endpoint per cambiare i limiti durante i test. Mai true in test/produzione.
+    test-endpoint: ${RATE_LIMIT_TEST_ENDPOINT:false}
 
 unsplash:
   # Copertine suggerite in base alla destinazione. Senza chiave la funzione è disattivata.
@@ -70,6 +84,19 @@ wikidata:
 places:
   # Raggio (km) attorno alla destinazione del viaggio entro cui cercare attrazioni e indirizzi.
   search-radius-km: ${PLACES_SEARCH_RADIUS_KM:40}
+
+push:
+  # Notifiche push (Web Push). Chiavi VAPID generate una volta per ambiente con
+  # `npx web-push generate-vapid-keys` (base64url). Se una delle tre manca le push sono disattivate.
+  vapid:
+    public-key: ${PUSH_VAPID_PUBLIC_KEY:}
+    private-key: ${PUSH_VAPID_PRIVATE_KEY:}
+    # Contatto per i push service: "mailto:..." oppure l'URL https del sito.
+    subject: ${PUSH_VAPID_SUBJECT:}
+  # Endpoint http consentiti (solo per i test e2e con il push service finto); in produzione solo https.
+  allow-insecure-endpoints: ${PUSH_ALLOW_INSECURE_ENDPOINTS:false}
+  # Per quanto il push service conserva una notifica se il dispositivo è spento (secondi).
+  ttl-seconds: ${PUSH_TTL_SECONDS:86400}
 
 jwt:
   # Obbligatorio: almeno 32 caratteri, diverso per ogni ambiente (es. `openssl rand -hex 32`).

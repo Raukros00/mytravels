@@ -23,7 +23,13 @@ GET  /search/photos?query=...   -> 3 foto (alt con la query), richiede "Authoriz
 GET  /photos/<id>/download      -> registra il "download" (linee guida Unsplash)
 GET  /img/<id>                  -> immagine PNG servita al browser
 GET  /__state                   -> per i test: ricerche e download ricevuti
+
+Push service (Web Push, RFC 8030): gli endpoint delle subscription di test sono http://api-stubs:8000/push/<id>
+POST /push/<id>                 -> registra il messaggio (cifrato) e risponde 201. Con <id> che inizia per
+                                   "gone" risponde 410, per "missing" 404, per "fail" 500 (abbonamento scaduto/errore).
+GET  /__push?id=<id>            -> per i test: messaggi ricevuti per quell'id (headers + body in base64)
 """
+import base64
 import json
 import math
 import os
@@ -83,6 +89,9 @@ REVERSE = [
 ]
 PHOTON_LANGS = {"default", "de", "en", "fr"}
 state = {"searches": [], "downloads": [], "places": [], "poi": [], "wikidata": [], "reverse": []}
+# Messaggi ricevuti dal finto push service, per id della subscription.
+pushes = {}
+PUSH_HEADERS = ("TTL", "Urgency", "Topic", "Content-Encoding", "Content-Type", "Authorization")
 # Servizi messi fuori uso dai test (GET /__fail?service=wikidata; GET /__fail per ripristinare).
 failing = set()
 
@@ -106,10 +115,31 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def do_POST(self):
+        url = urlparse(self.path)
+        if url.path.startswith("/push/"):
+            push_id = url.path[len("/push/"):]
+            length = int(self.headers.get("Content-Length") or 0)
+            body = self.rfile.read(length) if length else b""
+            status = 410 if push_id.startswith("gone") else 404 if push_id.startswith("missing") else \
+                500 if push_id.startswith("fail") else 201
+            pushes.setdefault(push_id, []).append({
+                "status": status,
+                "headers": {h: self.headers.get(h) for h in PUSH_HEADERS},
+                "body": base64.b64encode(body).decode(),
+            })
+            self.send_response(status)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        return self._json(404, {"errors": ["not found"]})
+
     def do_GET(self):
         url = urlparse(self.path)
         if url.path == "/__state":
             return self._json(200, state)
+        if url.path == "/__push":
+            return self._json(200, pushes.get(parse_qs(url.query).get("id", [""])[0], []))
         if url.path.startswith("/img/"):
             self.send_response(200)
             self.send_header("Content-Type", "image/png")
