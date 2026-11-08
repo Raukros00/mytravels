@@ -1,4 +1,4 @@
-"""Finti servizi esterni per i test e2e (Unsplash, GeoNames, Photon e Wikidata): stessa forma di risposta delle
+"""Finti servizi esterni per i test e2e (Unsplash, GeoNames, Photon, Wikidata e Open-Meteo): stessa forma di risposta delle
 API reali, nessuna rete esterna.
 
 GeoNames
@@ -16,7 +16,12 @@ GET  /wikidata/w/api.php?action=wbsearchentities&search=...&language=it -> id de
 GET  /wikidata/w/api.php?action=wbgetentities&ids=Q..|Q..&languages=... -> coordinate (P625) ed etichette
      Un testo con "offline" -> 503.
 
-GET  /__fail?service=wikidata|photon  -> mette fuori uso il servizio (503) finché non si chiama /__fail senza parametri
+Open-Meteo (meteo della giornata nella guida)
+GET  /open-meteo/v1/forecast?latitude=&longitude=&start_date=&end_date=&daily=...&hourly=...
+     -> previsioni del giorno: sereno fino alle 15, pioggia dalle 16:00 (24° di massima). Con latitude >= 50
+        sereno tutto il giorno (nessuna pioggia).
+
+GET  /__fail?service=wikidata|photon|open-meteo  -> mette fuori uso il servizio (503) finché non si chiama /__fail senza parametri
 
 Unsplash
 GET  /search/photos?query=...   -> 3 foto (alt con la query), richiede "Authorization: Client-ID e2e-fake-key"
@@ -88,7 +93,7 @@ REVERSE = [
                               "country": "Italia", "countrycode": "IT"}),
 ]
 PHOTON_LANGS = {"default", "de", "en", "fr"}
-state = {"searches": [], "downloads": [], "places": [], "poi": [], "wikidata": [], "reverse": []}
+state = {"searches": [], "downloads": [], "places": [], "poi": [], "wikidata": [], "reverse": [], "weather": []}
 # Messaggi ricevuti dal finto push service, per id della subscription.
 pushes = {}
 PUSH_HEADERS = ("TTL", "Urgency", "Topic", "Content-Encoding", "Content-Type", "Authorization")
@@ -151,6 +156,26 @@ class Handler(BaseHTTPRequestHandler):
             failing.clear()
             failing.update(parse_qs(url.query).get("service", []))
             return self._json(200, {"failing": sorted(failing)})
+        if url.path == "/open-meteo/v1/forecast":
+            params = {k: v[0] for k, v in parse_qs(url.query).items()}
+            state["weather"].append(params)
+            if "open-meteo" in failing:
+                return self._json(503, {"error": True, "reason": "Service Unavailable"})
+            day = params.get("start_date", "2030-01-01")
+            dry = float(params.get("latitude", "0")) >= 50
+            rain = [not dry and h >= 16 for h in range(24)]
+            temps = [round(15 + 9 * math.sin(math.pi * max(0, h - 6) / 16), 1) if 6 <= h <= 22 else 15.0 for h in range(24)]
+            return self._json(200, {
+                "latitude": float(params.get("latitude", "0")), "longitude": float(params.get("longitude", "0")),
+                "timezone": "Europe/Rome", "timezone_abbreviation": "CEST", "utc_offset_seconds": 7200,
+                "daily": {"time": [day], "weather_code": [1 if dry else 61], "temperature_2m_max": [max(temps)],
+                          "temperature_2m_min": [min(temps)], "precipitation_probability_max": [5 if dry else 80],
+                          "precipitation_sum": [0.0 if dry else 6.0]},
+                "hourly": {"time": [f"{day}T{h:02d}:00" for h in range(24)], "temperature_2m": temps,
+                           "precipitation_probability": [80 if r else 5 for r in rain],
+                           "precipitation": [1.2 if r else 0.0 for r in rain],
+                           "weather_code": [61 if r else (1 if 6 <= h <= 20 else 0) for h, r in enumerate(rain)]},
+            })
         if url.path == "/photon/reverse":
             params = parse_qs(url.query)
             lat, lon = float(params.get("lat", ["0"])[0]), float(params.get("lon", ["0"])[0])

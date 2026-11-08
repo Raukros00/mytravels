@@ -20,6 +20,7 @@ import { TimelineItem, buildDayTimeline, getNavigationUrl, mealOf } from '../tri
 import { TripMovePanelComponent } from '../trip-move/trip-move-panel.component';
 import { MoveUndoBarComponent } from '../trip-move/move-undo-bar.component';
 import { StopRef, recoverStops } from '../trip-move/stop-move.service';
+import { LiveWeatherComponent } from './live-weather.component';
 
 /** Una tappa della giornata nella guida: la voce dell'itinerario più orari e stato. */
 interface LiveStop extends LiveStopInput {
@@ -40,11 +41,12 @@ const STATUS_LABELS: Record<LiveStopStatus, string> = {
  * Adesso (tappa in corso o prossima, con Fatto / Salta / Indicazioni), Dopo (le 1–2 successive) e la
  * Giornata con lo stato di ogni tappa. La logica è in core/utils/live-day.utils.ts (funzioni pure).
  * #112: "Sposta" sulle tappe, lista "Da recuperare" dei giorni passati e ripasso di fine giornata.
+ * #111: meteo della giornata nell'intestazione (LiveWeatherComponent).
  */
 @Component({
   selector: 'app-trip-live',
   standalone: true,
-  imports: [RouterLink, TripMovePanelComponent, MoveUndoBarComponent],
+  imports: [RouterLink, TripMovePanelComponent, MoveUndoBarComponent, LiveWeatherComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:visibilitychange)': 'onVisibilityChange()' },
   templateUrl: './trip-live.component.html',
@@ -101,7 +103,9 @@ export class TripLiveComponent {
     return buildDayTimeline(t.activities ?? [], t.placesToEat ?? [], info.dayNumber).map(item => toLiveStop(item));
   });
 
-  protected readonly live = computed(() => computeLiveDay(this.stops(), minutesOfDay(this.clock.now())));
+  protected readonly nowMinutes = computed(() => minutesOfDay(this.clock.now()));
+
+  protected readonly live = computed(() => computeLiveDay(this.stops(), this.nowMinutes()));
 
   /** Tappa di cui è aperto il pannello "Sposta" (#112). */
   protected readonly moving = signal<StopRef | null>(null);
