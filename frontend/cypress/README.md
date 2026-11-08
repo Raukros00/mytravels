@@ -52,10 +52,15 @@ npm run cy:open        # in un altro: runner interattivo
 | `trip-detail.cy.ts` | tab itinerario, food, attività, logistica (voli/alloggio/trasporti), spese, condivisione |
 | `groups.cy.ts` | lista, creazione/modifica, codice invito, lascia gruppo, dettaglio, voti, membri, impostazioni, inviti via notifica |
 | `explore.cy.ts` | catalogo, ricerca e filtri, dettaglio, assegnazione di un itinerario a un gruppo |
+| `push.cy.ts` | notifiche push (backend): chiave VAPID, abbonamenti dei dispositivi, invio cifrato e pulizia degli abbonamenti scaduti |
 
 Comandi custom in `support/commands.ts`: `cy.login(utente)`, `cy.api(...)`, `cy.apiUntil(...)`, `cy.createGroup(...)`,
 `cy.createTrip(...)`, `cy.joinGroup(...)`, `cy.toast(...)`, `cy.dialog(...)`. Utenti, gruppi e viaggi demo sono in
 `support/users.ts`.
+
+Notifiche push: `support/push.ts` crea dispositivi finti (chiavi generate con WebCrypto) abbonati con un endpoint del
+finto push service dello stub (`e2e/api-stubs.py`, `GET /__push?id=...`); `receivedPushes(device)` attende i messaggi,
+li decifra (aes128gcm) e verifica la firma VAPID.
 
 ## Regole per i nuovi test
 

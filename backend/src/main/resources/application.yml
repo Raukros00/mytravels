@@ -71,6 +71,19 @@ places:
   # Raggio (km) attorno alla destinazione del viaggio entro cui cercare attrazioni e indirizzi.
   search-radius-km: ${PLACES_SEARCH_RADIUS_KM:40}
 
+push:
+  # Notifiche push (Web Push). Chiavi VAPID generate una volta per ambiente con
+  # `npx web-push generate-vapid-keys` (base64url). Se una delle tre manca le push sono disattivate.
+  vapid:
+    public-key: ${PUSH_VAPID_PUBLIC_KEY:}
+    private-key: ${PUSH_VAPID_PRIVATE_KEY:}
+    # Contatto per i push service: "mailto:..." oppure l'URL https del sito.
+    subject: ${PUSH_VAPID_SUBJECT:}
+  # Endpoint http consentiti (solo per i test e2e con il push service finto); in produzione solo https.
+  allow-insecure-endpoints: ${PUSH_ALLOW_INSECURE_ENDPOINTS:false}
+  # Per quanto il push service conserva una notifica se il dispositivo è spento (secondi).
+  ttl-seconds: ${PUSH_TTL_SECONDS:86400}
+
 jwt:
   # Obbligatorio: almeno 32 caratteri, diverso per ogni ambiente (es. `openssl rand -hex 32`).
   secret: ${JWT_SECRET}
