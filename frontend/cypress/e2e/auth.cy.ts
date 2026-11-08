@@ -242,7 +242,7 @@ describe('Autenticazione (modale)', () => {
       // Senza foto la navbar mostra l'avatar scelto; il profilo mostra la data di nascita.
       cy.get(`header button[title="${first} Rossi"]`).should('contain.text', '🎒');
       cy.visit('/profile');
-      cy.contains('h1', `${first} Rossi`).should('be.visible');
+      cy.contains('.profile-hero h2', `${first} Rossi`).should('be.visible');
       cy.contains('Data di nascita').next().should('contain.text', '17 maggio 1990');
 
       // Un utente nuovo non vede gruppi né viaggi di altri.

@@ -157,5 +157,22 @@
     "join_requests_title": "Richieste di accesso",
     "join_requests_approve": "Accetta",
     "join_requests_decline": "Rifiuta"
+  },
+  "profile": {
+    "page_title": "Profilo",
+    "page_desc": "Il tuo account e i tuoi viaggi in breve.",
+    "member_since": "Membro da {{date}}",
+    "stats_title": "Le mie statistiche",
+    "stats_desc": "Viaggi confermati di tutti i tuoi gruppi.",
+    "stat_trips": "Viaggi totali",
+    "stat_groups": "Gruppi",
+    "stat_countries": "Nazioni esplorate",
+    "stat_upcoming": "Prossimi viaggi",
+    "account_title": "Account",
+    "field_name": "Nome",
+    "field_email": "Email",
+    "field_birth_date": "Data di nascita",
+    "field_color": "Colore profilo",
+    "logout": "Disconnetti"
   }
 }

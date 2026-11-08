@@ -1,90 +1,123 @@
 @if (authService.currentUser(); as user) {
-<div class="min-h-dvh bg-background pb-24 md:pb-8">
+<div class="page-wrapper">
+  <div class="app-container">
 
-  <!-- Header -->
-  <section class="px-gutter pt-space-lg pb-space-md">
-    <div class="flex items-center gap-space-md">
-      <app-user-avatar class="profile-avatar" [user]="user" [size]="80" />
-      <div class="flex flex-col gap-1 min-w-0">
-        <h1 class="font-headline-md text-headline-md text-on-surface truncate">{{ user.name }}</h1>
-        <span class="font-body-md text-body-md text-on-surface-variant truncate">{{ user.email }}</span>
-        <span class="font-body-sm text-body-sm text-on-surface-variant">
-          Membro dal {{ user.joinedDate | date:'MMMM yyyy' : '' : 'it' }}
-        </span>
+    <div class="page-header animate-fade-in">
+      <div>
+        <h1 class="page-title">{{ 'profile.page_title' | translate }}</h1>
+        <p class="page-desc">{{ 'profile.page_desc' | translate }}</p>
       </div>
     </div>
-  </section>
 
-  <!-- Stats Grid -->
-  <section class="px-gutter pb-space-md">
-    <h2 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-space-sm">Le mie statistiche</h2>
-    <div class="grid grid-cols-2 gap-space-sm">
-      <div class="bg-surface-container-lowest rounded-xl p-space-md flex flex-col gap-1 shadow-sm">
-        <span class="font-headline-md text-headline-md text-primary">{{ tripService.trips().length }}</span>
-        <span class="font-body-sm text-body-sm text-on-surface-variant">Viaggi totali</span>
-      </div>
-      <div class="bg-surface-container-lowest rounded-xl p-space-md flex flex-col gap-1 shadow-sm">
-        <span class="font-headline-md text-headline-md text-secondary">{{ groupService.userGroups().length }}</span>
-        <span class="font-body-sm text-body-sm text-on-surface-variant">Gruppi</span>
-      </div>
-      <div class="bg-surface-container-lowest rounded-xl p-space-md flex flex-col gap-1 shadow-sm">
-        <span class="font-headline-md text-headline-md text-tertiary">{{ tripService.stats().uniqueCountries }}</span>
-        <span class="font-body-sm text-body-sm text-on-surface-variant">Nazioni esplorate</span>
-      </div>
-      <div class="bg-surface-container-lowest rounded-xl p-space-md flex flex-col gap-1 shadow-sm">
-        <span class="font-headline-md text-headline-md" style="color: #2563EB">{{ tripService.stats().upcoming }}</span>
-        <span class="font-body-sm text-body-sm text-on-surface-variant">Prossimi viaggi</span>
-      </div>
-    </div>
-  </section>
+    <div class="main-grid profile-grid">
 
-  <!-- Account -->
-  <section class="px-gutter pb-space-md">
-    <h2 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-space-sm">Account</h2>
-    <div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm divide-y divide-outline-variant/20">
-      <div class="flex items-center gap-space-md px-space-md py-3">
-        <span class="material-symbols-outlined text-[22px] text-on-surface-variant">person</span>
-        <div class="flex flex-col min-w-0">
-          <span class="font-label-md text-label-md text-on-surface-variant">Nome</span>
-          <span class="font-body-md text-body-md text-on-surface truncate">{{ user.name }}</span>
-        </div>
-      </div>
-      @if (user.birthDate) {
-        <div class="flex items-center gap-space-md px-space-md py-3">
-          <span class="material-symbols-outlined text-[22px] text-on-surface-variant">cake</span>
-          <div class="flex flex-col min-w-0">
-            <span class="font-label-md text-label-md text-on-surface-variant">Data di nascita</span>
-            <span class="font-body-md text-body-md text-on-surface">{{ user.birthDate | date:'d MMMM y' : '' : 'it' }}</span>
+      <!-- Colonna sinistra: intestazione e statistiche -->
+      <div class="profile-col">
+
+        <section class="profile-hero card" aria-labelledby="profile-name">
+          <app-user-avatar class="profile-hero-avatar" [user]="user" [size]="72" />
+          <div class="profile-hero-info">
+            <h2 id="profile-name" class="profile-hero-name">{{ user.name }}</h2>
+            <div class="profile-hero-meta">
+              <p class="hero-meta-row">
+                <span class="material-symbols-outlined hero-meta-icon" aria-hidden="true">mail</span>
+                <span class="hero-meta-value profile-hero-email">{{ user.email }}</span>
+              </p>
+              @if (user.joinedDate) {
+                <p class="hero-meta-row">
+                  <span class="material-symbols-outlined hero-meta-icon" aria-hidden="true">calendar_today</span>
+                  <span class="hero-meta-value profile-member-since">{{ 'profile.member_since' | translate: { date: (user.joinedDate | date:'MMMM y':'':lang()) } }}</span>
+                </p>
+              }
+            </div>
           </div>
-        </div>
-      }
-      <div class="flex items-center gap-space-md px-space-md py-3">
-        <span class="material-symbols-outlined text-[22px] text-on-surface-variant">mail</span>
-        <div class="flex flex-col min-w-0">
-          <span class="font-label-md text-label-md text-on-surface-variant">Email</span>
-          <span class="font-body-md text-body-md text-on-surface truncate">{{ user.email }}</span>
-        </div>
+        </section>
+
+        <section class="section-card card profile-stats" aria-labelledby="profile-stats-title">
+          <div class="section-header">
+            <span class="material-symbols-outlined section-icon" aria-hidden="true">insights</span>
+            <div>
+              <h2 id="profile-stats-title" class="section-title">{{ 'profile.stats_title' | translate }}</h2>
+              <p class="section-desc">{{ 'profile.stats_desc' | translate }}</p>
+            </div>
+          </div>
+          <div class="metrics-grid">
+            @for (stat of stats(); track stat.key) {
+              <div class="metric-card" [attr.data-stat]="stat.key">
+                <div [class]="'metric-icon-bubble metric-icon-bubble--' + stat.key">
+                  <span class="material-symbols-outlined" aria-hidden="true">{{ stat.icon }}</span>
+                </div>
+                <div class="metric-details">
+                  <span class="metric-label">{{ stat.label | translate }}</span>
+                  <strong class="metric-value">{{ stat.value }}</strong>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+
       </div>
-      <div class="flex items-center gap-space-md px-space-md py-3">
-        <div class="w-6 h-6 rounded-full shrink-0" [style.background-color]="user.color"></div>
-        <div class="flex flex-col min-w-0">
-          <span class="font-label-md text-label-md text-on-surface-variant">Colore profilo</span>
-          <span class="font-body-md text-body-md text-on-surface">{{ user.color }}</span>
-        </div>
+
+      <!-- Colonna destra: account -->
+      <div class="right-col profile-col">
+
+        <section class="section-card card profile-account" aria-labelledby="profile-account-title">
+          <div class="section-header">
+            <span class="material-symbols-outlined section-icon" aria-hidden="true">badge</span>
+            <div>
+              <h2 id="profile-account-title" class="section-title">{{ 'profile.account_title' | translate }}</h2>
+            </div>
+          </div>
+          <ul class="account-list">
+            <li class="account-row">
+              <span class="material-symbols-outlined account-icon" aria-hidden="true">person</span>
+              <div class="account-info">
+                <span class="account-label">{{ 'profile.field_name' | translate }}</span>
+                <span class="account-value">{{ user.name }}</span>
+              </div>
+            </li>
+            <li class="account-row">
+              <span class="material-symbols-outlined account-icon" aria-hidden="true">mail</span>
+              <div class="account-info">
+                <span class="account-label">{{ 'profile.field_email' | translate }}</span>
+                <span class="account-value">{{ user.email }}</span>
+              </div>
+            </li>
+            @if (user.birthDate) {
+              <li class="account-row">
+                <span class="material-symbols-outlined account-icon" aria-hidden="true">cake</span>
+                <div class="account-info">
+                  <span class="account-label">{{ 'profile.field_birth_date' | translate }}</span>
+                  <span class="account-value">{{ user.birthDate | date:'d MMMM y':'':lang() }}</span>
+                </div>
+              </li>
+            }
+            <li class="account-row">
+              <span class="account-swatch" [style.background-color]="user.color" aria-hidden="true"></span>
+              <div class="account-info">
+                <span class="account-label">{{ 'profile.field_color' | translate }}</span>
+                <span class="account-value account-value--mono">{{ user.color }}</span>
+              </div>
+            </li>
+          </ul>
+        </section>
+
+        <!--
+          Sezioni future dell'epica #113 (Modifica profilo, Notifiche, Sicurezza):
+          aggiungerle qui come altre `section-card` con `section-header`, una per sezione.
+        -->
+
       </div>
+
     </div>
-  </section>
 
-  <!-- Logout -->
-  <section class="px-gutter">
-    <button
-      type="button"
-      class="w-full flex items-center justify-center gap-space-sm px-space-md py-3 rounded-xl bg-error-container text-on-error-container font-label-lg text-label-lg transition-all active:scale-95"
-      (click)="authService.logout()">
-      <span class="material-symbols-outlined text-[20px]">logout</span>
-      Disconnetti
-    </button>
-  </section>
+    <div class="profile-actions">
+      <button type="button" class="btn btn-outline logout-btn" (click)="logout()">
+        <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+        {{ 'profile.logout' | translate }}
+      </button>
+    </div>
 
+  </div>
 </div>
 }

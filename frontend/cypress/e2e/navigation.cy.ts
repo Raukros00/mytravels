@@ -70,26 +70,7 @@ describe('Navigazione, dashboard e profilo', () => {
     cy.get('a[href="/groups"]').should('be.visible');
   });
 
-  it('il profilo mostra i dati dell\'account e le statistiche', () => {
-    cy.visit('/profile');
-    cy.contains('h1', USERS.admin.name).should('be.visible');
-    cy.contains(USERS.admin.email).should('be.visible');
-    cy.contains('Le mie statistiche').should('be.visible');
-    // Regressione: il pipe date con locale 'it' lanciava e svuotava la pagina.
-    cy.contains(/Membro dal \w+ \d{4}/).should('be.visible');
-    // admin è membro di 2 gruppi demo (Gli Esploratori, Weekend Warriors).
-    cy.contains('h2', 'Le mie statistiche')
-      .parent()
-      .contains('span', /^\s*Gruppi\s*$/)
-      .prev()
-      .should($value => expect(Number($value.text().trim())).to.be.gte(2));
-  });
-
-  it('dal profilo si può fare logout', () => {
-    cy.visit('/profile');
-    cy.get('main, body').contains('button', 'Disconnetti').click();
-    cy.location('pathname').should('eq', '/explore');
-  });
+  // Contenuti, lingua, statistiche e layout del profilo: vedi profile.cy.ts.
 
   describe('su mobile', () => {
     beforeEach(() => cy.viewport('iphone-x'));
