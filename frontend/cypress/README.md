@@ -71,6 +71,7 @@ npm run cy:open        # in un altro: runner interattivo
 | `explore.cy.ts` | catalogo, ricerca e filtri, dettaglio, assegnazione di un itinerario a un gruppo |
 | `push.cy.ts` | notifiche push (backend): chiave VAPID, abbonamenti dei dispositivi, invio cifrato e pulizia degli abbonamenti scaduti |
 | `push-groups.cy.ts` | push per inviti e richieste di ingresso (destinatario, testo, link, tag), gruppi silenziati |
+| `push-ui.cy.ts` | notifiche push dall'app: interruttore nel profilo (SwPush/Notification simulati), stati, istruzioni iPhone, logout/login |
 
 Comandi custom in `support/commands.ts`: `cy.login(utente)`, `cy.api(...)`, `cy.apiUntil(...)`, `cy.createGroup(...)`,
 `cy.createTrip(...)`, `cy.joinGroup(...)`, `cy.toast(...)`, `cy.dialog(...)`. Utenti, gruppi e viaggi demo sono in

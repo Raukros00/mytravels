@@ -201,8 +201,8 @@ describe('Dettaglio viaggio – modifiche', () => {
     cy.contains('.sub-section-title', 'Struttura & Prenotazione').parent().find('button').click();
 
     cy.dialog('Dettagli Alloggio & Hotel').within(() => {
-      cy.get('input[formControlName="name"]').clear().type('Hotel Principi di Piemonte');
-      cy.get('input[formControlName="address"]').clear().type('Via Gobetti, 15, Torino');
+      cy.get('#accom_name').clear().type('Hotel Principi di Piemonte');
+      cy.get('#accom_address').clear().type('Via Gobetti, 15, Torino');
       cy.get('input[formControlName="bookingCode"]').clear().type('PDP-777');
       cy.contains('button', 'Salva Alloggio').click();
     });

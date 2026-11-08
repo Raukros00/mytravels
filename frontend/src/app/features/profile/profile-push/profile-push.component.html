@@ -1,0 +1,66 @@
+<section class="section-card card profile-push" aria-labelledby="profile-push-title" [attr.data-state]="push.state()">
+  <div class="section-header">
+    <span class="material-symbols-outlined section-icon" aria-hidden="true">notifications_active</span>
+    <div>
+      <h2 id="profile-push-title" class="section-title">{{ 'profile.push_title' | translate }}</h2>
+      <p class="section-desc">{{ 'profile.push_desc' | translate }}</p>
+    </div>
+  </div>
+
+  @switch (push.state()) {
+    @case ('loading') {
+      <p class="push-message push-message--muted">{{ 'profile.push_loading' | translate }}</p>
+    }
+    @case ('ios-install') {
+      <div class="push-message push-install">
+        <p class="push-message-title">{{ 'profile.push_ios_title' | translate }}</p>
+        <ol class="push-steps">
+          <li>
+            {{ 'profile.push_ios_step1' | translate }}
+            <span class="material-symbols-outlined push-inline-icon" aria-hidden="true">ios_share</span>
+          </li>
+          <li>{{ 'profile.push_ios_step2' | translate }}</li>
+          <li>{{ 'profile.push_ios_step3' | translate }}</li>
+        </ol>
+        <p class="push-hint">{{ 'profile.push_ios_hint' | translate }}</p>
+      </div>
+    }
+    @case ('unsupported') {
+      <p class="push-message push-unsupported">{{ 'profile.push_unsupported' | translate }}</p>
+    }
+    @case ('server-disabled') {
+      <p class="push-message push-server-disabled">{{ 'profile.push_server_disabled' | translate }}</p>
+    }
+    @case ('denied') {
+      <div class="push-message push-denied">
+        <p class="push-message-title">{{ 'profile.push_denied_title' | translate }}</p>
+        <p class="push-hint">{{ 'profile.push_denied_hint' | translate }}</p>
+      </div>
+    }
+    @default {
+      <div class="push-row">
+        <div class="push-row-text">
+          <p class="push-row-label">{{ 'profile.push_toggle_label' | translate }}</p>
+          <p class="push-row-desc">
+            {{ (push.state() === 'on' ? 'profile.push_status_on' : 'profile.push_status_off') | translate }}
+          </p>
+        </div>
+        <button type="button" class="switch push-switch" role="switch"
+                [class.switch--on]="push.state() === 'on'"
+                [attr.aria-checked]="push.state() === 'on'"
+                [attr.aria-busy]="push.busy()"
+                [disabled]="push.busy()"
+                [attr.aria-label]="'profile.push_toggle_label' | translate"
+                (click)="toggle()">
+          <span class="switch-knob"></span>
+        </button>
+      </div>
+      @if (push.state() === 'on') {
+        <button type="button" class="btn btn-outline btn-sm push-test-btn" [disabled]="testing()" (click)="sendTest()">
+          <span class="material-symbols-outlined" aria-hidden="true">send</span>
+          {{ 'profile.push_test' | translate }}
+        </button>
+      }
+    }
+  }
+</section>

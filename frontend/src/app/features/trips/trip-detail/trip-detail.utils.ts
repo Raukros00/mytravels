@@ -13,6 +13,8 @@ export interface TimelineItem {
   isDefaultTime?: boolean;
   /** Nomi delle tappe della giornata con orari che si sovrappongono a questa. */
   overlapsWith: string[];
+  /** Ha coordinate vere (per mappa e indicazioni). */
+  hasLocation: boolean;
   address?: string;
   notes?: string;
   priceInfo?: string;
@@ -39,7 +41,7 @@ export function mealOf(place: TripPlaceToEat): string | null {
  * con l'etichetta dell'orario e le sovrapposizioni.
  */
 export function buildDayTimeline(activities: TripActivity[], places: TripPlaceToEat[], day: number): TimelineItem[] {
-  type Stop = ScheduleStop & { item: Omit<TimelineItem, 'timeLabel' | 'isDefaultTime' | 'overlapsWith'> };
+  type Stop = ScheduleStop & { item: Omit<TimelineItem, 'timeLabel' | 'isDefaultTime' | 'overlapsWith' | 'hasLocation'> };
 
   const stops: Stop[] = [
     ...activities.filter(a => a.assignedDay === day).map(a => ({
@@ -80,7 +82,8 @@ export function buildDayTimeline(activities: TripActivity[], places: TripPlaceTo
       ...stop.item,
       timeLabel: times ? formatTimeRange(times.start, times.end) : (stop.timeSlot?.trim() || undefined),
       isDefaultTime: times?.source === 'meal-default',
-      overlapsWith: (overlaps.get(stop.id) ?? []).map(o => o.name)
+      overlapsWith: (overlaps.get(stop.id) ?? []).map(o => o.name),
+      hasLocation: stop.item.raw.coordinates?.lat != null && stop.item.raw.coordinates?.lng != null
     };
   });
 }
@@ -95,22 +98,4 @@ export function formatDayDate(startDate: string | undefined, dayNum: number): st
   const date = new Date(startDate);
   date.setDate(date.getDate() + (dayNum - 1));
   return date.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
-}
-
-export function generateFallbackCoords(destination: string, seed: string): { lat: number; lng: number } {
-  let baseLat = 41.3851;
-  let baseLng = 2.1734;
-  if (destination.toLowerCase().includes('roma')) {
-    baseLat = 41.9028;
-    baseLng = 12.4964;
-  } else if (destination.toLowerCase().includes('tokyo')) {
-    baseLat = 35.6762;
-    baseLng = 139.6503;
-  }
-
-  const hash = seed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const offsetLat = ((hash % 30) - 15) * 0.003;
-  const offsetLng = (((hash * 7) % 30) - 15) * 0.003;
-
-  return { lat: baseLat + offsetLat, lng: baseLng + offsetLng };
 }

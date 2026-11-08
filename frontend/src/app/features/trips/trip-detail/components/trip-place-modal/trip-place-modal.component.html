@@ -7,7 +7,13 @@
   <form [formGroup]="form" (ngSubmit)="save()">
     <div class="form-group">
       <label class="form-label" for="food_name">Nome del Locale / Ristorante *</label>
-      <input type="text" id="food_name" formControlName="name" class="form-input" placeholder="Es. Cervecería Catalana...">
+      <app-poi-autocomplete
+        inputId="food_name"
+        [control]="form.controls.name"
+        [near]="near()"
+        listLabel="Locali suggeriti per il nome"
+        placeholder="Es. Cervecería Catalana..."
+        (picked)="pickPlace($event, 'name')" />
     </div>
 
     <div class="form-grid-2">
@@ -35,7 +41,14 @@
 
     <div class="form-group">
       <label class="form-label" for="food_address">Indirizzo Completo</label>
-      <input type="text" id="food_address" formControlName="address" class="form-input">
+      <app-poi-autocomplete
+        inputId="food_address"
+        [control]="form.controls.address"
+        [near]="near()"
+        listLabel="Indirizzi suggeriti"
+        placeholder="Es. Carrer de Mallorca 236, Barcellona"
+        (picked)="pickPlace($event, 'address')" />
+      <app-place-status [place]="place" [near]="near()" (located)="located($event)" />
     </div>
 
     <div class="form-group">

@@ -228,8 +228,6 @@ describe('Orari delle tappe – itinerario', () => {
 
     cy.reload();
     stopNames().should('deep.equal', ['Duomo', 'Pinacoteca', 'Trattoria', 'Giro libero']);
-    // La mappa segue la stessa sequenza.
-    cy.contains('.stops-count', '4 tappe');
   });
 
   it('una tappa con orario aggiunta dopo il riordino si inserisce in base all\'orario', () => {

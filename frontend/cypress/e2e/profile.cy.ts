@@ -45,8 +45,8 @@ describe('Profilo', () => {
           cy.contains('.account-label', t.field_email).next().should('have.text', USERS.admin.email);
           cy.contains('.account-label', t.field_color).next().invoke('text').should('match', /^#[0-9a-f]{6}$/i);
         });
-        // Nessuna sezione finta delle funzioni future (modifica profilo, notifiche, sicurezza).
-        cy.get('.section-card').should('have.length', 2);
+        // Statistiche, Account e Notifiche sul telefono (#95): nessuna sezione finta delle funzioni future.
+        cy.get('.section-card').should('have.length', 3);
       });
     });
 
