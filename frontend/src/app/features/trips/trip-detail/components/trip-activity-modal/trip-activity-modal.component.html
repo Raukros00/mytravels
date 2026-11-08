@@ -7,26 +7,37 @@
   <form [formGroup]="form" (ngSubmit)="save()">
     <div class="form-group">
       <label class="form-label" for="act_name">Nome Attrazione / Luogo *</label>
-      <input type="text" id="act_name" formControlName="name" class="form-input" placeholder="Es. Museo del Prado, Sagrada Família...">
+      <app-poi-autocomplete
+        inputId="act_name"
+        [control]="form.controls.name"
+        [near]="near()"
+        listLabel="Luoghi suggeriti per il nome"
+        placeholder="Es. Museo del Prado, Sagrada Família..."
+        (picked)="pickPlace($event, 'name')" />
     </div>
 
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label" for="act_category">Categoria *</label>
-        <select id="act_category" formControlName="category" class="form-select">
-          <option value="monument">Monumento</option>
-          <option value="museum">Museo</option>
-          <option value="nature">Natura / Parco</option>
-          <option value="experience">Esperienza / Tour</option>
-          <option value="shopping">Shopping / Mercato</option>
-          <option value="other">Altro</option>
-        </select>
-      </div>
+    <!-- A tutta larghezza: gli indirizzi suggeriti sono lunghi. -->
+    <div class="form-group">
+      <label class="form-label" for="act_address">Indirizzo / Posizione</label>
+      <app-poi-autocomplete
+        inputId="act_address"
+        [control]="form.controls.address"
+        [near]="near()"
+        listLabel="Indirizzi suggeriti"
+        placeholder="Es. Carrer de Mallorca 401, Barcellona"
+        (picked)="pickPlace($event, 'address')" />
+    </div>
 
-      <div class="form-group">
-        <label class="form-label" for="act_address">Indirizzo / Posizione</label>
-        <input type="text" id="act_address" formControlName="address" class="form-input" placeholder="Es. Carrer de Mallorca 401">
-      </div>
+    <div class="form-group">
+      <label class="form-label" for="act_category">Categoria *</label>
+      <select id="act_category" formControlName="category" class="form-select">
+        <option value="monument">Monumento</option>
+        <option value="museum">Museo</option>
+        <option value="nature">Natura / Parco</option>
+        <option value="experience">Esperienza / Tour</option>
+        <option value="shopping">Shopping / Mercato</option>
+        <option value="other">Altro</option>
+      </select>
     </div>
 
     <div class="form-grid-2">

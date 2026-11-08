@@ -41,6 +41,7 @@ services:
       UNSPLASH_API_URL: http://api-stubs:8000
       GEONAMES_USERNAME: e2e
       GEONAMES_API_URL: http://api-stubs:8000
+      PHOTON_URL: http://api-stubs:8000/photon/api
     depends_on:
       postgres:
         condition: service_healthy

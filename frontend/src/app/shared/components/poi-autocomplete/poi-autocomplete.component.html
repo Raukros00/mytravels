@@ -1,0 +1,42 @@
+<div class="poi-field">
+  <input
+    type="text"
+    class="form-input"
+    [id]="inputId()"
+    [formControl]="control()"
+    [placeholder]="placeholder()"
+    autocomplete="off"
+    role="combobox"
+    aria-autocomplete="list"
+    [attr.aria-controls]="inputId() + '-options'"
+    [attr.aria-expanded]="open()"
+    [attr.aria-activedescendant]="open() && active() >= 0 ? optionId(active()) : null"
+    (input)="onInput($event)"
+    (keydown)="onKeydown($event)"
+    (blur)="onBlur()">
+
+  @if (open()) {
+    <!-- mousedown senza default: il campo non perde il focus, così click e tocchi funzionano. -->
+    <div class="poi-dropdown" (mousedown)="$event.preventDefault()">
+      <ul class="poi-list" role="listbox" [id]="inputId() + '-options'" [attr.aria-label]="listLabel()">
+        @for (p of results(); track $index; let i = $index) {
+          <li class="poi-option" role="option"
+            [id]="optionId(i)"
+            [class.poi-option--active]="i === active()"
+            [attr.aria-selected]="i === active()"
+            (click)="select(p)"
+            (mouseenter)="setActive(i)">
+            <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+            <span class="poi-option-text">
+              <strong>{{ p.name }}</strong>
+              <small>{{ p.address }}</small>
+            </span>
+          </li>
+        }
+      </ul>
+      <p class="poi-attribution">
+        Dati © <a [href]="osmLink" target="_blank" rel="noopener">OpenStreetMap contributors</a>
+      </p>
+    </div>
+  }
+</div>

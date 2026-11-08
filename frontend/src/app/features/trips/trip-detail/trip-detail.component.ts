@@ -86,6 +86,14 @@ export class TripDetailComponent {
     return id ? this.tripService.getTripById(id) : undefined;
   });
 
+  /** Coordinate della destinazione (se scelta dai suggerimenti): priorità ai luoghi vicini. */
+  protected readonly destinationPoint = computed(() => {
+    const t = this.trip();
+    return t?.destinationLat != null && t.destinationLng != null
+      ? { lat: t.destinationLat, lng: t.destinationLng }
+      : null;
+  });
+
   private readonly loadTripIfMissing = effect(() => {
     const id = this.tripId();
     if (id) this.tripService.ensureTripLoaded(id);
@@ -276,9 +284,9 @@ export class TripDetailComponent {
   protected saveActivity(val: NewActivityValue): void {
     const t = this.trip();
     if (!t) return;
+    // Solo coordinate vere (da un luogo suggerito): senza, la mappa usa una posizione approssimata.
     this.tripService.addActivity(t.id, {
       ...val,
-      coordinates: generateFallbackCoords(t.destination, val.name),
       assignedDay: null
     });
     this.isActivityModalOpen.set(false);
