@@ -1,0 +1,200 @@
+<div class="page-wrapper">
+  <div class="app-container live-container">
+
+    @if (trip(); as t) {
+      <header class="live-header">
+        <a class="live-back" [routerLink]="['/trips', t.id]">
+          <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+          Vai al pianificatore
+        </a>
+        <p class="live-trip-title">{{ t.title }}</p>
+        @if (dayInfo()?.state === 'during') {
+          <h1 class="live-day-title">{{ dayTitle() }}</h1>
+        } @else {
+          <h1 class="live-day-title">{{ t.destination }}</h1>
+        }
+        <p class="live-date">
+          <span>{{ todayLabel() }}</span>
+          <span class="live-clock">· {{ clockLabel() }}</span>
+          @if (clock.simulated()) {
+            <span class="live-simulated" title="Orario simulato con ?now= (solo fuori produzione)">orario simulato</span>
+          }
+        </p>
+      </header>
+
+      @switch (dayInfo()?.state) {
+        @case ('before') {
+          <section class="live-card live-message" data-cy="live-not-started">
+            <span class="material-symbols-outlined live-message-icon" aria-hidden="true">luggage</span>
+            <h2>Il viaggio non è ancora iniziato</h2>
+            <p>
+              @if (dayInfo()!.daysToStart === 1) { Si parte domani! } @else { Mancano {{ dayInfo()!.daysToStart }} giorni alla partenza. }
+              La guida della giornata sarà disponibile durante il viaggio.
+            </p>
+            <a class="btn btn-primary btn-lg live-wide" [routerLink]="['/trips', t.id]">Apri il pianificatore</a>
+          </section>
+        }
+
+        @case ('after') {
+          <section class="live-card live-message" data-cy="live-ended">
+            <span class="material-symbols-outlined live-message-icon" aria-hidden="true">flag</span>
+            <h2>Il viaggio è finito</h2>
+            <p>Speriamo sia andato tutto bene! Itinerario, spese e ricordi restano nel pianificatore.</p>
+            <a class="btn btn-primary btn-lg live-wide" [routerLink]="['/trips', t.id]">Apri il pianificatore</a>
+          </section>
+        }
+
+        @case ('during') {
+          @switch (live().phase) {
+            @case ('empty') {
+              <section class="live-card live-message" data-cy="live-empty">
+                <span class="material-symbols-outlined live-message-icon" aria-hidden="true">beach_access</span>
+                <h2>Oggi non c'è niente in programma</h2>
+                <p>Giornata libera: goditela! Oppure scegli qualcosa dalle idee non ancora pianificate.</p>
+                @if (backlog().length) {
+                  <ul class="live-backlog">
+                    @for (idea of backlog(); track idea.type + idea.id) {
+                      <li class="live-backlog-item">
+                        <span class="material-symbols-outlined" aria-hidden="true">{{ idea.type === 'food' ? 'restaurant' : 'attractions' }}</span>
+                        <span class="live-backlog-name">{{ idea.name }}</span>
+                        <button type="button" class="btn btn-secondary btn-sm" (click)="addToToday(idea)">Aggiungi a oggi</button>
+                      </li>
+                    }
+                  </ul>
+                }
+                <a class="btn btn-outline btn-lg live-wide" [routerLink]="['/trips', t.id]">Apri il pianificatore</a>
+              </section>
+            }
+
+            @case ('finished') {
+              <section class="live-card live-message live-finished" data-cy="live-finished">
+                <span class="live-message-emoji" aria-hidden="true">🎉</span>
+                <h2>Giornata completata</h2>
+                <p class="live-finished-counts">
+                  {{ live().doneCount }} {{ live().doneCount === 1 ? 'tappa fatta' : 'tappe fatte' }}
+                  @if (live().skippedCount) { · {{ live().skippedCount }} {{ live().skippedCount === 1 ? 'saltata' : 'saltate' }} }
+                  @if (live().remaining.length) { · {{ live().remaining.length }} {{ live().remaining.length === 1 ? 'rimasta' : 'rimaste' }} da fare }
+                </p>
+
+                @if (t.accommodation?.name) {
+                  <div class="live-home">
+                    <span class="material-symbols-outlined" aria-hidden="true">hotel</span>
+                    <div class="live-home-text">
+                      <strong>Rientro all'alloggio</strong>
+                      <span>{{ t.accommodation!.name }}@if (t.accommodation!.address) { · {{ t.accommodation!.address }} }</span>
+                    </div>
+                    <a class="btn btn-secondary btn-sm" target="_blank" rel="noopener"
+                      [href]="directionsUrl(t.accommodation!.name, t.accommodation!.address)">Indicazioni</a>
+                  </div>
+                }
+
+                @if (dayInfo()!.isLastDay) {
+                  <p class="live-tomorrow">Era l'ultimo giorno del viaggio. Buon rientro!</p>
+                } @else if (tomorrowStops().length) {
+                  <p class="live-tomorrow" data-cy="live-tomorrow">
+                    <strong>Domani</strong> ({{ tomorrowLabel() }}):
+                    @for (s of tomorrowStops(); track s.type + s.id; let last = $last) {
+                      {{ s.timeLabel ? s.timeLabel + ' ' : '' }}{{ s.name }}{{ last ? '' : ', ' }}
+                    }
+                  </p>
+                } @else {
+                  <p class="live-tomorrow">Domani ({{ tomorrowLabel() }}) non c'è ancora niente in programma.</p>
+                }
+              </section>
+            }
+
+            @default {
+              @if (live().focus; as stop) {
+                <section class="live-card live-now" data-cy="live-now" [class.live-now--next]="live().focusKind === 'next'"
+                  aria-labelledby="live-now-name">
+                  <p class="live-now-label">{{ focusTiming() }}</p>
+                  <h2 id="live-now-name" class="live-now-name">{{ stop.item.name }}</h2>
+                  <p class="live-now-meta">
+                    <span class="material-symbols-outlined" aria-hidden="true">{{ stop.item.type === 'food' ? 'restaurant' : 'schedule' }}</span>
+                    {{ stop.item.timeLabel || 'Senza orario' }}
+                    @if (stop.item.isDefaultTime) { <span class="live-hint">(orario indicativo)</span> }
+                  </p>
+                  @if (stop.item.address) {
+                    <p class="live-now-meta">
+                      <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+                      {{ stop.item.address }}
+                    </p>
+                  }
+                  @if (stop.item.notes) {
+                    <p class="live-now-notes">{{ stop.item.notes }}</p>
+                  }
+                  <p class="live-now-chips">
+                    @if (stop.item.priceInfo) { <span class="live-chip">{{ stop.item.priceInfo }}</span> }
+                    @if (stop.item.bookingInfo) { <span class="live-chip live-chip--warn">{{ stop.item.bookingInfo }}</span> }
+                    @if (stop.item.type === 'activity' && $any(stop.item.raw).bookingUrl; as url) {
+                      <a class="live-chip" [href]="url" target="_blank" rel="noopener">Biglietti / prenotazione</a>
+                    }
+                  </p>
+
+                  <div class="live-actions">
+                    <button type="button" class="live-action live-action--done" (click)="markDone(stop)">
+                      <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                      Fatto
+                    </button>
+                    <button type="button" class="live-action" (click)="skip(stop)">
+                      <span class="material-symbols-outlined" aria-hidden="true">redo</span>
+                      Salta
+                    </button>
+                    <a class="live-action" target="_blank" rel="noopener" [href]="directionsUrl(stop.item.name, stop.item.address)">
+                      <span class="material-symbols-outlined" aria-hidden="true">directions</span>
+                      Indicazioni
+                    </a>
+                  </div>
+                </section>
+              }
+
+              @if (live().upNext.length) {
+                <section class="live-card live-after" data-cy="live-after" aria-labelledby="live-after-title">
+                  <h3 id="live-after-title" class="live-section-title">Dopo</h3>
+                  <ul class="live-after-list">
+                    @for (next of live().upNext; track next.id) {
+                      <li class="live-after-item">
+                        <span class="live-after-time">{{ next.item.timeLabel || '—' }}</span>
+                        <span class="live-after-name">{{ next.item.name }}</span>
+                      </li>
+                    }
+                  </ul>
+                </section>
+              }
+            }
+          }
+
+          @if (stops().length) {
+            <section class="live-card live-day" data-cy="live-day" aria-labelledby="live-day-title">
+              <h3 id="live-day-title" class="live-section-title">Giornata</h3>
+              <ol class="live-timeline">
+                @for (stop of stops(); track stop.id) {
+                  <li class="live-timeline-item" [attr.data-status]="statusOf(stop)">
+                    <span class="live-dot" aria-hidden="true"></span>
+                    <span class="live-timeline-time">{{ stop.item.timeLabel || '—' }}</span>
+                    <span class="live-timeline-name">{{ stop.item.name }}</span>
+                    <span class="live-status">{{ statusLabels[statusOf(stop)] }}</span>
+                    @if (statusOf(stop) === 'done' || statusOf(stop) === 'skipped') {
+                      <button type="button" class="live-undo" [attr.aria-label]="'Segna di nuovo da fare: ' + stop.item.name"
+                        (click)="restore(stop)">Annulla</button>
+                    }
+                    @if (statusOf(stop) === 'missed') {
+                      <button type="button" class="live-undo" [attr.aria-label]="'Segna come fatta: ' + stop.item.name"
+                        (click)="markDone(stop)">Fatta</button>
+                    }
+                  </li>
+                }
+              </ol>
+            </section>
+          }
+        }
+      }
+    } @else {
+      <section class="live-card live-message">
+        <h2>Viaggio non trovato</h2>
+        <p>Il viaggio non esiste o non fai parte del suo gruppo.</p>
+        <a class="btn btn-primary btn-lg live-wide" routerLink="/trips">Tutti i viaggi</a>
+      </section>
+    }
+  </div>
+</div>

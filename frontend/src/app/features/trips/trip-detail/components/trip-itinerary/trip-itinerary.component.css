@@ -350,6 +350,11 @@
   font-weight: 700;
 }
 
+.badge-skipped {
+  background: var(--wb-accent-surface);
+  color: var(--wb-accent-dark);
+}
+
 .badge-completed .material-symbols-outlined {
   font-size: 14px;
 }

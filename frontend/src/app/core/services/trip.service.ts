@@ -369,9 +369,10 @@ export class TripService {
     return newAct;
   }
 
-  public updateActivity(tripId: string, activityId: string, partial: Partial<TripActivity>): void {
+  /** `success`: messaggio di conferma al posto di quello generico (es. "Fatto!" nella guida della giornata). */
+  public updateActivity(tripId: string, activityId: string, partial: Partial<TripActivity>, success?: string): void {
     this.updateChild(tripId, 'activities', activityId, partial, {
-      success: 'Attrazione aggiornata!',
+      success: success ?? 'Attrazione aggiornata!',
       action: 'aggiornare l\'attrazione'
     });
   }
@@ -393,9 +394,9 @@ export class TripService {
     return newPlace;
   }
 
-  public updatePlaceToEat(tripId: string, placeId: string, partial: Partial<TripPlaceToEat>): void {
+  public updatePlaceToEat(tripId: string, placeId: string, partial: Partial<TripPlaceToEat>, success?: string): void {
     this.updateChild(tripId, 'placesToEat', placeId, partial, {
-      success: 'Locale aggiornato!',
+      success: success ?? 'Locale aggiornato!',
       action: 'aggiornare il locale'
     });
   }

@@ -58,6 +58,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/trips/trip-create/trip-create.component').then(m => m.TripCreateComponent)
       },
       {
+        // Modalità "In viaggio": guida della giornata (#103).
+        path: ':id/live',
+        loadComponent: () => import('./features/trips/trip-live/trip-live.component').then(m => m.TripLiveComponent)
+      },
+      {
         path: ':id',
         loadComponent: () => import('./features/trips/trip-detail/trip-detail.component').then(m => m.TripDetailComponent)
       }

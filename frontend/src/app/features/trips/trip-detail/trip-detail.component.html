@@ -12,6 +12,15 @@
         [status]="currentTripStatus()"
         (share)="shareTrip()" />
 
+      @if (currentTripStatus() === 'ongoing') {
+        <!-- Viaggio in corso: la guida della giornata (#103) -->
+        <a class="live-banner" [routerLink]="['/trips', t.id, 'live']">
+          <span class="material-symbols-outlined" aria-hidden="true">near_me</span>
+          <span class="live-banner-text"><strong>Il viaggio è in corso</strong> Apri la guida di oggi</span>
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </a>
+      }
+
       <!-- Navigation Tabs Bar -->
       <nav class="trip-tabs-nav" aria-label="Sezioni viaggio">
         <button

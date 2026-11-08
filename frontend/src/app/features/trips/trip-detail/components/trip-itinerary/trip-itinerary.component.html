@@ -116,6 +116,12 @@
                         Completato
                       </span>
                     }
+                    @if (item.isSkipped) {
+                      <span class="badge-completed badge-skipped">
+                        <span class="material-symbols-outlined">redo</span>
+                        Saltata
+                      </span>
+                    }
                     <span class="timeline-drag-handle material-symbols-outlined" aria-hidden="true" title="Trascina per riordinare">drag_indicator</span>
                     <button type="button" class="order-btn" [disabled]="first"
                       [attr.aria-label]="'Sposta prima: ' + item.name" title="Sposta prima"
