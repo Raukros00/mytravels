@@ -173,6 +173,27 @@
     "field_email": "Email",
     "field_birth_date": "Data di nascita",
     "field_color": "Colore profilo",
-    "logout": "Disconnetti"
+    "logout": "Disconnetti",
+    "push_title": "Notifiche sul telefono",
+    "push_desc": "Ricevi inviti e richieste dei gruppi anche ad app chiusa.",
+    "push_loading": "Verifica in corso…",
+    "push_toggle_label": "Notifiche su questo dispositivo",
+    "push_status_on": "Attive: le riceverai anche ad app chiusa.",
+    "push_status_off": "Disattivate. Tocca l'interruttore: il telefono ti chiederà il permesso.",
+    "push_test": "Invia una notifica di prova",
+    "push_test_sent": "Notifica di prova inviata.",
+    "push_test_error": "Invio della notifica di prova non riuscito.",
+    "push_enabled_toast": "Notifiche attivate su questo dispositivo.",
+    "push_disabled_toast": "Notifiche disattivate su questo dispositivo.",
+    "push_enable_error": "Non è stato possibile attivare le notifiche. Riprova.",
+    "push_unsupported": "Questo browser non supporta le notifiche push. Prova con Chrome, Edge, Firefox o Safari aggiornati.",
+    "push_server_disabled": "Le notifiche push non sono ancora disponibili. Riprova più tardi.",
+    "push_denied_title": "Hai bloccato le notifiche per WanderBite.",
+    "push_denied_hint": "Per riattivarle consenti le notifiche per questo sito nelle impostazioni del browser (icona accanto all'indirizzo) o, se hai installato l'app, in Impostazioni del telefono → Notifiche → WanderBite. Poi ricarica la pagina.",
+    "push_ios_title": "Su iPhone le notifiche funzionano solo dall'app installata:",
+    "push_ios_step1": "In Safari tocca Condividi",
+    "push_ios_step2": "Scegli \"Aggiungi alla schermata Home\"",
+    "push_ios_step3": "Apri WanderBite dalla Home e attiva le notifiche da qui",
+    "push_ios_hint": "Serve iOS 16.4 o successivo."
   }
 }

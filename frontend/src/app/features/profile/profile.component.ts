@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@a
 import { DatePipe } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { UserAvatarComponent } from '../../shared/components/user-avatar/user-avatar.component';
+import { ProfilePushComponent } from './profile-push/profile-push.component';
 import { AuthService } from '../../core/services/auth.service';
 import { TripService } from '../../core/services/trip.service';
 import { GroupService } from '../../core/services/group.service';
@@ -19,7 +20,7 @@ interface ProfileStat {
   selector: 'app-profile',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, TranslatePipe, UserAvatarComponent],
+  imports: [DatePipe, TranslatePipe, UserAvatarComponent, ProfilePushComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
