@@ -1,12 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { filter, map } from 'rxjs';
 import { ModalComponent } from '../modal/modal.component';
 import { NotificationListComponent } from '../notification-list/notification-list.component';
-import { Router, RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthModalService } from '../../../core/services/auth-modal.service';
 import { GroupService } from '../../../core/services/group.service';
 import { I18nService } from '../../../core/services/i18n.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { LiveTripService } from '../../../core/services/live-trip.service';
 import { UserAvatarComponent } from '../user-avatar/user-avatar.component';
 import { GroupCreateModalComponent } from '../../../features/groups/group-create-modal/group-create-modal.component';
 
@@ -24,7 +27,15 @@ export class NavbarComponent {
   public groupService = inject(GroupService);
   public i18n = inject(I18nService);
   public notifService = inject(NotificationService);
+  /** Viaggio in corso: voce "Oggi" (#104). */
+  public liveTrips = inject(LiveTripService);
   private router = inject(Router);
+
+  /** Sulla guida della giornata è attiva la voce "Oggi", non "Viaggi". */
+  public readonly isLivePage = toSignal(this.router.events.pipe(
+    filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+    map(e => /^\/trips\/[^/?#]+\/live(?:[?#]|$)/.test(e.urlAfterRedirects))
+  ), { initialValue: false });
 
   public isGroupMenuOpen = signal(false);
   public isUserMenuOpen = signal(false);

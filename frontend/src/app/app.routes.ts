@@ -2,16 +2,19 @@ import { inject } from '@angular/core';
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { authEntryGuard } from './core/guards/auth-entry.guard';
+import { homeGuard } from './core/guards/home.guard';
 import { AuthService } from './core/services/auth.service';
 
-/** Home: i viaggi per chi è loggato, Esplora (l'unica sezione pubblica) per i visitatori. */
+/** Rotte sconosciute: i viaggi per chi è loggato, Esplora (l'unica sezione pubblica) per i visitatori. */
 const homeRedirect = () => (inject(AuthService).isAuthenticated() ? '/trips' : '/explore');
 
 export const routes: Routes = [
   {
+    // Apertura dell'app: durante un viaggio la guida della giornata (#104), altrimenti come homeRedirect.
     path: '',
     pathMatch: 'full',
-    redirectTo: homeRedirect
+    canActivate: [homeGuard],
+    children: []
   },
   // Accesso e registrazione sono una modale: queste rotte la aprono sopra Esplora.
   { path: 'login', canActivate: [authEntryGuard], data: { tab: 'login' }, children: [] },

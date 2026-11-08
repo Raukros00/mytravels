@@ -25,6 +25,9 @@
       </div>
     </div>
 
+    <!-- Dopo la fine di un viaggio: riepilogo (#104) -->
+    <app-trip-recap-card />
+
     @if (currentTrip(); as cur) {
       <a class="current-hero animate-fade-in" [routerLink]="['/trips', cur.trip.id]">
         @if (cur.trip.coverUrl) {

@@ -79,6 +79,41 @@
   color: var(--wb-text-tertiary);
 }
 
+/* Più viaggi in corso: selettore (#104) */
+.live-switch {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 -1rem;
+  padding: 0 1rem;
+}
+
+.live-switch-item {
+  flex: 0 0 auto;
+  max-width: 70vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.9rem;
+  border-radius: var(--wb-radius-full);
+  border: 1.5px solid var(--wb-border);
+  background: var(--wb-surface-0);
+  color: var(--wb-text-secondary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.live-switch-item--active {
+  border-color: var(--wb-primary);
+  background: var(--wb-primary-surface);
+  color: var(--wb-primary);
+}
+
 /* ── Messaggi (prima/dopo il viaggio, giornata vuota o finita) ── */
 .live-message {
   display: flex;

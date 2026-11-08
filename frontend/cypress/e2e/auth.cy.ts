@@ -558,6 +558,8 @@ describe('Autenticazione (modale)', () => {
     beforeEach(() => cy.login('admin'));
 
     it('per un utente loggato la home sono i viaggi e /login porta ai viaggi', () => {
+      // Data senza viaggi di admin in corso: altrimenti la home è la guida della giornata (#104).
+      cy.clock(new Date(2031, 0, 15, 10, 0), ['Date']);
       cy.visit('/');
       cy.location('pathname').should('eq', '/trips');
       cy.visit('/login');
