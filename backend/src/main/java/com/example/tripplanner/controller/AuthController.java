@@ -7,6 +7,7 @@ import com.example.tripplanner.model.User;
 import com.example.tripplanner.security.JwtUtil;
 import com.example.tripplanner.service.AuthService;
 import jakarta.validation.Valid;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -51,6 +52,9 @@ public class AuthController {
             ));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
+        } catch (DataIntegrityViolationException e) {
+            // Due registrazioni simultanee con la stessa email: le blocca il vincolo univoco del database.
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", "Email already exists"));
         }
     }
 

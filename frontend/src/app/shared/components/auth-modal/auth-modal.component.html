@@ -28,7 +28,7 @@
     <form [formGroup]="loginForm" (ngSubmit)="submitLogin()" role="tabpanel" aria-labelledby="auth-tab-login">
       <div class="form-group">
         <label class="form-label" for="auth-login-email">Email</label>
-        <input id="auth-login-email" type="email" formControlName="email" class="form-input" autocomplete="email" placeholder="nome@esempio.com">
+        <input id="auth-login-email" type="email" formControlName="email" class="form-input" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="nome@esempio.com">
         @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) {
           <span class="form-error">Inserisci un indirizzo email valido.</span>
         }
@@ -74,7 +74,7 @@
 
       <div class="form-group">
         <label class="form-label" for="auth-register-email">Email</label>
-        <input id="auth-register-email" type="email" formControlName="email" class="form-input" autocomplete="email" placeholder="nome@esempio.com">
+        <input id="auth-register-email" type="email" formControlName="email" class="form-input" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="nome@esempio.com">
         @if (registerForm.controls.email.touched && registerForm.controls.email.invalid) {
           <span class="form-error">Inserisci un indirizzo email valido.</span>
         }

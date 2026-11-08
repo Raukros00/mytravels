@@ -15,6 +15,16 @@ function minAgeValidator(years: number) {
     control.value && control.value > isoYearsAgo(years) ? { minAge: { years } } : null;
 }
 
+/** Email valida anche con spazi iniziali/finali (vengono tolti all'invio, come fa il backend). */
+function trimmedEmailValidator(control: AbstractControl<string>): ValidationErrors | null {
+  return Validators.email({ value: (control.value ?? '').trim() } as AbstractControl);
+}
+
+/** Forma canonica dell'email (trim + minuscolo), la stessa usata dal backend. */
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -38,7 +48,7 @@ export class AuthModalComponent {
   protected readonly error = signal<string | null>(null);
 
   protected readonly loginForm = this.fb.nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
+    email: ['', [Validators.required, trimmedEmailValidator]],
     password: ['', Validators.required]
   });
 
@@ -50,7 +60,7 @@ export class AuthModalComponent {
     firstName: ['', [Validators.required, Validators.maxLength(100)]],
     lastName: ['', [Validators.required, Validators.maxLength(100)]],
     birthDate: ['', [Validators.required, minAgeValidator(MIN_REGISTRATION_AGE)]],
-    email: ['', [Validators.required, Validators.email]],
+    email: ['', [Validators.required, trimmedEmailValidator]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     avatar: [this.avatarList[0]],
     color: [this.colorList[0]]
@@ -84,12 +94,15 @@ export class AuthModalComponent {
 
   protected submitLogin(): void {
     if (this.loginForm.invalid || this.pending()) return;
-    this.run(this.authService.login(this.loginForm.getRawValue()));
+    const { email, password } = this.loginForm.getRawValue();
+    // Solo trim: il backend confronta senza distinzione tra maiuscole/minuscole (vedi AuthService.findByEmail).
+    this.run(this.authService.login({ email: email.trim(), password }));
   }
 
   protected submitRegister(): void {
     if (this.registerForm.invalid || this.pending()) return;
-    this.run(this.authService.register({ ...this.registerForm.getRawValue(), profileImage: this.profileImage() }));
+    const value = this.registerForm.getRawValue();
+    this.run(this.authService.register({ ...value, email: normalizeEmail(value.email), profileImage: this.profileImage() }));
   }
 
   protected onPhotoSelected(event: Event): void {
