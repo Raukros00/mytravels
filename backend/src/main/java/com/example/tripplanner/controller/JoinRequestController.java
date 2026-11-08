@@ -3,9 +3,11 @@ package com.example.tripplanner.controller;
 import com.example.tripplanner.model.Group;
 import com.example.tripplanner.model.GroupJoinRequest;
 import com.example.tripplanner.model.User;
+import com.example.tripplanner.ratelimit.RateLimits;
 import com.example.tripplanner.security.GroupAccess;
 import com.example.tripplanner.service.JoinRequestService;
 import com.example.tripplanner.service.JoinRequestService.JoinRequestException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -25,16 +27,23 @@ public class JoinRequestController {
 
     private final JoinRequestService joinRequestService;
     private final GroupAccess groupAccess;
+    private final RateLimits rateLimits;
 
-    public JoinRequestController(JoinRequestService joinRequestService, GroupAccess groupAccess) {
+    public JoinRequestController(JoinRequestService joinRequestService, GroupAccess groupAccess, RateLimits rateLimits) {
         this.joinRequestService = joinRequestService;
         this.groupAccess = groupAccess;
+        this.rateLimits = rateLimits;
     }
 
+    /** Anteprima del gruppo dal codice invito; limitata per IP contro la ricerca a tappeto dei codici (#83). */
     @GetMapping("/invite/{code}")
-    public ResponseEntity<?> preview(@PathVariable String code, Authentication authentication) {
+    public ResponseEntity<?> preview(@PathVariable String code, Authentication authentication, HttpServletRequest request) {
         Optional<User> me = groupAccess.currentUser(authentication);
         if (me.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        String ip = RateLimits.clientIp(request);
+        long wait = rateLimits.invitePreviewByIp.retryAfterSeconds(ip);
+        if (wait > 0) return RateLimits.tooManyRequests(wait);
+        rateLimits.invitePreviewByIp.record(ip);
         return ResponseEntity.ok(joinRequestService.preview(code, me.get()));
     }
 

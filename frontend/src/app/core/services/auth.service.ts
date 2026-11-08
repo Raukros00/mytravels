@@ -8,6 +8,13 @@ import { User } from '../models/user.model';
 import { LoginDto, RegisterDto } from '../models/auth.model';
 import { USE_MOCK_DATA } from '../config/mock.config';
 
+/** Messaggio per la risposta 429 (troppi tentativi), con l'attesa in minuti arrotondata per eccesso. */
+export function tooManyAttemptsMessage(err: { error?: { retryAfterSeconds?: number }; headers?: { get(name: string): string | null } }): string {
+  const seconds = Number(err.error?.retryAfterSeconds ?? err.headers?.get('Retry-After') ?? 0);
+  const minutes = Math.max(1, Math.ceil((Number.isFinite(seconds) ? seconds : 0) / 60));
+  return `Troppi tentativi, riprova tra ${minutes} ${minutes === 1 ? 'minuto' : 'minuti'}.`;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -63,7 +70,9 @@ export class AuthService {
       map(res => this.startSession(res)),
       tap(user => this.toastService.success(`Bentornato, ${user.name}! 👋`)),
       catchError(err => throwError(() => new Error(
-        err.status === 401 ? 'Email o password non corretti.' : (err.error?.message || 'Accesso non riuscito, riprova.')
+        err.status === 401 ? 'Email o password non corretti.'
+          : err.status === 429 ? tooManyAttemptsMessage(err)
+          : (err.error?.message || 'Accesso non riuscito, riprova.')
       )))
     );
   }
@@ -74,7 +83,9 @@ export class AuthService {
       map(res => this.startSession(res)),
       tap(user => this.toastService.success(`Benvenuto su WanderBite, ${user.name}! 🚀`)),
       catchError(err => throwError(() => new Error(
-        err.status === 409 ? 'Esiste già un account con questa email.' : (err.error?.message || 'Errore durante la registrazione.')
+        err.status === 409 ? 'Esiste già un account con questa email.'
+          : err.status === 429 ? tooManyAttemptsMessage(err)
+          : (err.error?.message || 'Errore durante la registrazione.')
       )))
     );
   }
