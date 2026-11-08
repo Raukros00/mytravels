@@ -85,6 +85,8 @@ export class AuthService {
       catchError(err => throwError(() => new Error(
         err.status === 409 ? 'Esiste già un account con questa email.'
           : err.status === 429 ? tooManyAttemptsMessage(err)
+          // Errori sulla password (es. "password: La password è tra le più comuni…"): il messaggio è già in italiano.
+          : err.status === 400 && /^password: /.test(err.error?.message ?? '') ? err.error.message.replace(/^password: /, '')
           : (err.error?.message || 'Errore durante la registrazione.')
       )))
     );

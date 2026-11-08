@@ -99,8 +99,8 @@ describe('Viaggi – lista', () => {
 describe('Viaggi – utente senza gruppi', () => {
   it('vede lo stato vuoto con l\'invito a pianificare', () => {
     const email = `e2e.vuoto.${Date.now()}@example.com`;
-    cy.request('POST', '/auth/register', { firstName: 'Senza', lastName: 'Gruppi', birthDate: '1990-01-01', email, password: 'Password1!', avatar: '🎒', color: '#10b981' });
-    cy.login({ email, password: 'Password1!' });
+    cy.request('POST', '/auth/register', { firstName: 'Senza', lastName: 'Gruppi', birthDate: '1990-01-01', email, password: 'Segreta123!', avatar: '🎒', color: '#10b981' });
+    cy.login({ email, password: 'Segreta123!' });
     cy.visit('/trips');
     cy.contains('Nessun viaggio ancora').should('be.visible');
     cy.contains('button', 'Pianifica un Viaggio').click();

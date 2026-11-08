@@ -207,3 +207,87 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Password: mostra/nascondi (#70) */
+.password-field {
+  position: relative;
+}
+
+.password-field .form-input {
+  padding-right: 3rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.25rem;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0;
+  border-radius: var(--wb-radius-full);
+  background: transparent;
+  color: var(--wb-text-secondary);
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  color: var(--wb-text-primary);
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid var(--wb-border-focus);
+  outline-offset: 1px;
+}
+
+.password-toggle .material-symbols-outlined {
+  font-size: 1.25rem;
+}
+
+/* Indicatore di robustezza */
+.password-strength {
+  --strength-color: var(--wb-error);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.45rem;
+}
+
+.password-strength[data-level="fair"] { --strength-color: #B45309; }
+.password-strength[data-level="good"] { --strength-color: var(--wb-success); }
+
+.password-strength-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.25rem;
+  flex: 1;
+  max-width: 9rem;
+}
+
+.password-strength-bar span {
+  height: 0.3rem;
+  border-radius: var(--wb-radius-full);
+  background: var(--wb-border);
+}
+
+.password-strength-bar span:first-child,
+.password-strength[data-level="fair"] .password-strength-bar span:nth-child(2),
+.password-strength[data-level="good"] .password-strength-bar span {
+  background: var(--strength-color);
+}
+
+.password-strength-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--strength-color);
+}
+
+.password-help {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--wb-text-secondary);
+}
