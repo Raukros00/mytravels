@@ -423,8 +423,13 @@
   white-space: nowrap;
 }
 
-.live-undo {
+.live-item-actions {
   grid-area: undo;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.live-undo {
   justify-self: start;
   min-height: 36px;
   padding: 0 0.5rem;
@@ -482,4 +487,85 @@
   .live-timeline-item {
     grid-template-columns: 14px 5.5rem minmax(0, 1fr) auto;
   }
+}
+
+/* ── Spostare le tappe (#112) ── */
+.live-move-link {
+  margin-top: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--wb-text-secondary);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.live-timeline-item .live-move {
+  color: var(--wb-text-secondary);
+}
+
+.live-review {
+  width: 100%;
+  padding: 0.85rem;
+  border-radius: var(--wb-radius-md);
+  background: var(--wb-accent-surface);
+  border: 1px solid var(--wb-accent-border);
+  text-align: left;
+}
+
+.live-review-text {
+  margin: 0 0 0.5rem;
+}
+
+.live-review-list,
+.live-recover-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.live-review-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.live-recover-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "name btn" "meta btn";
+  column-gap: 0.75rem;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--wb-surface-2);
+}
+
+.live-recover-item:last-child {
+  border-bottom: 0;
+}
+
+.live-recover-name {
+  grid-area: name;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.live-recover-meta {
+  grid-area: meta;
+  font-size: 0.85rem;
+  color: var(--wb-text-secondary);
+}
+
+.live-recover-item .btn {
+  grid-area: btn;
 }

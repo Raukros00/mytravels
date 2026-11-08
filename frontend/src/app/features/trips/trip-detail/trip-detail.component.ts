@@ -44,6 +44,10 @@ import {
   TripAccommodationModalComponent
 } from './components/trip-accommodation-modal/trip-accommodation-modal.component';
 import { todayIso } from '../../../core/utils/date.utils';
+import { tripDayInfo } from '../../../core/utils/live-day.utils';
+import { TripMovePanelComponent } from '../trip-move/trip-move-panel.component';
+import { MoveUndoBarComponent } from '../trip-move/move-undo-bar.component';
+import { StopRef, recoverStops } from '../trip-move/stop-move.service';
 
 @Component({
   selector: 'app-trip-detail',
@@ -62,7 +66,9 @@ import { todayIso } from '../../../core/utils/date.utils';
     TripAssignModalComponent,
     TripFlightsModalComponent,
     TripTransfersModalComponent,
-    TripAccommodationModalComponent
+    TripAccommodationModalComponent,
+    TripMovePanelComponent,
+    MoveUndoBarComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './trip-detail.component.html',
@@ -117,6 +123,8 @@ export class TripDetailComponent {
   protected readonly isAccommodationModalOpen = signal(false);
   protected readonly isExpenseModalOpen = signal(false);
   protected readonly editingExpense = signal<TripExpense | null>(null);
+  /** Tappa di cui è aperto il pannello "Sposta" (#112). */
+  protected readonly movingStop = signal<StopRef | null>(null);
 
   // Expenses: group members (+ former members still referenced by expenses)
   protected readonly currentUserId = computed(() => this.authService.currentUser()?.id);
@@ -168,6 +176,19 @@ export class TripDetailComponent {
     const t = this.trip();
     if (!t) return [];
     return buildDayTimeline(t.activities || [], t.placesToEat || [], this.selectedDay());
+  });
+
+  /**
+   * Da recuperare (#112): tappe saltate, o non fatte nei giorni già passati (prima della partenza solo le
+   * saltate; dopo la fine del viaggio nessuna). Il giorno di oggi viene dall'ora dell'app (ClockService).
+   */
+  protected readonly toRecover = computed(() => {
+    const t = this.trip();
+    if (!t) return [];
+    const info = tripDayInfo(t.startDate, t.endDate, todayIso(this.clock.now()));
+    // A viaggio finito non ci sono più giorni in cui recuperarle.
+    if (info.state === 'after') return [];
+    return recoverStops(t, info.state === 'before' ? 0 : info.dayNumber);
   });
 
   protected readonly selectedDayFoodCount = computed(() =>

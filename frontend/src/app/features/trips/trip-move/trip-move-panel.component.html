@@ -1,0 +1,84 @@
+<app-modal
+  [isOpen]="!!stop()"
+  [title]="'Sposta ' + (item()?.name ?? '')"
+  icon="event_repeat"
+  [hasFooter]="false"
+  (close)="closed.emit()">
+
+  @if (item(); as it) {
+    <div class="move-panel" data-cy="move-panel">
+      @if (options().length) {
+        @if (recommended()) {
+          <p class="move-recommendation" data-cy="move-recommendation">
+            <span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span>
+            {{ recommendationText() }}
+          </p>
+        } @else {
+          <p class="move-recommendation move-recommendation--none">
+            Nessun giorno ha una fascia libera compatibile: scegli tu il giorno e l'orario.
+          </p>
+        }
+
+        <ul class="move-days" aria-label="Giorni rimanenti">
+          @for (o of options(); track o.day) {
+            <li>
+              <button type="button" class="move-day" [class.move-day--selected]="selectedDay() === o.day"
+                [class.move-day--closed]="o.closed" [attr.aria-pressed]="selectedDay() === o.day"
+                [attr.data-day]="o.day" (click)="choose(o)">
+                <span class="move-day-head">
+                  <strong>Giorno {{ o.day }}</strong>
+                  <span class="move-day-date">{{ dayLabel(o) }}</span>
+                  @if (o.recommended) { <span class="move-badge">Consigliato</span> }
+                </span>
+                <span class="move-load" aria-hidden="true"><span class="move-load-bar" [style.width.%]="loadPercent(o)"></span></span>
+                <span class="move-day-line">{{ loadLabel(o) }}</span>
+                <span class="move-day-line move-day-free">{{ freeLabel(o) }}</span>
+                @if (o.closed) {
+                  <span class="move-warn">⚠️ {{ closedLabel(o) }}</span>
+                } @else if (o.hoursConflict) {
+                  <span class="move-warn">⚠️ Orari di apertura ({{ it.openingHours }}) incompatibili con le fasce libere</span>
+                }
+                @if (o.proposed && !o.closed) {
+                  <span class="move-day-line">Andrebbe alle {{ o.proposed.start }}–{{ o.proposed.end }}</span>
+                }
+              </button>
+            </li>
+          }
+        </ul>
+
+        @if (options()[0]?.bookingWarning) {
+          <p class="move-note">🎟️ Ha biglietti o prenotazione: ricordati di cambiare la data.</p>
+        }
+
+        @if (selected(); as sel) {
+          <div class="move-times">
+            <p class="move-times-title">Orario nel Giorno {{ sel.day }} (modificabile)</p>
+            <div class="move-times-row">
+              <label class="form-group">
+                <span class="form-label">Inizio</span>
+                <input type="time" class="form-input" id="move_start" [ngModel]="startTime()" (ngModelChange)="startTime.set($event ?? '')">
+              </label>
+              <label class="form-group">
+                <span class="form-label">Fine</span>
+                <input type="time" class="form-input" id="move_end" [ngModel]="endTime()" (ngModelChange)="endTime.set($event ?? '')">
+              </label>
+            </div>
+            @if (timeError(); as err) {
+              <p class="move-error" role="alert">{{ err }}</p>
+            }
+          </div>
+          <button type="button" class="btn btn-primary btn-lg w-full" [disabled]="!!timeError()" (click)="confirm()">
+            Sposta al Giorno {{ sel.day }}
+          </button>
+        }
+      } @else {
+        <p class="move-recommendation move-recommendation--none">Non ci sono altri giorni del viaggio in cui spostarla.</p>
+      }
+
+      <button type="button" class="btn btn-ghost w-full" (click)="toBacklog()">
+        <span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>
+        Rimetti tra le idee da pianificare
+      </button>
+    </div>
+  }
+</app-modal>

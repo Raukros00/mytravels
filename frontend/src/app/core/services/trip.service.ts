@@ -369,7 +369,7 @@ export class TripService {
     return newAct;
   }
 
-  /** `success`: messaggio di conferma al posto di quello generico (es. "Fatto!" nella guida della giornata). */
+  /** `success`: messaggio di conferma al posto di quello generico (es. "Fatto!" nella guida della giornata); '' = nessun messaggio. */
   public updateActivity(tripId: string, activityId: string, partial: Partial<TripActivity>, success?: string): void {
     this.updateChild(tripId, 'activities', activityId, partial, {
       success: success ?? 'Attrazione aggiornata!',
@@ -555,7 +555,8 @@ export class TripService {
       next: () => {
         // Riapplicata: una copia del server arrivata nel frattempo potrebbe averla sovrascritta.
         this.patchChildren(tripId, key, items => items.map(i => i.id === current() ? { ...merged, id: current() } : i));
-        this.toastService.success(msg.success);
+        // Messaggio vuoto: la conferma la mostra chi ha chiamato (es. la barra "Annulla" degli spostamenti).
+        if (msg.success) this.toastService.success(msg.success);
       },
       error: (err) => {
         this.patchChildren(tripId, key, items => items.map(i => i.id === current() ? { ...target, id: current() } : i));

@@ -1,0 +1,130 @@
+.move-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.move-recommendation {
+  margin: 0;
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--wb-radius-md);
+  background: var(--wb-secondary-surface);
+  color: var(--wb-secondary-dark);
+  font-weight: 600;
+}
+
+.move-recommendation--none {
+  background: var(--wb-surface-1);
+  color: var(--wb-text-secondary);
+  font-weight: 500;
+}
+
+.move-days {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.move-day {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.3rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--wb-radius-md);
+  border: 1.5px solid var(--wb-border);
+  background: var(--wb-surface-0);
+  text-align: left;
+  font: inherit;
+  color: var(--wb-text-primary);
+  cursor: pointer;
+}
+
+.move-day--selected {
+  border-color: var(--wb-primary);
+  background: var(--wb-primary-surface);
+}
+
+.move-day--closed {
+  opacity: 0.75;
+}
+
+.move-day-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.move-day-date {
+  color: var(--wb-text-secondary);
+  font-size: 0.9rem;
+}
+
+.move-badge {
+  margin-left: auto;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--wb-radius-full);
+  background: var(--wb-secondary);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.move-load {
+  height: 6px;
+  border-radius: var(--wb-radius-full);
+  background: var(--wb-surface-2);
+  overflow: hidden;
+}
+
+.move-load-bar {
+  display: block;
+  height: 100%;
+  background: var(--wb-accent-light);
+}
+
+.move-day-line {
+  font-size: 0.9rem;
+  color: var(--wb-text-secondary);
+}
+
+.move-day-free {
+  color: var(--wb-secondary-dark);
+}
+
+.move-warn {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--wb-accent-dark);
+}
+
+.move-note {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--wb-text-secondary);
+}
+
+.move-times-title {
+  margin: 0 0 0.4rem;
+  font-weight: 600;
+}
+
+.move-times-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.move-error {
+  margin: 0.4rem 0 0;
+  color: var(--wb-error);
+  font-size: 0.9rem;
+}

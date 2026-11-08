@@ -47,3 +47,53 @@
   flex-direction: column;
   font-size: 0.9rem;
 }
+
+/* Tappe da recuperare (#112) */
+.recover-box {
+  margin-bottom: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--wb-radius-lg);
+  background: var(--wb-accent-surface);
+  border: 1px solid var(--wb-accent-border);
+}
+
+.recover-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--wb-accent-dark);
+}
+
+.recover-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.recover-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "name btn" "meta btn";
+  column-gap: 0.75rem;
+  align-items: center;
+  padding: 0.45rem 0;
+}
+
+.recover-name {
+  grid-area: name;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.recover-meta {
+  grid-area: meta;
+  font-size: 0.85rem;
+  color: var(--wb-text-secondary);
+}
+
+.recover-item .btn {
+  grid-area: btn;
+}

@@ -189,6 +189,10 @@
                     <span class="material-symbols-outlined">schedule</span>
                     Orario
                   </button>
+                  <button type="button" class="link-btn" (click)="moveItem.emit(item)" [attr.aria-label]="'Sposta a un altro giorno: ' + item.name">
+                    <span class="material-symbols-outlined">event_repeat</span>
+                    Sposta
+                  </button>
                   <button type="button" class="link-btn" (click)="unassignItem.emit(item)">
                     <span class="material-symbols-outlined">undo</span>
                     Sposta nel Backlog
