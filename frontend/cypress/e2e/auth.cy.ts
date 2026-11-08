@@ -170,6 +170,24 @@ describe('Autenticazione (modale)', () => {
       cy.window().its('localStorage').invoke('getItem', 'wb_jwt').should('be.a', 'string');
     });
 
+    it('mostra/nasconde la password anche su mobile', () => {
+      cy.viewport('iphone-x');
+      authModal().within(() => {
+        cy.get('#auth-login-password').type('Segreta123!').should('have.attr', 'type', 'password');
+        cy.get('button[aria-controls="auth-login-password"]')
+          .should('be.visible')
+          .and('have.attr', 'aria-label', 'Mostra password')
+          .and('have.attr', 'aria-pressed', 'false')
+          .click();
+        cy.get('#auth-login-password').should('have.attr', 'type', 'text').and('have.value', 'Segreta123!');
+        cy.get('button[aria-controls="auth-login-password"]')
+          .should('have.attr', 'aria-label', 'Nascondi password')
+          .and('have.attr', 'aria-pressed', 'true')
+          .click();
+        cy.get('#auth-login-password').should('have.attr', 'type', 'password');
+      });
+    });
+
     it('con password errata mostra l\'errore nella modale', () => {
       fillLogin(USERS.admin.email, 'password-sbagliata');
       authModal().find('.auth-error').should('contain.text', 'Email o password non corretti.');
@@ -330,7 +348,7 @@ describe('Autenticazione (modale)', () => {
       });
     });
 
-    it('richiede nome, cognome, data di nascita e una password di almeno 6 caratteri', () => {
+    it('richiede nome, cognome, data di nascita e una password di almeno 8 caratteri', () => {
       authModal().within(() => {
         cy.get('#auth-register-first-name').focus().blur();
         cy.contains('.form-error', 'Inserisci il tuo nome.').should('be.visible');
@@ -338,8 +356,64 @@ describe('Autenticazione (modale)', () => {
         cy.contains('.form-error', 'Inserisci il tuo cognome.').should('be.visible');
         cy.get('#auth-register-birth-date').focus().blur();
         cy.contains('.form-error', 'Inserisci la tua data di nascita.').should('be.visible');
-        cy.get('#auth-register-password').type('123').blur();
-        cy.contains('.form-error', 'almeno 6 caratteri').should('be.visible');
+        cy.get('#auth-register-password').should('have.attr', 'placeholder', 'Almeno 8 caratteri');
+        cy.get('#auth-register-password').type('1234567').blur();
+        cy.contains('.form-error', 'almeno 8 caratteri').should('be.visible');
+        cy.get('#auth-register-password').type('8');
+        cy.contains('.form-error', 'almeno 8 caratteri').should('not.exist');
+      });
+    });
+
+    it('la password non può essere uguale all\'email o alla parte prima della @', () => {
+      authModal().within(() => {
+        fillRegistration('Stessa', 'Email', `e2e.stessa.${Date.now()}@example.com`);
+        cy.get('#auth-register-email').invoke('val').then(email => {
+          cy.get('#auth-register-password').clear().type(String(email).split('@')[0]);
+        });
+        cy.contains('.form-error', 'La password non può essere uguale all\'email.').should('be.visible');
+        cy.contains('button', 'Crea account').should('be.disabled');
+        cy.get('#auth-register-password').type('-diversa');
+        cy.contains('.form-error', 'uguale all\'email').should('not.exist');
+        cy.contains('button', 'Crea account').should('be.enabled');
+      });
+    });
+
+    it('una password comune viene rifiutata dal server con un messaggio chiaro', () => {
+      cy.intercept('POST', '/auth/register').as('register');
+      authModal().within(() => {
+        fillRegistration('Comune', 'Password', `e2e.comune.${Date.now()}@example.com`);
+        cy.get('#auth-register-password').clear().type('password123');
+        cy.contains('button', 'Crea account').click();
+      });
+      cy.wait('@register').its('response.statusCode').should('eq', 400);
+      authModal().find('.auth-error')
+        .should('contain.text', 'La password è tra le più comuni: scegline una meno prevedibile.')
+        .and('not.contain.text', 'password:');
+      cy.window().its('localStorage').invoke('getItem', 'wb_jwt').should('be.null');
+    });
+
+    it('mostra/nascondi password e indicatore di robustezza', () => {
+      authModal().within(() => {
+        cy.get('#auth-register-password').should('have.attr', 'type', 'password');
+        cy.get('.password-strength').should('not.exist');
+        cy.contains('.password-help', 'Almeno 8 caratteri').should('be.visible');
+
+        cy.get('#auth-register-password').type('abc');
+        cy.get('.password-strength').should('have.attr', 'data-level', 'weak').and('contain.text', 'Debole');
+        cy.get('#auth-register-password').clear().type('viaggio2027');
+        cy.get('.password-strength').should('have.attr', 'data-level', 'fair').and('contain.text', 'Discreta');
+        cy.get('#auth-register-password').clear().type('Viaggio-Lisbona-2027');
+        cy.get('.password-strength').should('have.attr', 'data-level', 'good').and('contain.text', 'Buona');
+
+        cy.get('button[aria-controls="auth-register-password"]')
+          .should('have.attr', 'aria-label', 'Mostra password')
+          .and('have.attr', 'aria-pressed', 'false')
+          .click()
+          .should('have.attr', 'aria-label', 'Nascondi password')
+          .and('have.attr', 'aria-pressed', 'true');
+        cy.get('#auth-register-password').should('have.attr', 'type', 'text').and('have.value', 'Viaggio-Lisbona-2027');
+        cy.get('button[aria-controls="auth-register-password"]').click();
+        cy.get('#auth-register-password').should('have.attr', 'type', 'password');
       });
     });
 
@@ -379,6 +453,34 @@ describe('Autenticazione (modale)', () => {
       register({ ...valid(), password: '123' }).its('status').should('eq', 400);
       register({ ...valid(), profileImage: 'javascript:alert(1)' }).its('status').should('eq', 400);
       register({ ...valid(), profileImage: `data:image/jpeg;base64,${'A'.repeat(400_004)}` }).its('status').should('eq', 400);
+    });
+
+    it('nuove password: almeno 8 caratteri, non comuni, diverse dall\'email', () => {
+      register({ ...valid(), password: 'Abc123!' }).then(res => {
+        expect(res.status).to.eq(400);
+        expect(res.body.message).to.eq('password: La password deve avere tra 8 e 128 caratteri.');
+      });
+      ['password123', 'QWERTY123', '12345678', 'iloveyou', 'juventus'].forEach(password =>
+        register({ ...valid(), password }).then(res => {
+          expect(res.status, password).to.eq(400);
+          expect(res.body.message).to.eq('password: La password è tra le più comuni: scegline una meno prevedibile.');
+        }),
+      );
+      const email = `Mario.Pass.${Date.now()}@example.com`;
+      [email, email.toLowerCase(), email.split('@')[0]].forEach(password =>
+        register({ ...valid(), email, password }).then(res => {
+          expect(res.status, password).to.eq(400);
+          expect(res.body.message).to.eq('password: La password non può essere uguale all\'email.');
+        }),
+      );
+      register({ ...valid(), password: 'otto8888' }).its('status').should('eq', 201);
+    });
+
+    it('gli utenti esistenti con password più corte accedono senza problemi', () => {
+      // Le password demo hanno 7-9 caratteri (es. luca123): valgono ancora per il login.
+      expect(USERS.luca.password).to.have.length.lessThan(8);
+      cy.request('POST', '/auth/login', { email: USERS.luca.email, password: USERS.luca.password })
+        .its('status').should('eq', 200);
     });
 
     it('accetta una registrazione valida e salva il nome completo', () => {
