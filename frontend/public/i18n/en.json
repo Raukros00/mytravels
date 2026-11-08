@@ -173,6 +173,27 @@
     "field_email": "Email",
     "field_birth_date": "Date of birth",
     "field_color": "Profile colour",
-    "logout": "Log out"
+    "logout": "Log out",
+    "push_title": "Phone notifications",
+    "push_desc": "Get group invitations and requests even when the app is closed.",
+    "push_loading": "Checking…",
+    "push_toggle_label": "Notifications on this device",
+    "push_status_on": "On: you'll get them even when the app is closed.",
+    "push_status_off": "Off. Tap the switch: your phone will ask for permission.",
+    "push_test": "Send a test notification",
+    "push_test_sent": "Test notification sent.",
+    "push_test_error": "Couldn't send the test notification.",
+    "push_enabled_toast": "Notifications turned on for this device.",
+    "push_disabled_toast": "Notifications turned off for this device.",
+    "push_enable_error": "Couldn't turn on notifications. Please try again.",
+    "push_unsupported": "This browser doesn't support push notifications. Try an up-to-date Chrome, Edge, Firefox or Safari.",
+    "push_server_disabled": "Push notifications aren't available yet. Please try again later.",
+    "push_denied_title": "You've blocked notifications for WanderBite.",
+    "push_denied_hint": "To turn them back on, allow notifications for this site in your browser settings (icon next to the address) or, if you installed the app, in your phone's Settings → Notifications → WanderBite. Then reload the page.",
+    "push_ios_title": "On iPhone, notifications only work from the installed app:",
+    "push_ios_step1": "In Safari, tap Share",
+    "push_ios_step2": "Choose \"Add to Home Screen\"",
+    "push_ios_step3": "Open WanderBite from your Home Screen and turn on notifications here",
+    "push_ios_hint": "Requires iOS 16.4 or later."
   }
 }
