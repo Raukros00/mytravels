@@ -121,6 +121,11 @@ describe('Esplora', () => {
           expect(trips[0]).to.include({ title: TEMPLATE.title, startDate: '2027-09-01' });
           expect(trips[0].activities.length, 'attività copiate').to.be.greaterThan(0);
           expect(trips[0].placesToEat.length, 'locali copiati').to.be.greaterThan(0);
+          // Le coordinate del modello vengono copiate (#102).
+          for (const stop of [...trips[0].activities, ...trips[0].placesToEat]) {
+            expect(stop.coordinates, `coordinate di ${stop.name}`).to.have.all.keys('lat', 'lng');
+            expect(stop.coordinates.lat, `latitudine di ${stop.name}`).to.be.a('number');
+          }
         });
 
         // Dopo un reload il viaggio c'è ancora (non era solo nel browser).

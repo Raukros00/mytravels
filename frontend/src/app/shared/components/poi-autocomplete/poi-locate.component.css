@@ -1,0 +1,63 @@
+:host {
+  display: block;
+}
+
+.locate-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.locate-btn .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.locate-miss {
+  font-size: 0.78rem;
+  color: var(--wb-text-secondary);
+}
+
+.locate-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--wb-secondary-border);
+  background: var(--wb-secondary-surface);
+  border-radius: var(--wb-radius-sm);
+}
+
+.locate-text {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--wb-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.locate-text small {
+  display: block;
+  color: var(--wb-text-secondary);
+}
+
+.locate-text .material-symbols-outlined {
+  font-size: 16px;
+  color: var(--wb-secondary);
+}
+
+.locate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.locate-attribution {
+  font-size: 0.7rem;
+  color: var(--wb-text-tertiary);
+}
+
+.locate-attribution a {
+  color: inherit;
+}
