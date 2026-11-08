@@ -80,6 +80,25 @@
 
       @switch (activeTab()) {
         @case ('itinerary') {
+          @if (toRecover().length) {
+            <!-- Tappe saltate o non fatte nei giorni passati (#112) -->
+            <section class="recover-box" data-cy="planner-recover" aria-labelledby="recover-title">
+              <h2 id="recover-title" class="recover-title">
+                <span class="material-symbols-outlined" aria-hidden="true">history</span>
+                Da recuperare
+              </h2>
+              <ul class="recover-list">
+                @for (r of toRecover(); track r.type + r.id) {
+                  <li class="recover-item">
+                    <span class="recover-name">{{ r.name }}</span>
+                    <span class="recover-meta">Giorno {{ r.assignedDay }} · {{ r.skipped ? 'saltata' : 'non fatta' }}</span>
+                    <button type="button" class="btn btn-secondary btn-sm" (click)="movingStop.set({ type: r.type, id: r.id })">Sposta</button>
+                  </li>
+                }
+              </ul>
+            </section>
+          }
+
           <app-trip-itinerary
             [tripDays]="tripDaysNumbers()"
             [selectedDay]="selectedDay()"
@@ -93,6 +112,7 @@
             (addStep)="openPlanFromBacklogModal()"
             (unassignItem)="unassignFromDay($event)"
             (editTime)="editStopTime($event)"
+            (moveItem)="movingStop.set({ type: $event.type, id: $event.id })"
             (reorder)="reorderDay($event)"
             [near]="destinationPoint()"
             (locate)="locateStop($event)" />
@@ -176,6 +196,12 @@
   [currency]="trip()?.currency || 'EUR'"
   (closed)="isExpenseModalOpen.set(false)"
   (saved)="saveExpense($event)" />
+
+@if (trip(); as t) {
+  <!-- Spostare le tappe tra i giorni (#112) -->
+  <app-trip-move-panel [trip]="t" [stop]="movingStop()" (closed)="movingStop.set(null)" />
+}
+<app-move-undo-bar />
 
 <app-trip-assign-modal
   [isOpen]="isAssignModalOpen()"

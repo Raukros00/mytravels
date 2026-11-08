@@ -32,6 +32,8 @@ export class TripItineraryComponent {
   readonly addStep = output<void>();
   readonly unassignItem = output<TimelineItem>();
   readonly editTime = output<TimelineItem>();
+  /** "Sposta" a un altro giorno (#112): pannello con i giorni e il giorno consigliato. */
+  readonly moveItem = output<TimelineItem>();
   /** Nuova sequenza delle tappe del giorno (frecce o trascinamento). */
   readonly reorder = output<TimelineItem[]>();
   /** Posizione trovata e confermata per una tappa che non l'aveva. */

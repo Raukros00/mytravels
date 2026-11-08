@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
@@ -17,6 +17,9 @@ import {
   tripDayInfo
 } from '../../../core/utils/live-day.utils';
 import { TimelineItem, buildDayTimeline, getNavigationUrl, mealOf } from '../trip-detail/trip-detail.utils';
+import { TripMovePanelComponent } from '../trip-move/trip-move-panel.component';
+import { MoveUndoBarComponent } from '../trip-move/move-undo-bar.component';
+import { StopRef, recoverStops } from '../trip-move/stop-move.service';
 
 /** Una tappa della giornata nella guida: la voce dell'itinerario più orari e stato. */
 interface LiveStop extends LiveStopInput {
@@ -36,11 +39,12 @@ const STATUS_LABELS: Record<LiveStopStatus, string> = {
  * Modalità "In viaggio" (#103): guida della giornata da usare in giro col telefono.
  * Adesso (tappa in corso o prossima, con Fatto / Salta / Indicazioni), Dopo (le 1–2 successive) e la
  * Giornata con lo stato di ogni tappa. La logica è in core/utils/live-day.utils.ts (funzioni pure).
+ * #112: "Sposta" sulle tappe, lista "Da recuperare" dei giorni passati e ripasso di fine giornata.
  */
 @Component({
   selector: 'app-trip-live',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, TripMovePanelComponent, MoveUndoBarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:visibilitychange)': 'onVisibilityChange()' },
   templateUrl: './trip-live.component.html',
@@ -98,6 +102,24 @@ export class TripLiveComponent {
   });
 
   protected readonly live = computed(() => computeLiveDay(this.stops(), minutesOfDay(this.clock.now())));
+
+  /** Tappa di cui è aperto il pannello "Sposta" (#112). */
+  protected readonly moving = signal<StopRef | null>(null);
+
+  /** Da recuperare (#112): saltate o non fatte nei giorni passati (quelle di oggi sono nella Giornata). */
+  protected readonly toRecover = computed(() => {
+    const t = this.trip();
+    const info = this.dayInfo();
+    if (!t || info?.state !== 'during') return [];
+    return recoverStops(t, info.dayNumber).filter(s => s.assignedDay !== info.dayNumber);
+  });
+
+  /** Ripasso di fine giornata (#112): tappe di oggi rimaste da fare o saltate. */
+  protected readonly leftToday = computed(() =>
+    this.live().phase === 'finished' ? this.stops().filter(s => !s.done) : []
+  );
+
+  protected readonly leftTodayNames = computed(() => this.leftToday().map(s => s.item.name).join(', '));
 
   protected readonly dayTitle = computed(() => {
     const t = this.trip();
@@ -161,6 +183,10 @@ export class TripLiveComponent {
 
   protected skip(stop: LiveStop): void {
     this.save(stop, false, true, `"${stop.item.name}" saltato.`);
+  }
+
+  protected openMove(ref: StopRef): void {
+    this.moving.set({ type: ref.type, id: ref.id });
   }
 
   /** Torna "da fare" (annulla Fatto o Salta). */
