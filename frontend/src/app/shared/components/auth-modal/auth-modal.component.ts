@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
-import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { User } from '../../../core/models/user.model';
 import { MIN_REGISTRATION_AGE } from '../../../core/models/auth.model';
@@ -24,6 +25,34 @@ function trimmedEmailValidator(control: AbstractControl<string>): ValidationErro
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
+
+/** Lunghezza minima delle nuove password (stessa regola del backend, #70). */
+export const MIN_PASSWORD_LENGTH = 8;
+
+/** La password non può essere l'email né la parte prima della @ (stessa regola del backend). */
+const passwordNotEmailValidator: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
+  const email = normalizeEmail(group.get('email')?.value ?? '');
+  const password = (group.get('password')?.value ?? '').trim().toLowerCase();
+  if (!email || !password) return null;
+  const local = email.split('@')[0];
+  return password === email || password === local ? { passwordIsEmail: true } : null;
+};
+
+export type PasswordStrength = 'weak' | 'fair' | 'good';
+
+/**
+ * Stima semplice della robustezza (lunghezza + varietà di caratteri), solo come aiuto visivo:
+ * le regole vincolanti sono minimo 8 caratteri, niente password comuni, diversa dall'email.
+ */
+export function passwordStrength(password: string): PasswordStrength {
+  if (password.length < MIN_PASSWORD_LENGTH || /^(.)\1*$/.test(password)) return 'weak';
+  const classes = [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter(re => re.test(password)).length;
+  if ((password.length >= 12 && classes >= 3) || (password.length >= 16 && classes >= 2)) return 'good';
+  if (classes >= 2 || password.length >= 12) return 'fair';
+  return 'weak';
+}
+
+const STRENGTH_LABELS: Record<PasswordStrength, string> = { weak: 'Debole', fair: 'Discreta', good: 'Buona' };
 
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -61,9 +90,23 @@ export class AuthModalComponent {
     lastName: ['', [Validators.required, Validators.maxLength(100)]],
     birthDate: ['', [Validators.required, minAgeValidator(MIN_REGISTRATION_AGE)]],
     email: ['', [Validators.required, trimmedEmailValidator]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
+    password: ['', [Validators.required, Validators.minLength(MIN_PASSWORD_LENGTH), Validators.maxLength(128)]],
     avatar: [this.avatarList[0]],
     color: [this.colorList[0]]
+  }, { validators: passwordNotEmailValidator });
+
+  protected readonly minPasswordLength = MIN_PASSWORD_LENGTH;
+  /** Mostra/nascondi password (accesso e registrazione). */
+  protected readonly showLoginPassword = signal(false);
+  protected readonly showRegisterPassword = signal(false);
+
+  private readonly registerPassword = toSignal(this.registerForm.controls.password.valueChanges, { initialValue: '' });
+  /** Robustezza della password in registrazione (null finché il campo è vuoto). */
+  protected readonly strength = computed(() => {
+    const value = this.registerPassword() ?? '';
+    if (!value) return null;
+    const level = passwordStrength(value);
+    return { level, label: STRENGTH_LABELS[level] };
   });
 
   /** Foto scelta e in fase di ritaglio. */
@@ -83,6 +126,8 @@ export class AuthModalComponent {
         this.photoFile.set(null);
         this.profileImage.set(null);
         this.photoError.set(null);
+        this.showLoginPassword.set(false);
+        this.showRegisterPassword.set(false);
       }
     });
   }

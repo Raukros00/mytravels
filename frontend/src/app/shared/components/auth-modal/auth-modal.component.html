@@ -35,7 +35,16 @@
       </div>
       <div class="form-group">
         <label class="form-label" for="auth-login-password">Password</label>
-        <input id="auth-login-password" type="password" formControlName="password" class="form-input" autocomplete="current-password" placeholder="••••••••">
+        <div class="password-field">
+          <input id="auth-login-password" [type]="showLoginPassword() ? 'text' : 'password'" formControlName="password" class="form-input" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="••••••••">
+          <button type="button" class="password-toggle"
+            [attr.aria-label]="showLoginPassword() ? 'Nascondi password' : 'Mostra password'"
+            [attr.aria-pressed]="showLoginPassword()"
+            aria-controls="auth-login-password"
+            (click)="showLoginPassword.set(!showLoginPassword())">
+            <span class="material-symbols-outlined" aria-hidden="true">{{ showLoginPassword() ? 'visibility_off' : 'visibility' }}</span>
+          </button>
+        </div>
       </div>
       <button type="submit" class="btn btn-primary w-full auth-submit" [disabled]="loginForm.invalid || pending()">
         {{ pending() ? 'Accesso in corso…' : 'Continua' }}
@@ -81,9 +90,28 @@
       </div>
       <div class="form-group">
         <label class="form-label" for="auth-register-password">Password</label>
-        <input id="auth-register-password" type="password" formControlName="password" class="form-input" autocomplete="new-password" placeholder="Almeno 6 caratteri">
+        <div class="password-field">
+          <input id="auth-register-password" [type]="showRegisterPassword() ? 'text' : 'password'" formControlName="password" class="form-input" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false"
+            [placeholder]="'Almeno ' + minPasswordLength + ' caratteri'" aria-describedby="auth-register-password-help">
+          <button type="button" class="password-toggle"
+            [attr.aria-label]="showRegisterPassword() ? 'Nascondi password' : 'Mostra password'"
+            [attr.aria-pressed]="showRegisterPassword()"
+            aria-controls="auth-register-password"
+            (click)="showRegisterPassword.set(!showRegisterPassword())">
+            <span class="material-symbols-outlined" aria-hidden="true">{{ showRegisterPassword() ? 'visibility_off' : 'visibility' }}</span>
+          </button>
+        </div>
+        @if (strength(); as s) {
+          <div class="password-strength" [attr.data-level]="s.level">
+            <span class="password-strength-bar" aria-hidden="true"><span></span><span></span><span></span></span>
+            <span class="password-strength-label" aria-live="polite">Robustezza: {{ s.label }}</span>
+          </div>
+        }
+        <span id="auth-register-password-help" class="password-help">Almeno {{ minPasswordLength }} caratteri, non tra le più comuni e diversa dall'email.</span>
         @if (registerForm.controls.password.touched && registerForm.controls.password.invalid) {
-          <span class="form-error">La password deve avere almeno 6 caratteri.</span>
+          <span class="form-error">La password deve avere almeno {{ minPasswordLength }} caratteri.</span>
+        } @else if (registerForm.controls.password.dirty && registerForm.hasError('passwordIsEmail')) {
+          <span class="form-error">La password non può essere uguale all'email.</span>
         }
       </div>
 

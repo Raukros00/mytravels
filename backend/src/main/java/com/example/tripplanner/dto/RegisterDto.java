@@ -2,6 +2,7 @@ package com.example.tripplanner.dto;
 
 import com.example.tripplanner.util.Emails;
 import com.example.tripplanner.validation.MinAge;
+import com.example.tripplanner.validation.NewPassword;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -13,6 +14,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
+@NewPassword
 public class RegisterDto {
     /** Età minima per registrarsi: in Italia, a 14 anni si presta da soli il consenso al trattamento dei dati. */
     public static final int MIN_AGE = 14;
@@ -39,8 +41,9 @@ public class RegisterDto {
         this.email = Emails.normalize(email);
     }
 
+    /** Nuove password: almeno 8 caratteri (#70). Le password esistenti restano valide per il login. */
     @NotBlank
-    @Size(min = 6, max = 128)
+    @Size(min = 8, max = 128, message = "La password deve avere tra 8 e 128 caratteri.")
     private String password;
 
     private String avatar;
