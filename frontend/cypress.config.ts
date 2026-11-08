@@ -14,10 +14,34 @@ export default defineConfig({
     supportFile: 'cypress/support/e2e.ts',
     viewportWidth: 1280,
     viewportHeight: 800,
+    // Timeout espliciti: un comando o una pagina appesa fanno fallire il test invece di bloccare la run.
     defaultCommandTimeout: 8000,
+    requestTimeout: 10000,
+    responseTimeout: 30000,
+    pageLoadTimeout: 30000,
     video: false,
     screenshotOnRunFailure: true,
-    // In CI un retry assorbe eventuali flakiness di rete; in locale si vede subito il fallimento.
+    // In run un retry assorbe eventuali flakiness; in locale (open) si vede subito il fallimento.
     retries: { runMode: 1, openMode: 0 },
+    // Libera la memoria del browser tra un test e l'altro (Chromium/Electron): evita i crash su run lunghe.
+    experimentalMemoryManagement: true,
+    // Nessuna rete esterna: font, copertine Unsplash e tile della mappa non servono ai test e,
+    // senza connessione o con una rete lenta, lascerebbero la pagina in attesa del `load`.
+    blockHosts: [
+      'fonts.googleapis.com',
+      'fonts.gstatic.com',
+      '*.unsplash.com',
+      'unsplash.com',
+      '*.tile.openstreetmap.org',
+      'tile.openstreetmap.org',
+      '*.google.com',
+      '*.googleapis.com',
+      '*.gstatic.com',
+    ],
+    setupNodeEvents(_on, config) {
+      // Headless nessuno snapshot dei test passati in memoria (servono solo nel runner interattivo).
+      if (!config.isInteractive) config.numTestsKeptInMemory = 0;
+      return config;
+    },
   },
 });

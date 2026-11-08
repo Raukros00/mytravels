@@ -407,6 +407,30 @@ export class TripService {
     });
   }
 
+  /**
+   * Nuovo ordine delle tappe del giorno `day` (attività e ristoranti insieme): la posizione nell'elenco
+   * diventa `dayOrder`. Aggiornato subito in locale e salvato con un'unica richiesta; se fallisce si ripristina.
+   */
+  public reorderDayStops(tripId: string, day: number, stops: DayStopRef[]): void {
+    const trip = this.getTripById(tripId);
+    if (!trip) return;
+    const previous = { activities: trip.activities, placesToEat: trip.placesToEat };
+    const position = new Map(stops.map((s, i) => [`${s.type}:${s.id}`, i]));
+    const withOrder = <T extends { id: string; dayOrder?: number | null }>(items: T[] | undefined, type: DayStopRef['type']): T[] =>
+      (items ?? []).map(i => position.has(`${type}:${i.id}`) ? { ...i, dayOrder: position.get(`${type}:${i.id}`)! } : i);
+    this.patchLocalTrip(tripId, {
+      activities: withOrder(trip.activities, 'activity'),
+      placesToEat: withOrder(trip.placesToEat, 'food')
+    });
+
+    this.apiService.put<Trip>(`/api/v1/trips/${tripId}/days/${day}/order`, { items: stops }).subscribe({
+      error: (err) => {
+        this.patchLocalTrip(tripId, previous);
+        this.warnFailure('salvare l\'ordine delle tappe', err);
+      }
+    });
+  }
+
   // Flights & Logistics Management
   public updateFlights(tripId: string, flights: FlightDetails): void {
     this.updateLogistics(tripId, 'flights', flights, 'Dettagli voli salvati! ✈️', 'salvare i voli');
@@ -589,6 +613,9 @@ const LIST_KEYS: (keyof Trip)[] = ['activities', 'placesToEat', 'expenses', 'vot
 type ChildKey ='activities' | 'placesToEat' | 'expenses';
 type ChildOf<K extends ChildKey> = K extends 'activities' ? TripActivity : K extends 'placesToEat' ? TripPlaceToEat : TripExpense;
 interface SyncMessages { success: string; action: string; }
+
+/** Una tappa della giornata, per salvarne l'ordine. */
+export interface DayStopRef { type: 'activity' | 'food'; id: string; }
 
 const CHILD_PATHS: Record<ChildKey, string> = {
   activities: 'activities',

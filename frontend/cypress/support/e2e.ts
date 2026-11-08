@@ -12,6 +12,28 @@ Cypress.on('uncaught:exception', err => {
 });
 
 /**
+ * Rete esterna bloccata (blockHosts in cypress.config.ts): senza il CSS di Google Fonts le icone
+ * Material Symbols resterebbero parole ("notifications") larghe quanto il testo, che coprono i pulsanti
+ * vicini. Questo stile riproduce l'ingombro del glifo (quadrato di 1em) come fa il CSS originale.
+ */
+const ICON_FONT_SHIM = `
+.material-symbols-outlined {
+  display: inline-block; width: 1em; height: 1em; overflow: hidden;
+  font-size: 24px; line-height: 1; white-space: nowrap; letter-spacing: normal;
+  text-transform: none; word-wrap: normal; direction: ltr; vertical-align: middle;
+}`;
+
+Cypress.on('window:before:load', win => {
+  win.document.addEventListener('DOMContentLoaded', () => {
+    const style = win.document.createElement('style');
+    style.setAttribute('data-cy', 'icon-font-shim');
+    style.textContent = ICON_FONT_SHIM;
+    // In testa, così le classi dell'app (es. text-[20px]) continuano a vincere sulla dimensione.
+    win.document.head.prepend(style);
+  });
+});
+
+/**
  * Errori scritti dall'app con console.error durante il test.
  * Comprendono gli errori di Angular (es. pipe che lanciano) e le sincronizzazioni con il backend
  * fallite: l'UI è ottimistica, quindi senza questo controllo resterebbero invisibili.

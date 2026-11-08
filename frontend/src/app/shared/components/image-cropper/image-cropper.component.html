@@ -29,6 +29,6 @@
 
   <div class="cropper-actions">
     <button type="button" class="btn btn-secondary" (click)="cancelled.emit()">Annulla</button>
-    <button type="button" class="btn btn-primary" [disabled]="loadError()" (click)="confirm()">Usa questa foto</button>
+    <button type="button" class="btn btn-primary" [disabled]="loadError() || !loaded()" (click)="confirm()">Usa questa foto</button>
   </div>
 </div>

@@ -142,11 +142,12 @@ describe('Dettaglio viaggio – modifiche', () => {
     cy.dialog('Pianifica nel Giorno').within(() => {
       cy.contains('strong', 'Museo Egizio');
       cy.get('select').select('2');
-      cy.get('input[placeholder^="Es. 10:00"]').clear().type('10:00 - 12:00');
+      cy.get('#assign_start').type('10:00');
+      cy.get('#assign_end').type('12:00');
       cy.contains('button', 'Conferma').click();
     });
     cy.contains('.item-feed-card', 'Museo Egizio').contains('.meta-pill', 'Giorno 2');
-    savedTrip(tripId, t => expect(t.activities[0]).to.include({ assignedDay: 2, timeSlot: '10:00 - 12:00' }));
+    savedTrip(tripId, t => expect(t.activities[0]).to.include({ assignedDay: 2, startTime: '10:00', endTime: '12:00', timeSlot: '10:00 - 12:00' }));
 
     // Compare nell'itinerario del giorno 2
     openTab('Itinerario');

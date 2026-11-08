@@ -51,4 +51,11 @@ public class TripPlaceToEat {
     @Column(name = "assigned_meal")    private String assignedMeal;
     @Column(name = "time_slot")        private String timeSlot;
     @Column(name = "is_visited")       private Boolean isVisited;
+
+    /** Orari strutturati 'HH:mm' (facoltativi; la fine solo dopo l'inizio). {@code timeSlot} resta come testo libero. */
+    @Column(name = "start_time") private String startTime;
+    @Column(name = "end_time")   private String endTime;
+
+    /** Posizione nella giornata decisa dall'utente; null = posizionata in base all'orario. */
+    @Column(name = "day_order")  private Integer dayOrder;
 }
