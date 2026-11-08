@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { TripService } from '../../../core/services/trip.service';
 import { ClockService } from '../../../core/services/clock.service';
+import { LiveTripService } from '../../../core/services/live-trip.service';
 import { TripPlaceToEat } from '../../../core/models/trip.model';
 import { todayIso } from '../../../core/utils/date.utils';
 import { TimeRange, effectiveTimes } from '../../../core/utils/day-schedule.utils';
@@ -49,6 +50,7 @@ export class TripLiveComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly tripService = inject(TripService);
   protected readonly clock = inject(ClockService);
+  private readonly liveTrips = inject(LiveTripService);
 
   protected readonly statusLabels = STATUS_LABELS;
 
@@ -69,6 +71,18 @@ export class TripLiveComponent {
   });
 
   protected readonly today = computed(() => todayIso(this.clock.now()));
+
+  /** Più viaggi in corso oggi: selettore in alto (#104). */
+  protected readonly ongoingTrips = computed(() => {
+    const list = this.liveTrips.ongoingTrips();
+    return list.length > 1 ? [...list].sort((a, b) => a.title.localeCompare(b.title, 'it')) : [];
+  });
+
+  /** Viaggio aperto durante il viaggio: all'apertura dell'app si riparte da qui (#104). */
+  private readonly rememberTrip = effect(() => {
+    const t = this.trip();
+    if (t && this.dayInfo()?.state === 'during') this.liveTrips.markUsed(t.id);
+  });
 
   protected readonly dayInfo = computed(() => {
     const t = this.trip();
@@ -170,6 +184,7 @@ export class TripLiveComponent {
     this.clock.tick();
     const id = this.tripId();
     if (id) this.tripService.ensureTripLoaded(id);
+    this.liveTrips.refresh().subscribe();
   }
 
   /** Fatto / saltato con l'endpoint della singola tappa: gli altri membri lo vedono al prossimo caricamento. */

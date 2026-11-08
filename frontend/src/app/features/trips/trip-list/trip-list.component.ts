@@ -5,6 +5,7 @@ import { TripService } from '../../../core/services/trip.service';
 import { GroupService } from '../../../core/services/group.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
+import { TripRecapCardComponent } from './trip-recap-card/trip-recap-card.component';
 import { Trip, TripStatus, deriveTripStatus, isProposal } from '../../../core/models/trip.model';
 import { todayIso } from '../../../core/utils/date.utils';
 
@@ -53,7 +54,7 @@ interface CurrentTripVm {
   standalone: true,
   host: { '(document:click)': 'openMenuId.set(null)' },
   selector: 'app-trip-list',
-  imports: [RouterModule, FormsModule, EmptyStateComponent],
+  imports: [RouterModule, FormsModule, EmptyStateComponent, TripRecapCardComponent],
   templateUrl: './trip-list.component.html',
   styleUrl: './trip-list.component.css'
 })

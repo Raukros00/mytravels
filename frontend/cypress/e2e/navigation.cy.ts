@@ -3,7 +3,9 @@ import { USERS } from '../support/users';
 describe('Navigazione, dashboard e profilo', () => {
   beforeEach(() => cy.login('admin'));
 
-  it('la home porta alla lista viaggi', () => {
+  it('la home porta alla lista viaggi (senza viaggi in corso)', () => {
+    // Data senza viaggi di admin in corso: altrimenti la home è la guida della giornata (#104, vedi trip-home.cy.ts).
+    cy.clock(new Date(2031, 0, 15, 10, 0), ['Date']);
     cy.visit('/');
     cy.location('pathname').should('eq', '/trips');
     cy.contains('h1', 'Viaggi').should('be.visible');

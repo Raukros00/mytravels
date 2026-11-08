@@ -1,0 +1,78 @@
+:host { display: block; }
+
+.recap-card {
+  margin-bottom: 1.25rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: var(--wb-radius-xl);
+  background: var(--wb-accent-surface);
+  border: 1px solid var(--wb-accent-border);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.recap-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.recap-emoji {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.recap-head-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.recap-kicker {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--wb-accent-dark);
+}
+
+.recap-title {
+  margin: 0.15rem 0 0;
+  font-family: var(--wb-font-display);
+  font-size: 1.2rem;
+  color: var(--wb-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.recap-close {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: var(--wb-radius-full);
+  background: transparent;
+  color: var(--wb-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.recap-stats {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.recap-stat dt {
+  font-size: 0.8rem;
+  color: var(--wb-text-secondary);
+}
+
+.recap-stat dd {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--wb-text-primary);
+}

@@ -2,6 +2,16 @@
   <div class="app-container live-container">
 
     @if (trip(); as t) {
+      @if (ongoingTrips().length) {
+        <nav class="live-switch" aria-label="Viaggi in corso">
+          @for (other of ongoingTrips(); track other.id) {
+            <a class="live-switch-item" [class.live-switch-item--active]="other.id === t.id"
+              [attr.aria-current]="other.id === t.id ? 'page' : null"
+              [routerLink]="['/trips', other.id, 'live']">{{ other.title }}</a>
+          }
+        </nav>
+      }
+
       <header class="live-header">
         <a class="live-back" [routerLink]="['/trips', t.id]">
           <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>

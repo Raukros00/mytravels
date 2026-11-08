@@ -1,0 +1,27 @@
+@if (recap(); as r) {
+  <section class="recap-card animate-fade-in" data-cy="trip-recap" aria-labelledby="recap-title">
+    <div class="recap-head">
+      <span class="recap-emoji" aria-hidden="true">🧳</span>
+      <div class="recap-head-text">
+        <p class="recap-kicker">Com'è andato il viaggio?</p>
+        <h2 id="recap-title" class="recap-title">{{ r.title }}</h2>
+      </div>
+      <button type="button" class="recap-close" aria-label="Chiudi il riepilogo" (click)="dismiss(r.id)">
+        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+      </button>
+    </div>
+
+    <dl class="recap-stats">
+      <div class="recap-stat">
+        <dt>Tappe fatte</dt>
+        <dd>{{ r.stopsDone }} di {{ r.stopsTotal }}</dd>
+      </div>
+      <div class="recap-stat">
+        <dt>Spese totali</dt>
+        <dd>{{ r.expensesTotal | currency: r.currency : 'symbol' : '1.0-2' : 'it' }}</dd>
+      </div>
+    </dl>
+
+    <a class="btn btn-secondary btn-sm" [routerLink]="['/trips', r.id]" (click)="dismiss(r.id)">Rivedi il viaggio</a>
+  </section>
+}

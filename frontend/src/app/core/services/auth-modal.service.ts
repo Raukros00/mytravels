@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { LiveTripService } from './live-trip.service';
 
 export type AuthTab = 'login' | 'register';
 
@@ -18,6 +19,7 @@ export interface AuthModalOptions {
 @Injectable({ providedIn: 'root' })
 export class AuthModalService {
   private readonly router = inject(Router);
+  private readonly liveTrips = inject(LiveTripService);
 
   readonly isOpen = signal(false);
   readonly tab = signal<AuthTab>('login');
@@ -45,5 +47,11 @@ export class AuthModalService {
     this.close();
     if (url) this.router.navigateByUrl(url);
     action?.();
+    // Accesso senza una pagina o un'azione da riprendere: durante un viaggio si apre la guida di oggi (#104).
+    if (!url && !action) {
+      this.liveTrips.homeUrl('').subscribe(target => {
+        if (target) this.router.navigateByUrl(target);
+      });
+    }
   }
 }
