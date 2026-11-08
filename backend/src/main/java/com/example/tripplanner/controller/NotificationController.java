@@ -6,6 +6,7 @@ import com.example.tripplanner.model.User;
 import com.example.tripplanner.repository.NotificationRepository;
 import com.example.tripplanner.repository.UserRepository;
 import com.example.tripplanner.security.GroupAccess;
+import com.example.tripplanner.service.GroupPushNotifier;
 import com.example.tripplanner.service.NotificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,15 +31,18 @@ public class NotificationController {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final GroupAccess groupAccess;
+    private final GroupPushNotifier pushNotifier;
 
     public NotificationController(NotificationService notificationService,
                                   NotificationRepository notificationRepository,
                                   UserRepository userRepository,
-                                  GroupAccess groupAccess) {
+                                  GroupAccess groupAccess,
+                                  GroupPushNotifier pushNotifier) {
         this.notificationService = notificationService;
         this.notificationRepository = notificationRepository;
         this.userRepository = userRepository;
         this.groupAccess = groupAccess;
+        this.pushNotifier = pushNotifier;
     }
 
     @GetMapping
@@ -83,6 +87,8 @@ public class NotificationController {
                 .read(false)
                 .status("pending")
                 .build());
+        // Push all'invitato (solo per un invito nuovo: quello già in attesa non viene ripetuto).
+        pushNotifier.invite(group.get(), me.get(), recipientId);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
