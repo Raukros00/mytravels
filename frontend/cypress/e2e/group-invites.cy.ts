@@ -348,7 +348,12 @@ describe('Creazione gruppo – foto ritagliata', () => {
     cy.dialog(t.form_create_title).within(() => {
       cy.get('#gcm-name').type(name);
       cy.get('#group-icon-file').selectFile('cypress/fixtures/profile-photo.png', { force: true });
-      cy.get('.cropper-stage').should('be.visible');
+      // Ritaglio orizzontale 2:1 (copertina), senza la maschera circolare della foto profilo.
+      cy.get('.cropper-stage').should('be.visible').then($stage => {
+        const r = $stage[0].getBoundingClientRect();
+        expect(r.width / r.height).to.be.closeTo(2, 0.02);
+      });
+      cy.get('.cropper-mask').should('have.class', 'cropper-mask--rect');
       cy.get('input[aria-label="Zoom"]').invoke('val', 1.8).trigger('input');
       cy.contains('button', 'Usa questa foto').click();
       cy.get('.cropper-stage').should('not.exist');
@@ -356,8 +361,24 @@ describe('Creazione gruppo – foto ritagliata', () => {
       cy.contains('button', t.form_create).click();
     });
     cy.toast(`Gruppo "${name}" creato con successo!`).should('be.visible');
-    cy.groupByName('admin', name).its('icon').should('match', /^data:image\/jpeg;base64,/);
-    cy.contains('.group-card', name).find('img.group-icon-img').should('be.visible');
+    cy.groupByName('admin', name).then(group => {
+      const icon: string = group.icon;
+      expect(icon).to.match(/^data:image\/jpeg;base64,/);
+      expect(icon.length, 'entro il limite del backend').to.be.lessThan(400_000);
+      // L'immagine salvata è orizzontale 1000×500.
+      cy.window().then(win => new Cypress.Promise<{ w: number; h: number }>(resolve => {
+        const img = new win.Image();
+        img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+        img.src = icon;
+      })).should('deep.equal', { w: 1000, h: 500 });
+
+      // Nella lista resta leggibile nel riquadro piccolo (ritaglio centrale)...
+      cy.contains('.group-card', name).find('img.group-icon-img').should('be.visible')
+        .and('have.css', 'object-fit', 'cover');
+      // ...e nel dettaglio è la copertina.
+      cy.visit(`/groups/${group.id}`);
+      cy.get('.group-hero-cover img.group-hero-img').should('be.visible').and('have.attr', 'src', icon);
+    });
   });
 
   it('annullando il ritaglio l\'icona non cambia', () => {

@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, ElementRef, computed, effect, input, output, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Group } from '../../../../../core/models/group.model';
 import { User } from '../../../../../core/models/user.model';
 
+/** Intestazione del dettaglio gruppo: copertina (foto o emoji sul colore del gruppo), dati e azioni. */
 @Component({
   selector: 'app-group-hero',
   standalone: true,
@@ -21,22 +22,8 @@ export class GroupHeroComponent {
   readonly edit = output<void>();
   readonly invite = output<void>();
 
-  private readonly heroIcon = viewChild<ElementRef<HTMLElement>>('heroIcon');
-
   readonly isImageIcon = computed(() => {
-    const icon = this.group().icon;
+    const icon = this.group().icon ?? '';
     return icon.startsWith('data:') || icon.startsWith('http') || icon.startsWith('blob:');
   });
-
-  constructor() {
-    effect(onCleanup => {
-      const el = this.heroIcon()?.nativeElement;
-      if (!el) return;
-      const sync = () => (el.style.width = el.offsetHeight + 'px');
-      sync();
-      const observer = new ResizeObserver(sync);
-      observer.observe(el);
-      onCleanup(() => observer.disconnect());
-    });
-  }
 }

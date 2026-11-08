@@ -3,7 +3,7 @@
     <p class="cropper-error" role="alert">Non è stato possibile leggere l'immagine. Prova con un file JPG, PNG o WebP.</p>
   } @else {
     <div class="cropper-stage"
-      [style.width.px]="stageSize" [style.height.px]="stageSize"
+      [style.width.px]="stage().w" [style.height.px]="stage().h"
       tabindex="0" role="img" aria-label="Area di ritaglio: trascina per spostare, usa la rotellina o le frecce"
       (pointerdown)="onPointerDown($event)"
       (pointermove)="onPointerMove($event)"
@@ -16,7 +16,7 @@
           [style.width]="imageStyle().width" [style.height]="imageStyle().height" [style.transform]="imageStyle().transform"
           (load)="onLoad($event)" (error)="loadError.set(true)">
       }
-      <div class="cropper-mask" aria-hidden="true"></div>
+      <div class="cropper-mask" [class.cropper-mask--rect]="shape() === 'rect'" aria-hidden="true"></div>
     </div>
 
     <label class="cropper-zoom">
