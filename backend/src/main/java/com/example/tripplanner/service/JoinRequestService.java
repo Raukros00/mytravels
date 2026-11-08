@@ -40,15 +40,18 @@ public class JoinRequestService {
     private final GroupJoinRequestRepository requestRepository;
     private final NotificationRepository notificationRepository;
     private final GroupService groupService;
+    private final GroupPushNotifier pushNotifier;
 
     public JoinRequestService(GroupRepository groupRepository,
                               GroupJoinRequestRepository requestRepository,
                               NotificationRepository notificationRepository,
-                              GroupService groupService) {
+                              GroupService groupService,
+                              GroupPushNotifier pushNotifier) {
         this.groupRepository = groupRepository;
         this.requestRepository = requestRepository;
         this.notificationRepository = notificationRepository;
         this.groupService = groupService;
+        this.pushNotifier = pushNotifier;
     }
 
     /** Anteprima del gruppo per chi ha il codice: niente membri né codice, solo ciò che serve a decidere. */
@@ -96,6 +99,8 @@ public class JoinRequestService {
         group.getMembers().stream()
                 .filter(m -> "admin".equalsIgnoreCase(m.getRole()))
                 .forEach(admin -> notify("join_request", admin.getId(), me, group, request.getId(), "pending"));
+        // Push agli admin, partono dopo il commit della transazione.
+        pushNotifier.joinRequest(group, me);
         return request;
     }
 
@@ -137,6 +142,7 @@ public class JoinRequestService {
             notificationRepository.save(n);
         });
         notify(approve ? "join_approved" : "join_declined", request.getUserId(), admin, group, requestId, request.getStatus());
+        pushNotifier.joinDecision(group, admin, request.getUserId(), approve);
         return request;
     }
 
