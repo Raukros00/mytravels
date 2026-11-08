@@ -121,7 +121,9 @@ public class JoinRequestService {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new JoinRequestException(404, "Gruppo non trovato."));
 
+        boolean joined = false;
         if (approve) {
+            joined = group.getMembers().stream().noneMatch(m -> request.getUserId().equals(m.getId()));
             JoinGroupRequest join = new JoinGroupRequest();
             join.setInviteCode(group.getInviteCode());
             join.setUserId(request.getUserId());
@@ -143,6 +145,8 @@ public class JoinRequestService {
         });
         notify(approve ? "join_approved" : "join_declined", request.getUserId(), admin, group, requestId, request.getStatus());
         pushNotifier.joinDecision(group, admin, request.getUserId(), approve);
+        // #98: agli altri membri (se hanno attivato "nuovi membri"), non all'admin che ha approvato.
+        if (joined) pushNotifier.memberJoined(group, request.getUserId(), request.getUserName(), List.of(admin.getId()));
         return request;
     }
 
