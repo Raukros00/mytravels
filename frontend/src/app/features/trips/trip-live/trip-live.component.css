@@ -378,6 +378,7 @@
   grid-template-columns: 14px 6.5rem minmax(0, 1fr) auto;
   grid-template-areas:
     "dot time name status"
+    ".   .    walk walk"
     ".   .    undo undo";
   align-items: center;
   column-gap: 0.6rem;
@@ -568,4 +569,63 @@
 
 .live-recover-item .btn {
   grid-area: btn;
+}
+
+/* ── Indicazioni (#106) ── */
+.live-walk {
+  font-size: 0.95rem;
+  color: var(--wb-text-secondary);
+}
+
+.live-timeline-walk {
+  grid-area: walk;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.15rem;
+  font-size: 0.8rem;
+  color: var(--wb-text-tertiary);
+}
+
+.live-timeline-walk .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.live-directions {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.live-maps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.live-maps-label {
+  color: var(--wb-text-tertiary);
+  font-weight: 600;
+}
+
+.live-maps-app {
+  min-height: 36px;
+  padding: 0.2rem 0.7rem;
+  border-radius: var(--wb-radius-full);
+  border: 1px solid var(--wb-border-strong);
+  background: var(--wb-surface-0);
+  color: var(--wb-text-secondary);
+  font-family: var(--wb-font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.live-maps-app--active {
+  background: var(--wb-primary-surface);
+  border-color: var(--wb-primary);
+  color: var(--wb-primary-dark);
 }
