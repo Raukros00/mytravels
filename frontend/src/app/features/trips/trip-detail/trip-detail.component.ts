@@ -48,6 +48,7 @@ import { tripDayInfo } from '../../../core/utils/live-day.utils';
 import { TripMovePanelComponent } from '../trip-move/trip-move-panel.component';
 import { MoveUndoBarComponent } from '../trip-move/move-undo-bar.component';
 import { StopRef, recoverStops } from '../trip-move/stop-move.service';
+import { OfflineBannerComponent } from '../../../shared/components/offline-banner/offline-banner.component';
 
 @Component({
   selector: 'app-trip-detail',
@@ -68,6 +69,7 @@ import { StopRef, recoverStops } from '../trip-move/stop-move.service';
     TripTransfersModalComponent,
     TripAccommodationModalComponent,
     TripMovePanelComponent,
+    OfflineBannerComponent,
     MoveUndoBarComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

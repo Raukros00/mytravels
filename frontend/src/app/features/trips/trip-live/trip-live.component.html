@@ -35,6 +35,8 @@
         }
       </header>
 
+      <app-offline-banner [tripId]="t.id" />
+
       @switch (dayInfo()?.state) {
         @case ('before') {
           <section class="live-card live-message" data-cy="live-not-started">

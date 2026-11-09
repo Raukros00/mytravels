@@ -90,6 +90,10 @@ export class LiveTripService {
         }),
         catchError(err => {
           console.warn('Could not load trips for the live mode:', err?.status);
+          // Offline (#109): si usano i viaggi salvati sul dispositivo, così la guida si apre lo stesso.
+          if (!this.tripsSignal().length && this.auth.currentUser()) {
+            this.tripsSignal.set(this.storage.getTrips().map(toSummary));
+          }
           return of(this.tripsSignal());
         }),
         finalize(() => (this.inflight = null)),

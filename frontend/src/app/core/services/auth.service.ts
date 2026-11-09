@@ -4,6 +4,7 @@ import { Observable, catchError, map, of, tap, throwError } from 'rxjs';
 import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
 import { ApiService } from './api.service';
+import { NetworkStatusService } from './network-status.service';
 import { User } from '../models/user.model';
 import { LoginDto, RegisterDto } from '../models/auth.model';
 import { USE_MOCK_DATA } from '../config/mock.config';
@@ -23,6 +24,7 @@ export class AuthService {
   private toastService = inject(ToastService);
   private router = inject(Router);
   private apiService = inject(ApiService);
+  private networkStatus = inject(NetworkStatusService);
 
   private currentUserSignal = signal<User | null>(this.storageService.getCurrentUser());
   private allUsersSignal = signal<User[]>(this.storageService.getUsers());
@@ -46,9 +48,11 @@ export class AuthService {
           this.currentUserSignal.set(user);
           this.storageService.setCurrentUser(user);
         },
-        error: () => {
-          // Token expired or invalid
-          this.logout();
+        error: (err) => {
+          // Token scaduto o non valido. Senza rete (#109: guida offline) o con il server giù si resta
+          // collegati con l'utente salvato: l'app deve aprirsi anche offline.
+          if (err?.status === 401 || err?.status === 403) this.logout();
+          else console.warn('Could not verify the session, keeping the saved user:', err?.status);
         }
       });
     }
@@ -102,7 +106,24 @@ export class AuthService {
   public logout(): void {
     this.currentUserSignal.set(null);
     this.storageService.clearSessionData();
+    this.networkStatus.reset();
+    clearOfflineApiCache();
     this.toastService.info('Disconnessione effettuata. A presto!');
     this.router.navigate(['/explore']);
+  }
+}
+
+/**
+ * #109: al logout si eliminano le risposte delle API salvate dal service worker per l'uso offline
+ * (cache "ngsw:...:data:..."), così chi usa il dispositivo dopo non vede i dati dell'utente precedente.
+ */
+function clearOfflineApiCache(): void {
+  try {
+    if (typeof caches === 'undefined') return;
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k.startsWith('ngsw:') && k.includes(':data:')).map(k => caches.delete(k))))
+      .catch(() => undefined);
+  } catch {
+    // Cache API non disponibile (es. contesto non sicuro): niente da pulire.
   }
 }

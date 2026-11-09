@@ -10,7 +10,9 @@ const STORAGE_KEYS = {
   GROUPS: 'wb_groups',
   ACTIVE_GROUP_ID: 'wb_active_group_id',
   TRIPS: 'wb_trips',
-  JWT: 'wb_jwt'
+  JWT: 'wb_jwt',
+  /** Ora dei dati salvati per l'uso offline (#109). */
+  OFFLINE_SAVED_AT: 'wb_offline_saved_at'
 };
 
 const SEED_VERSION_KEY = 'wb_seed_version';

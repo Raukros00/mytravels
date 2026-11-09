@@ -12,7 +12,8 @@ export class I18nService {
   public currentLang = signal<AppLang>(this.resolveInitialLang());
 
   init(): Promise<void> {
-    return firstValueFrom(this.translate.use(this.currentLang())).then(() => void 0);
+    // Offline senza traduzioni in cache l'app deve partire lo stesso (#109): i testi restano le chiavi.
+    return firstValueFrom(this.translate.use(this.currentLang())).then(() => void 0, () => void 0);
   }
 
   switchLang(lang: AppLang): void {

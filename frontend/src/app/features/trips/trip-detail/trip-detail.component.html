@@ -21,6 +21,9 @@
         </a>
       }
 
+      <!-- #109: offline e spese in attesa di sincronizzazione -->
+      <app-offline-banner [tripId]="t.id" />
+
       <!-- Navigation Tabs Bar -->
       <nav class="trip-tabs-nav" aria-label="Sezioni viaggio">
         <button
