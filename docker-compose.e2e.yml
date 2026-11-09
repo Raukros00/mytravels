@@ -49,6 +49,7 @@ services:
       RATE_LIMIT_TEST_ENDPOINT: "true"
       PHOTON_URL: http://api-stubs:8000/photon/api
       WIKIDATA_URL: http://api-stubs:8000/wikidata/w/api.php
+      OPEN_METEO_URL: http://api-stubs:8000/open-meteo/v1/forecast
       # Notifiche push: chiavi VAPID SOLO per i test (generate apposta, non usate altrove).
       # Le subscription dei test puntano al finto push service dello stub (http://api-stubs:8000/push/...).
       PUSH_VAPID_PUBLIC_KEY: BDj5qCEpNwBdu5yOHGiIH0LpAkk4dp-PYWp-6_d5QsfAr7OCuuPpHT54Rkrc-6LxFxRTx3c7p6eFCzFKnqJxW_A

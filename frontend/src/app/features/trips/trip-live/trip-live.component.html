@@ -30,6 +30,9 @@
             <span class="live-simulated" title="Orario simulato con ?now= (solo fuori produzione)">orario simulato</span>
           }
         </p>
+        @if (dayInfo()?.state === 'during') {
+          <app-live-weather [tripId]="t.id" [date]="today()" [nowMinutes]="nowMinutes()" [stops]="stops()" />
+        }
       </header>
 
       @switch (dayInfo()?.state) {
