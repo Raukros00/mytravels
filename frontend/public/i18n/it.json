@@ -269,7 +269,22 @@
       "with": "Indicazioni con",
       "app_label": "App per le indicazioni",
       "from_previous": "dalla tappa precedente",
-      "from_home": "dall'alloggio"
+      "from_home": "dall'alloggio",
+      "from_here": "dalla tua posizione"
+    },
+    "location": {
+      "enable": "Usa la mia posizione per le indicazioni",
+      "privacy": "La posizione resta sul telefono: non viene inviata al server né salvata, e si usa solo mentre questa pagina è aperta.",
+      "searching": "Sto cercando la tua posizione…",
+      "active": "Posizione attiva: distanze e indicazioni partono da dove sei.",
+      "disable": "Non usare la posizione",
+      "cancel": "Annulla",
+      "denied": "Permesso alla posizione negato: la guida funziona come prima. Puoi riattivarlo dalle impostazioni del browser.",
+      "unavailable": "Posizione non disponibile in questo momento.",
+      "arrived": "Sei arrivato a {{name}}?",
+      "mark_visited": "Segna come visitata",
+      "not_yet": "No",
+      "my_position": "La mia posizione"
     }
   }
 }

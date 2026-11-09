@@ -35,6 +35,9 @@ import { MoveUndoBarComponent } from '../trip-move/move-undo-bar.component';
 import { StopRef, recoverStops } from '../trip-move/stop-move.service';
 import { LiveWeatherComponent } from './live-weather.component';
 import { OfflineBannerComponent } from '../../../shared/components/offline-banner/offline-banner.component';
+import { LiveLocationService } from './live-location.service';
+import { LiveLocationComponent } from './live-location.component';
+import { ArrivalStop } from '../../../core/utils/location.utils';
 import { LiveSuggestionsComponent, SuggestionActionEvent, SuggestionPickEvent } from './live-suggestions.component';
 
 const DISMISSED_KEY = 'wb_live_dismissed';
@@ -44,6 +47,8 @@ interface StopLeg {
   origin: MapPlace | null;
   /** La partenza è l'alloggio (prima tappa della giornata). */
   fromHome: boolean;
+  /** #108: la partenza è la posizione del telefono (tappa in corso o prossima, con la posizione attiva). */
+  fromHere?: boolean;
   /** "1,2 km · ~15 min a piedi", solo se partenza e tappa hanno coordinate. */
   walk: string | null;
 }
@@ -76,7 +81,9 @@ const STATUS_LABELS: Record<LiveStopStatus, string> = {
   selector: 'app-trip-live',
   standalone: true,
   imports: [RouterLink, TranslatePipe, TripMovePanelComponent, MoveUndoBarComponent, LiveSuggestionsComponent, LiveWeatherComponent,
-    OfflineBannerComponent],
+    OfflineBannerComponent, LiveLocationComponent],
+  // #108: posizione solo mentre la guida è aperta (il servizio si ferma con la pagina).
+  providers: [LiveLocationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:visibilitychange)': 'onVisibilityChange()' },
   templateUrl: './trip-live.component.html',
@@ -89,6 +96,7 @@ export class TripLiveComponent {
   private readonly liveTrips = inject(LiveTripService);
   private readonly translate = inject(TranslateService);
   private readonly i18n = inject(I18nService);
+  private readonly location = inject(LiveLocationService);
   protected readonly maps = inject(MapsPreferenceService);
   protected readonly mapsLabels = MAPS_APP_LABELS;
 
@@ -198,11 +206,17 @@ export class TripLiveComponent {
     const home = this.homePlace();
     const result = new Map<string, StopLeg>();
     let previous: MapPlace | null = null;
+    // #108: con la posizione attiva, verso la tappa in corso o la prossima si parte da dove si è davvero.
+    const me = this.myPlace();
+    const focusId = this.live().focus?.id ?? null;
     for (const stop of this.stops()) {
       const here = placeOf(stop);
-      const origin = previous ?? home;
+      const fromHere = !!me && stop.id === focusId;
+      const origin = fromHere ? me : previous ?? home;
       const estimate = walkEstimate(origin, here);
-      result.set(stop.id, { origin, fromHome: !previous && !!home, walk: estimate ? formatWalkEstimate(estimate, lang) : null });
+      result.set(stop.id, {
+        origin, fromHome: !fromHere && !previous && !!home, fromHere, walk: estimate ? formatWalkEstimate(estimate, lang) : null
+      });
       if (!stop.skipped && isRoutable(here)) previous = here;
     }
     return result;
@@ -286,7 +300,7 @@ export class TripLiveComponent {
   /** Indicazioni per tornare all'alloggio: dall'ultima tappa con un luogo, se non si sa dove si è. */
   protected homeDirections(): string | null {
     const home = this.homePlace();
-    return home ? this.maps.url(home, this.lastPlace()) : null;
+    return home ? this.maps.url(home, this.myPlace() ?? this.lastPlace()) : null;
   }
 
   protected leg(stop: LiveStop): StopLeg | null {
@@ -302,8 +316,20 @@ export class TripLiveComponent {
     return home?.name || home?.address ? { name: home.name, address: home.address, coordinates: home.coordinates ?? null } : null;
   }
 
-  /** Dove si è adesso secondo il programma: la tappa in corso, altrimenti la precedente, altrimenti l'alloggio. */
+  /** #108: la posizione del telefono come luogo di partenza (solo se attiva). */
+  private myPlace(): MapPlace | null {
+    const p = this.location.position();
+    if (!p || this.location.status() !== 'on') return null;
+    return { name: this.translate.instant('live.location.my_position'), address: null, coordinates: { lat: p.lat, lng: p.lng } };
+  }
+
+  /**
+   * Dove si è adesso: la posizione del telefono se attiva (#108), altrimenti secondo il programma
+   * (la tappa in corso, altrimenti la precedente, altrimenti l'alloggio).
+   */
   private hereOrigin(): MapPlace | null {
+    const me = this.myPlace();
+    if (me) return me;
     const live = this.live();
     if (live.focus && live.focusKind === 'current' && isRoutable(placeOf(live.focus))) return placeOf(live.focus);
     if (live.focus) return this.legs().get(live.focus.id)?.origin ?? null;
@@ -399,13 +425,29 @@ export class TripLiveComponent {
     if (key) writeList(key, [...next]);
   }
 
+  /** #108: tappe di oggi per la proposta "Sei arrivato?". */
+  protected readonly arrivalStops = computed<ArrivalStop[]>(() => this.stops().map(s => ({
+    id: s.id, name: s.item.name, coordinates: s.item.raw.coordinates ?? null, done: s.done, skipped: s.skipped
+  })));
+
+  /** #108: "Sei arrivato a X? Segna come visitata". */
+  protected onArrived(stopId: string): void {
+    const stop = this.findStop(stopId);
+    if (stop) this.markDone(stop);
+  }
+
   private findStop(id: string): LiveStop | null {
     return this.stops().find(s => s.id === id) ?? null;
   }
 
   /** Tornando sull'app: ora aggiornata e tappe segnate nel frattempo dagli altri membri. */
   protected onVisibilityChange(): void {
-    if (document.visibilityState !== 'visible') return;
+    // #108: niente posizione con la pagina nascosta.
+    if (document.visibilityState !== 'visible') {
+      this.location.pause();
+      return;
+    }
+    this.location.resume();
     this.clock.tick();
     const id = this.tripId();
     if (id) this.tripService.ensureTripLoaded(id);

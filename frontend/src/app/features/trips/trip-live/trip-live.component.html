@@ -60,6 +60,8 @@
         }
 
         @case ('during') {
+          <app-live-location [stops]="arrivalStops()" [focusId]="live().focus?.id ?? null" (arrived)="onArrived($event)" />
+
           <app-live-suggestions [result]="suggestions()" [urlFor]="suggestionUrl" [placeUrl]="placeUrl"
             (act)="onSuggestionAction($event)" (pick)="onSuggestionPick($event)" />
 
@@ -158,7 +160,7 @@
                   @if (leg(stop)?.walk; as walk) {
                     <p class="live-now-meta live-walk" data-cy="live-walk">
                       <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span>
-                      {{ walk }} {{ (leg(stop)!.fromHome ? 'live.directions.from_home' : 'live.directions.from_previous') | translate }}
+                      {{ walk }} {{ (leg(stop)!.fromHere ? 'live.directions.from_here' : leg(stop)!.fromHome ? 'live.directions.from_home' : 'live.directions.from_previous') | translate }}
                     </p>
                   }
                   @if (stop.item.notes) {
@@ -229,7 +231,7 @@
                     @if (leg(stop)?.walk; as walk) {
                       <span class="live-timeline-walk" data-cy="live-timeline-walk">
                         <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span>
-                        {{ walk }} {{ (leg(stop)!.fromHome ? 'live.directions.from_home' : 'live.directions.from_previous') | translate }}
+                        {{ walk }} {{ (leg(stop)!.fromHere ? 'live.directions.from_here' : leg(stop)!.fromHome ? 'live.directions.from_home' : 'live.directions.from_previous') | translate }}
                       </span>
                     }
                     <span class="live-item-actions">
