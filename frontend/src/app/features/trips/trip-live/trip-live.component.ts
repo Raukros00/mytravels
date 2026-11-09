@@ -1,11 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, linkedSignal, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { TripService } from '../../../core/services/trip.service';
 import { ClockService } from '../../../core/services/clock.service';
 import { LiveTripService } from '../../../core/services/live-trip.service';
+import { MapsPreferenceService } from '../../../core/services/maps-preference.service';
+import { I18nService } from '../../../core/services/i18n.service';
 import { TripActivity, TripPlaceToEat } from '../../../core/models/trip.model';
 import { todayIso } from '../../../core/utils/date.utils';
 import { TimeRange, effectiveTimes } from '../../../core/utils/day-schedule.utils';
@@ -26,7 +28,8 @@ import {
   SuggestionsResult,
   computeSuggestions
 } from '../../../core/utils/live-suggestions.utils';
-import { TimelineItem, buildDayTimeline, getNavigationUrl, mealOf } from '../trip-detail/trip-detail.utils';
+import { MAPS_APP_LABELS, MapPlace, MapsApp, formatWalkEstimate, isRoutable, walkEstimate } from '../../../core/utils/directions.utils';
+import { TimelineItem, buildDayTimeline, mealOf } from '../trip-detail/trip-detail.utils';
 import { TripMovePanelComponent } from '../trip-move/trip-move-panel.component';
 import { MoveUndoBarComponent } from '../trip-move/move-undo-bar.component';
 import { StopRef, recoverStops } from '../trip-move/stop-move.service';
@@ -34,6 +37,15 @@ import { LiveWeatherComponent } from './live-weather.component';
 import { LiveSuggestionsComponent, SuggestionActionEvent, SuggestionPickEvent } from './live-suggestions.component';
 
 const DISMISSED_KEY = 'wb_live_dismissed';
+
+/** Come arrivare a una tappa (#106): da dove si parte e la stima a piedi dalla partenza. */
+interface StopLeg {
+  origin: MapPlace | null;
+  /** La partenza è l'alloggio (prima tappa della giornata). */
+  fromHome: boolean;
+  /** "1,2 km · ~15 min a piedi", solo se partenza e tappa hanno coordinate. */
+  walk: string | null;
+}
 
 /** Una tappa della giornata nella guida: la voce dell'itinerario più orari e stato. */
 interface LiveStop extends LiveStopInput {
@@ -55,12 +67,13 @@ const STATUS_LABELS: Record<LiveStopStatus, string> = {
  * Giornata con lo stato di ogni tappa. La logica è in core/utils/live-day.utils.ts (funzioni pure).
  * #112: "Sposta" sulle tappe, lista "Da recuperare" dei giorni passati e ripasso di fine giornata.
  * #105: suggerimenti contestuali (core/utils/live-suggestions.utils.ts) con le loro azioni.
+ * #106: indicazioni con i mezzi pubblici nell'app di mappe del dispositivo e stima a piedi tra le tappe.
  * #111: meteo della giornata nell'intestazione (LiveWeatherComponent).
  */
 @Component({
   selector: 'app-trip-live',
   standalone: true,
-  imports: [RouterLink, TripMovePanelComponent, MoveUndoBarComponent, LiveSuggestionsComponent, LiveWeatherComponent],
+  imports: [RouterLink, TranslatePipe, TripMovePanelComponent, MoveUndoBarComponent, LiveSuggestionsComponent, LiveWeatherComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:visibilitychange)': 'onVisibilityChange()' },
   templateUrl: './trip-live.component.html',
@@ -72,6 +85,9 @@ export class TripLiveComponent {
   protected readonly clock = inject(ClockService);
   private readonly liveTrips = inject(LiveTripService);
   private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18nService);
+  protected readonly maps = inject(MapsPreferenceService);
+  protected readonly mapsLabels = MAPS_APP_LABELS;
 
   protected readonly statusLabels = STATUS_LABELS;
 
@@ -160,12 +176,31 @@ export class TripLiveComponent {
     if (action === 'link') return s.url ?? null;
     if (action !== 'directions' && action !== 'go') return null;
     const stop = s.stopId ? this.findStop(s.stopId) : null;
-    if (stop) return this.directionsUrl(stop.item.name, stop.item.address);
-    const home = this.trip()?.accommodation;
-    return home?.name ? this.directionsUrl(home.name, home.address) : null;
+    if (stop) return this.stopDirections(stop);
+    return this.homeDirections();
   };
 
-  protected readonly placeUrl = (place: RankedPlace): string => this.directionsUrl(place.name, place.address ?? undefined);
+  /** Indicazioni per un locale proposto per il pasto: si parte dalla tappa in corso o dalla precedente. */
+  protected readonly placeUrl = (place: RankedPlace): string => this.maps.url(place, this.hereOrigin());
+
+  /**
+   * Per ogni tappa (#106): partenza = tappa precedente non saltata, per la prima l'alloggio; stima a piedi se
+   * entrambe hanno coordinate.
+   */
+  protected readonly legs = computed(() => {
+    const lang = this.i18n.currentLang();
+    const home = this.homePlace();
+    const result = new Map<string, StopLeg>();
+    let previous: MapPlace | null = null;
+    for (const stop of this.stops()) {
+      const here = placeOf(stop);
+      const origin = previous ?? home;
+      const estimate = walkEstimate(origin, here);
+      result.set(stop.id, { origin, fromHome: !previous && !!home, walk: estimate ? formatWalkEstimate(estimate, lang) : null });
+      if (!stop.skipped && isRoutable(here)) previous = here;
+    }
+    return result;
+  });
 
   /** Tappa di cui è aperto il pannello "Sposta" (#112). */
   protected readonly moving = signal<StopRef | null>(null);
@@ -237,8 +272,42 @@ export class TripLiveComponent {
     return this.live().statuses.get(stop.id) ?? 'todo';
   }
 
-  protected directionsUrl(name: string, address?: string): string {
-    return getNavigationUrl(name, address);
+  /** Indicazioni con i mezzi pubblici verso la tappa, dalla tappa precedente (o dall'alloggio) se non si sa dove si è. */
+  protected stopDirections(stop: LiveStop): string {
+    return this.maps.url(placeOf(stop), this.legs().get(stop.id)?.origin ?? null);
+  }
+
+  /** Indicazioni per tornare all'alloggio: dall'ultima tappa con un luogo, se non si sa dove si è. */
+  protected homeDirections(): string | null {
+    const home = this.homePlace();
+    return home ? this.maps.url(home, this.lastPlace()) : null;
+  }
+
+  protected leg(stop: LiveStop): StopLeg | null {
+    return this.legs().get(stop.id) ?? null;
+  }
+
+  protected chooseMapsApp(app: MapsApp): void {
+    this.maps.setApp(app);
+  }
+
+  private homePlace(): MapPlace | null {
+    const home = this.trip()?.accommodation;
+    return home?.name || home?.address ? { name: home.name, address: home.address, coordinates: home.coordinates ?? null } : null;
+  }
+
+  /** Dove si è adesso secondo il programma: la tappa in corso, altrimenti la precedente, altrimenti l'alloggio. */
+  private hereOrigin(): MapPlace | null {
+    const live = this.live();
+    if (live.focus && live.focusKind === 'current' && isRoutable(placeOf(live.focus))) return placeOf(live.focus);
+    if (live.focus) return this.legs().get(live.focus.id)?.origin ?? null;
+    return this.lastPlace();
+  }
+
+  /** L'ultima tappa della giornata (non saltata) con un luogo, altrimenti `null`. */
+  private lastPlace(): MapPlace | null {
+    const stops = this.stops().filter(s => !s.skipped).map(placeOf).filter(isRoutable);
+    return stops[stops.length - 1] ?? null;
   }
 
   protected markDone(stop: LiveStop): void {
@@ -363,6 +432,11 @@ function toLiveStop(item: TimelineItem): LiveStop {
     done: !!item.isCompleted,
     skipped: !!item.isSkipped
   };
+}
+
+/** Il luogo di una tappa per le indicazioni: coordinate, nome e indirizzo. */
+function placeOf(stop: LiveStop): MapPlace {
+  return { name: stop.item.name, address: stop.item.address ?? null, coordinates: stop.item.raw.coordinates ?? null };
 }
 
 /** I dati di una tappa che servono ai suggerimenti (#105). */

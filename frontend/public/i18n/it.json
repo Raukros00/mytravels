@@ -262,6 +262,12 @@
       },
       "picked": "{{name}} aggiunto a oggi per {{meal}}.",
       "picked_instead": "{{name}} al posto di {{old}}: buon appetito!"
+    },
+    "directions": {
+      "with": "Indicazioni con",
+      "app_label": "App per le indicazioni",
+      "from_previous": "dalla tappa precedente",
+      "from_home": "dall'alloggio"
     }
   }
 }

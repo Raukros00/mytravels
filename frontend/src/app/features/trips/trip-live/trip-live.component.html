@@ -116,8 +116,8 @@
                       <strong>Rientro all'alloggio</strong>
                       <span>{{ t.accommodation!.name }}@if (t.accommodation!.address) { · {{ t.accommodation!.address }} }</span>
                     </div>
-                    <a class="btn btn-secondary btn-sm" target="_blank" rel="noopener"
-                      [href]="directionsUrl(t.accommodation!.name, t.accommodation!.address)">Indicazioni</a>
+                    <a class="btn btn-secondary btn-sm" target="_blank" rel="noopener" data-cy="live-home-directions"
+                      [href]="homeDirections()">Indicazioni</a>
                   </div>
                 }
 
@@ -153,6 +153,12 @@
                       {{ stop.item.address }}
                     </p>
                   }
+                  @if (leg(stop)?.walk; as walk) {
+                    <p class="live-now-meta live-walk" data-cy="live-walk">
+                      <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span>
+                      {{ walk }} {{ (leg(stop)!.fromHome ? 'live.directions.from_home' : 'live.directions.from_previous') | translate }}
+                    </p>
+                  }
                   @if (stop.item.notes) {
                     <p class="live-now-notes">{{ stop.item.notes }}</p>
                   }
@@ -173,10 +179,17 @@
                       <span class="material-symbols-outlined" aria-hidden="true">redo</span>
                       Salta
                     </button>
-                    <a class="live-action" target="_blank" rel="noopener" [href]="directionsUrl(stop.item.name, stop.item.address)">
+                    <a class="live-action" target="_blank" rel="noopener" data-cy="live-directions" [href]="stopDirections(stop)">
                       <span class="material-symbols-outlined" aria-hidden="true">directions</span>
                       Indicazioni
                     </a>
+                  </div>
+                  <div class="live-maps" role="group" data-cy="live-maps" [attr.aria-label]="'live.directions.app_label' | translate">
+                    <span class="live-maps-label">{{ 'live.directions.with' | translate }}</span>
+                    @for (app of maps.apps; track app) {
+                      <button type="button" class="live-maps-app" [class.live-maps-app--active]="maps.app() === app"
+                        [attr.aria-pressed]="maps.app() === app" [attr.data-app]="app" (click)="chooseMapsApp(app)">{{ mapsLabels[app] }}</button>
+                    }
                   </div>
                   <button type="button" class="live-move-link" (click)="openMove(stop.item)">
                     <span class="material-symbols-outlined" aria-hidden="true">event_repeat</span>
@@ -211,6 +224,12 @@
                     <span class="live-timeline-time">{{ stop.item.timeLabel || '—' }}</span>
                     <span class="live-timeline-name">{{ stop.item.name }}</span>
                     <span class="live-status">{{ statusLabels[statusOf(stop)] }}</span>
+                    @if (leg(stop)?.walk; as walk) {
+                      <span class="live-timeline-walk" data-cy="live-timeline-walk">
+                        <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span>
+                        {{ walk }} {{ (leg(stop)!.fromHome ? 'live.directions.from_home' : 'live.directions.from_previous') | translate }}
+                      </span>
+                    }
                     <span class="live-item-actions">
                       @if (statusOf(stop) === 'done' || statusOf(stop) === 'skipped') {
                         <button type="button" class="live-undo" [attr.aria-label]="'Segna di nuovo da fare: ' + stop.item.name"
@@ -219,6 +238,10 @@
                       @if (statusOf(stop) === 'missed') {
                         <button type="button" class="live-undo" [attr.aria-label]="'Segna come fatta: ' + stop.item.name"
                           (click)="markDone(stop)">Fatta</button>
+                      }
+                      @if (statusOf(stop) !== 'done' && statusOf(stop) !== 'skipped') {
+                        <a class="live-undo live-directions" target="_blank" rel="noopener" data-cy="live-stop-directions"
+                          [attr.aria-label]="'Indicazioni per ' + stop.item.name" [href]="stopDirections(stop)">Indicazioni</a>
                       }
                       @if (statusOf(stop) !== 'done') {
                         <button type="button" class="live-undo live-move" [attr.aria-label]="'Sposta a un altro giorno: ' + stop.item.name"
