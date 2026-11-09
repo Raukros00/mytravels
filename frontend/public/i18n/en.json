@@ -205,6 +205,8 @@
     "push_pref_new_members_desc": "When someone joins one of your groups.",
     "push_pref_reminders": "Reminders before departure",
     "push_pref_reminders_desc": "3 days before and the day before a confirmed trip.",
+    "push_pref_live_guide": "Guide during the trip",
+    "push_pref_live_guide_desc": "Good morning with the day's plan at 8:30, meals, closing times and an end-of-day recap.",
     "push_prefs_error": "Could not save the preference. Please try again."
   },
   "live": {
@@ -267,22 +269,7 @@
       "with": "Directions with",
       "app_label": "Maps app for directions",
       "from_previous": "from the previous stop",
-      "from_home": "from your accommodation",
-      "from_here": "from where you are"
-    },
-    "location": {
-      "enable": "Use my location for directions",
-      "privacy": "Your location stays on your phone: it is never sent to the server or saved, and it is only used while this page is open.",
-      "searching": "Looking for your location…",
-      "active": "Location on: distances and directions start from where you are.",
-      "disable": "Stop using my location",
-      "cancel": "Cancel",
-      "denied": "Location permission denied: the guide works as before. You can allow it again in the browser settings.",
-      "unavailable": "Location not available right now.",
-      "arrived": "Have you arrived at {{name}}?",
-      "mark_visited": "Mark as visited",
-      "not_yet": "No",
-      "my_position": "My location"
+      "from_home": "from your accommodation"
     }
   }
 }

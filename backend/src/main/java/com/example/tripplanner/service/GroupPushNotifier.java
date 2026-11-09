@@ -6,6 +6,7 @@ import com.example.tripplanner.model.PushCategory;
 import com.example.tripplanner.model.Trip;
 import com.example.tripplanner.model.User;
 import com.example.tripplanner.service.PushService.PushMessage;
+import com.example.tripplanner.util.LiveGuidePlan;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -122,6 +123,76 @@ public class GroupPushNotifier {
                     ? new PushMessage(title, "Domani si parte per " + place + "!", url, tag)
                     : new PushMessage(title, "Mancano 3 giorni a " + place + " ✈️", url, tag);
         });
+    }
+
+    /**
+     * Guida durante il viaggio (#110) ai destinatari indicati (membri attuali, già filtrati dal job per l'invio
+     * unico): buongiorno, pasto, chiusura imminente o fine giornata. Si apre la guida della giornata.
+     */
+    public void liveGuide(Group group, Trip trip, LiveGuidePlan.Event event, List<String> recipients) {
+        String url = "/trips/" + trip.getId() + "/live";
+        String tag = "live:" + trip.getId() + ":" + event.kind().code + (event.ref().isEmpty() ? "" : ":" + event.ref());
+        String title = trip.getTitle();
+        send(group, Set.of(), recipients, PushCategory.LIVE_GUIDE, lang -> {
+            boolean en = "en".equals(lang);
+            return new PushMessage(title, liveGuideBody(event, en), url, tag);
+        });
+    }
+
+    /** Testo delle notifiche della guida (#110), in italiano o in inglese. */
+    static String liveGuideBody(LiveGuidePlan.Event event, boolean en) {
+        LiveGuidePlan.Stop stop = event.stop();
+        return switch (event.kind()) {
+            case MORNING -> (en ? "Good morning! Today: " : "Buongiorno! Oggi: ") + program(event.today(), en);
+            case MEAL -> en
+                    ? "It's " + mealName(stop.meal(), true) + " time: " + stop.name() + " is waiting for you"
+                    : "È ora di " + mealName(stop.meal(), false) + ": " + stop.name() + " ti aspetta";
+            case CLOSING -> en
+                    ? stop.name() + " closes in 1 hour (at " + event.closesAt() + ")"
+                    : stop.name() + " chiude tra 1 ora (alle " + event.closesAt() + ")";
+            case EVENING -> {
+                long done = event.today().stream().filter(LiveGuidePlan.Stop::done).count();
+                int total = event.today().size();
+                String summary = en
+                        ? "Day over: " + done + " of " + total + " stops done."
+                        : "Giornata finita: " + done + " " + (done == 1 ? "tappa fatta" : "tappe fatte") + " su " + total + ".";
+                String next;
+                if (event.lastDay()) next = en ? " It was the last day: have a good trip home!" : " Era l'ultimo giorno: buon rientro!";
+                else if (event.tomorrow().isEmpty()) next = en ? " Nothing planned for tomorrow yet." : " Domani non c'è ancora niente in programma.";
+                else next = (en ? " Tomorrow: " : " Domani: ") + program(event.tomorrow(), en);
+                yield summary + next;
+            }
+        };
+    }
+
+    /** "Sagrada Família, Park Güell e cena da Bar Cañete" (al massimo 4 tappe, poi "e altre N"). */
+    private static String program(List<LiveGuidePlan.Stop> stops, boolean en) {
+        List<String> names = stops.stream()
+                .map(s -> s.food() && s.meal() != null
+                        ? (en ? mealName(s.meal(), true) + " at " : mealName(s.meal(), false) + " da ") + s.name()
+                        : s.name())
+                .toList();
+        int max = 4;
+        List<String> shown = names.size() > max ? names.subList(0, max - 1) : names;
+        String and = en ? " and " : " e ";
+        if (names.size() > max) {
+            int others = names.size() - shown.size();
+            return String.join(", ", shown) + and + (en ? others + " more" : "altre " + others);
+        }
+        if (shown.size() == 1) return shown.get(0);
+        return String.join(", ", shown.subList(0, shown.size() - 1)) + and + shown.get(shown.size() - 1);
+    }
+
+    private static String mealName(String meal, boolean en) {
+        if (meal == null) return en ? "a meal" : "mangiare";
+        return switch (meal) {
+            case "breakfast" -> en ? "breakfast" : "colazione";
+            case "lunch" -> en ? "lunch" : "pranzo";
+            case "dinner" -> en ? "dinner" : "cena";
+            case "aperitivo" -> en ? "aperitivo" : "aperitivo";
+            case "snack" -> en ? "a snack" : "merenda";
+            default -> en ? "a meal" : "mangiare";
+        };
     }
 
     private static List<String> memberIds(Group group) {

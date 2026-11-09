@@ -35,6 +35,11 @@ public class PushPreferences {
     @Column(nullable = false)
     private boolean reminders = true;
 
+    /** #110: notifiche della guida durante il viaggio. */
+    @Builder.Default
+    @Column(name = "live_guide", nullable = false)
+    private boolean liveGuide = true;
+
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
@@ -49,6 +54,7 @@ public class PushPreferences {
             case PROPOSALS -> proposals;
             case NEW_MEMBERS -> newMembers;
             case REMINDERS -> reminders;
+            case LIVE_GUIDE -> liveGuide;
         };
     }
 }
