@@ -1,11 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, linkedSignal, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { TripService } from '../../../core/services/trip.service';
 import { ClockService } from '../../../core/services/clock.service';
 import { LiveTripService } from '../../../core/services/live-trip.service';
-import { TripPlaceToEat } from '../../../core/models/trip.model';
+import { TripActivity, TripPlaceToEat } from '../../../core/models/trip.model';
 import { todayIso } from '../../../core/utils/date.utils';
 import { TimeRange, effectiveTimes } from '../../../core/utils/day-schedule.utils';
 import {
@@ -16,11 +17,23 @@ import {
   tripDayDate,
   tripDayInfo
 } from '../../../core/utils/live-day.utils';
+import {
+  RankedPlace,
+  SuggestPlace,
+  SuggestStop,
+  Suggestion,
+  SuggestionAction,
+  SuggestionsResult,
+  computeSuggestions
+} from '../../../core/utils/live-suggestions.utils';
 import { TimelineItem, buildDayTimeline, getNavigationUrl, mealOf } from '../trip-detail/trip-detail.utils';
 import { TripMovePanelComponent } from '../trip-move/trip-move-panel.component';
 import { MoveUndoBarComponent } from '../trip-move/move-undo-bar.component';
 import { StopRef, recoverStops } from '../trip-move/stop-move.service';
 import { LiveWeatherComponent } from './live-weather.component';
+import { LiveSuggestionsComponent, SuggestionActionEvent, SuggestionPickEvent } from './live-suggestions.component';
+
+const DISMISSED_KEY = 'wb_live_dismissed';
 
 /** Una tappa della giornata nella guida: la voce dell'itinerario più orari e stato. */
 interface LiveStop extends LiveStopInput {
@@ -41,12 +54,13 @@ const STATUS_LABELS: Record<LiveStopStatus, string> = {
  * Adesso (tappa in corso o prossima, con Fatto / Salta / Indicazioni), Dopo (le 1–2 successive) e la
  * Giornata con lo stato di ogni tappa. La logica è in core/utils/live-day.utils.ts (funzioni pure).
  * #112: "Sposta" sulle tappe, lista "Da recuperare" dei giorni passati e ripasso di fine giornata.
+ * #105: suggerimenti contestuali (core/utils/live-suggestions.utils.ts) con le loro azioni.
  * #111: meteo della giornata nell'intestazione (LiveWeatherComponent).
  */
 @Component({
   selector: 'app-trip-live',
   standalone: true,
-  imports: [RouterLink, TripMovePanelComponent, MoveUndoBarComponent, LiveWeatherComponent],
+  imports: [RouterLink, TripMovePanelComponent, MoveUndoBarComponent, LiveSuggestionsComponent, LiveWeatherComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:visibilitychange)': 'onVisibilityChange()' },
   templateUrl: './trip-live.component.html',
@@ -57,6 +71,7 @@ export class TripLiveComponent {
   private readonly tripService = inject(TripService);
   protected readonly clock = inject(ClockService);
   private readonly liveTrips = inject(LiveTripService);
+  private readonly translate = inject(TranslateService);
 
   protected readonly statusLabels = STATUS_LABELS;
 
@@ -106,6 +121,51 @@ export class TripLiveComponent {
   protected readonly nowMinutes = computed(() => minutesOfDay(this.clock.now()));
 
   protected readonly live = computed(() => computeLiveDay(this.stops(), this.nowMinutes()));
+
+  private readonly dismissedKey = computed(() => {
+    const id = this.tripId();
+    return id ? `${DISMISSED_KEY}:${id}:${this.today()}` : null;
+  });
+
+  /** Suggerimenti chiusi ("Ignora", "Sì") per questo viaggio e oggi, ricordati sul dispositivo (#105). */
+  private readonly dismissed = linkedSignal<ReadonlySet<string>>(() => {
+    const key = this.dismissedKey();
+    return new Set(key ? readList(key) : []);
+  });
+
+  /** Suggerimento principale e secondari (#105). */
+  protected readonly suggestions = computed<SuggestionsResult>(() => {
+    const t = this.trip();
+    const info = this.dayInfo();
+    if (!t || info?.state !== 'during') return { primary: null, secondary: [] };
+    const now = this.clock.now();
+    const places: SuggestPlace[] = (t.placesToEat ?? [])
+      .filter(p => !p.isVisited && (p.assignedDay == null || (p.assignedDay === info.dayNumber && !p.isSkipped)))
+      .map(p => ({
+        id: p.id, name: p.name, address: p.address || null, meal: mealOf(p), coordinates: p.coordinates ?? null,
+        today: p.assignedDay === info.dayNumber
+      }));
+    return computeSuggestions({
+      nowMinutes: minutesOfDay(now),
+      weekday: now.getDay(),
+      stops: this.stops().map(toSuggestStop),
+      places,
+      accommodation: t.accommodation?.name ? { name: t.accommodation.name, coordinates: t.accommodation.coordinates ?? null } : null,
+      dismissed: this.dismissed()
+    });
+  });
+
+  /** Link delle azioni dei suggerimenti: indicazioni, "Andiamo", biglietti / prenotazione. */
+  protected readonly suggestionUrl = (s: Suggestion, action: SuggestionAction): string | null => {
+    if (action === 'link') return s.url ?? null;
+    if (action !== 'directions' && action !== 'go') return null;
+    const stop = s.stopId ? this.findStop(s.stopId) : null;
+    if (stop) return this.directionsUrl(stop.item.name, stop.item.address);
+    const home = this.trip()?.accommodation;
+    return home?.name ? this.directionsUrl(home.name, home.address) : null;
+  };
+
+  protected readonly placeUrl = (place: RankedPlace): string => this.directionsUrl(place.name, place.address ?? undefined);
 
   /** Tappa di cui è aperto il pannello "Sposta" (#112). */
   protected readonly moving = signal<StopRef | null>(null);
@@ -208,6 +268,66 @@ export class TripLiveComponent {
     else this.tripService.updatePlaceToEat(t.id, entry.id, changes, 'Aggiunto alla giornata di oggi.');
   }
 
+  /** Azioni dei suggerimenti (#105): Salta e Sposta usano il flusso della #112. */
+  protected onSuggestionAction({ suggestion, action }: SuggestionActionEvent): void {
+    const stop = suggestion.stopId ? this.findStop(suggestion.stopId) : null;
+    switch (action) {
+      case 'done':
+        if (stop) this.markDone(stop);
+        break;
+      case 'skip':
+        if (stop) this.skip(stop);
+        break;
+      case 'move':
+        if (stop) this.openMove(stop.item);
+        break;
+      case 'booked':
+      case 'ignore':
+        this.dismiss(suggestion.id);
+        break;
+    }
+  }
+
+  /**
+   * Scelta di un locale per il pasto: va nella giornata di oggi per quel pasto. Al posto di quello in programma
+   * ("Scegli un altro") prende i suoi orari, e quello in programma viene saltato (finisce in "Da recuperare").
+   */
+  protected onSuggestionPick({ suggestion, place }: SuggestionPickEvent): void {
+    const t = this.trip();
+    const info = this.dayInfo();
+    if (!t || !info) return;
+    const meal = String(suggestion.params['meal'] ?? '');
+    const mealWord = this.translate.instant(`live.suggest.meals.${meal}`);
+    const planned = suggestion.kind === 'meal-planned' && suggestion.stopId ? this.findStop(suggestion.stopId) : null;
+    const changes: Partial<TripPlaceToEat> = {
+      assignedDay: info.dayNumber,
+      assignedMeal: (meal || null) as TripPlaceToEat['assignedMeal'],
+      dayOrder: null,
+      isSkipped: false
+    };
+    if (planned) {
+      const raw = planned.item.raw as TripPlaceToEat;
+      Object.assign(changes, { startTime: raw.startTime ?? null, endTime: raw.endTime ?? null, timeSlot: raw.timeSlot ?? '' });
+      this.tripService.updatePlaceToEat(t.id, place.id, changes,
+        this.translate.instant('live.suggest.picked_instead', { name: place.name, old: planned.item.name }));
+      this.save(planned, false, true, `"${planned.item.name}" saltato.`);
+    } else {
+      this.tripService.updatePlaceToEat(t.id, place.id, changes, this.translate.instant('live.suggest.picked', { name: place.name, meal: mealWord }));
+    }
+  }
+
+  private dismiss(id: string): void {
+    const next = new Set(this.dismissed());
+    next.add(id);
+    this.dismissed.set(next);
+    const key = this.dismissedKey();
+    if (key) writeList(key, [...next]);
+  }
+
+  private findStop(id: string): LiveStop | null {
+    return this.stops().find(s => s.id === id) ?? null;
+  }
+
   /** Tornando sull'app: ora aggiornata e tappe segnate nel frattempo dagli altri membri. */
   protected onVisibilityChange(): void {
     if (document.visibilityState !== 'visible') return;
@@ -243,6 +363,48 @@ function toLiveStop(item: TimelineItem): LiveStop {
     done: !!item.isCompleted,
     skipped: !!item.isSkipped
   };
+}
+
+/** I dati di una tappa che servono ai suggerimenti (#105). */
+function toSuggestStop(stop: LiveStop): SuggestStop {
+  const raw = stop.item.raw;
+  const isActivity = stop.item.type === 'activity';
+  const activity = isActivity ? (raw as TripActivity) : null;
+  return {
+    id: stop.id,
+    times: stop.times,
+    done: stop.done,
+    skipped: stop.skipped,
+    type: stop.item.type,
+    name: stop.item.name,
+    meal: isActivity ? null : mealOf(raw as TripPlaceToEat),
+    openingHours: raw.openingHours ?? null,
+    closingDays: raw.closingDays ?? null,
+    bookingRequired: !!raw.bookingRequired,
+    ticketsRequired: !!activity?.ticketsRequired,
+    ticketPrice: activity?.ticketPrice ?? null,
+    currency: activity?.currency ?? null,
+    bookingUrl: activity?.bookingUrl ?? null,
+    coordinates: raw.coordinates ?? null
+  };
+}
+
+/** Liste salvate sul dispositivo (localStorage può mancare o essere bloccato: in quel caso non si ricorda nulla). */
+function readList(key: string): string[] {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) ?? '[]');
+    return Array.isArray(value) ? value.filter(v => typeof v === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeList(key: string, list: string[]): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(list.slice(-50)));
+  } catch {
+    // Spazio pieno o storage bloccato: il suggerimento resta chiuso solo finché la pagina è aperta.
+  }
 }
 
 /** "venerdì 3 luglio" da una data `yyyy-MM-dd`. */

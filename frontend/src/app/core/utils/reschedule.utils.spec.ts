@@ -44,6 +44,9 @@ describe('reschedule.utils', () => {
       expect(parseOpeningHours('9:00-19:00')).toEqual([r('09:00', '19:00')]);
       expect(parseOpeningHours('09.00–13.00, 15.00–19.30')).toEqual([r('09:00', '13:00'), r('15:00', '19:30')]);
       expect(parseOpeningHours('10:00 - 24:00')).toEqual([r('10:00', '23:59')]);
+      expect(parseOpeningHours('9-17')).toEqual([r('09:00', '17:00')]);
+      expect(parseOpeningHours('lun-ven 9-13 e 15.30-19')).toEqual([r('09:00', '13:00'), r('15:30', '19:00')]);
+      expect(parseOpeningHours('dal 12-05-2030')).toBeNull();
       expect(parseOpeningHours('sempre aperto')).toBeNull();
       expect(parseOpeningHours(undefined)).toBeNull();
     });
