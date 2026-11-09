@@ -22,6 +22,9 @@ public interface TripRepository extends JpaRepository<Trip, String> {
     /** Viaggi con la decisione e la data di partenza indicate (promemoria prima della partenza). */
     List<Trip> findByDecisionAndStartDate(String decision, String startDate);
 
+    /** #110: viaggi in corso in una data (`yyyy-MM-dd`: il confronto tra stringhe segue le date). */
+    List<Trip> findByDecisionAndStartDateLessThanEqualAndEndDateGreaterThanEqual(String decision, String startDate, String endDate);
+
     /**
      * Il viaggio con la riga bloccata fino alla fine della transazione (SELECT ... FOR UPDATE):
      * le operazioni che leggono e riscrivono lo stesso viaggio (es. i voti) vengono eseguite
