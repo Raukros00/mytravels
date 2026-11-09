@@ -33,6 +33,7 @@ import { TimelineItem, buildDayTimeline, mealOf } from '../trip-detail/trip-deta
 import { TripMovePanelComponent } from '../trip-move/trip-move-panel.component';
 import { MoveUndoBarComponent } from '../trip-move/move-undo-bar.component';
 import { StopRef, recoverStops } from '../trip-move/stop-move.service';
+import { LiveWeatherComponent } from './live-weather.component';
 import { LiveSuggestionsComponent, SuggestionActionEvent, SuggestionPickEvent } from './live-suggestions.component';
 
 const DISMISSED_KEY = 'wb_live_dismissed';
@@ -67,11 +68,12 @@ const STATUS_LABELS: Record<LiveStopStatus, string> = {
  * #112: "Sposta" sulle tappe, lista "Da recuperare" dei giorni passati e ripasso di fine giornata.
  * #105: suggerimenti contestuali (core/utils/live-suggestions.utils.ts) con le loro azioni.
  * #106: indicazioni con i mezzi pubblici nell'app di mappe del dispositivo e stima a piedi tra le tappe.
+ * #111: meteo della giornata nell'intestazione (LiveWeatherComponent).
  */
 @Component({
   selector: 'app-trip-live',
   standalone: true,
-  imports: [RouterLink, TranslatePipe, TripMovePanelComponent, MoveUndoBarComponent, LiveSuggestionsComponent],
+  imports: [RouterLink, TranslatePipe, TripMovePanelComponent, MoveUndoBarComponent, LiveSuggestionsComponent, LiveWeatherComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:visibilitychange)': 'onVisibilityChange()' },
   templateUrl: './trip-live.component.html',
@@ -132,7 +134,9 @@ export class TripLiveComponent {
     return buildDayTimeline(t.activities ?? [], t.placesToEat ?? [], info.dayNumber).map(item => toLiveStop(item));
   });
 
-  protected readonly live = computed(() => computeLiveDay(this.stops(), minutesOfDay(this.clock.now())));
+  protected readonly nowMinutes = computed(() => minutesOfDay(this.clock.now()));
+
+  protected readonly live = computed(() => computeLiveDay(this.stops(), this.nowMinutes()));
 
   private readonly dismissedKey = computed(() => {
     const id = this.tripId();

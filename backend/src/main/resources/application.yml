@@ -81,6 +81,11 @@ wikidata:
   # in parallelo a Photon (dati CC0, nessuna chiave). Vuota = solo Photon.
   url: ${WIKIDATA_URL:https://www.wikidata.org/w/api.php}
 
+open-meteo:
+  # Meteo della giornata nella guida "In viaggio" (Open-Meteo: gratuito, senza chiave, dati CC BY 4.0).
+  # Vuoto = guida senza meteo. Può puntare anche a un'istanza propria di Open-Meteo.
+  url: ${OPEN_METEO_URL:https://api.open-meteo.com/v1/forecast}
+
 places:
   # Raggio (km) attorno alla destinazione del viaggio entro cui cercare attrazioni e indirizzi.
   search-radius-km: ${PLACES_SEARCH_RADIUS_KM:40}

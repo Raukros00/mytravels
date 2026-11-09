@@ -50,6 +50,8 @@ services:
       PHOTON_URL: ${PHOTON_URL-https://photon.komoot.io/api}
       # Monumenti e attrazioni con il nome in italiano (Wikidata): default l'API pubblica, vuoto = solo Photon.
       WIKIDATA_URL: ${WIKIDATA_URL-https://www.wikidata.org/w/api.php}
+      # Meteo della giornata nella guida (Open-Meteo, senza chiave): default l'API pubblica, vuoto = niente meteo.
+      OPEN_METEO_URL: ${OPEN_METEO_URL-https://api.open-meteo.com/v1/forecast}
       JPA_SHOW_SQL: ${JPA_SHOW_SQL:-false}
       SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
     depends_on:
