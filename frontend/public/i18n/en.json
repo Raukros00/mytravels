@@ -262,6 +262,12 @@
       },
       "picked": "{{name}} added to today for {{meal}}.",
       "picked_instead": "{{name}} instead of {{old}}: enjoy your meal!"
+    },
+    "directions": {
+      "with": "Directions with",
+      "app_label": "Maps app for directions",
+      "from_previous": "from the previous stop",
+      "from_home": "from your accommodation"
     }
   }
 }

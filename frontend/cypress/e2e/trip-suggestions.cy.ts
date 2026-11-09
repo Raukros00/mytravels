@@ -192,7 +192,8 @@ describe('In viaggio – suggerimenti contestuali', () => {
     openAt(trip, DAY1, '21:45');
     primary().should('have.attr', 'data-kind', 'day-end').within(() => {
       cy.get('.suggest-text').should('have.text', 'Giornata finita! Torna all\'alloggio: Hotel Arts.');
-      cy.contains('a', 'Indicazioni').should('have.attr', 'href').and('contain', 'Hotel');
+      // Destinazione: le coordinate dell'alloggio, con i mezzi pubblici (#106).
+      cy.contains('a', 'Indicazioni').should('have.attr', 'href').and('contain', 'destination=41.387,2.17&travelmode=transit');
     });
   });
 
