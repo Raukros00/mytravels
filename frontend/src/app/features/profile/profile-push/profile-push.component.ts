@@ -19,7 +19,7 @@ export class ProfilePushComponent {
   protected readonly categories = PUSH_CATEGORIES;
   /** Chiavi di traduzione delle categorie (profile.push_pref_<chiave> e ..._desc). */
   protected readonly categoryKey: Record<PushCategory, string> = {
-    invites: 'invites', proposals: 'proposals', newMembers: 'new_members', reminders: 'reminders', liveGuide: 'live_guide',
+    invites: 'invites', proposals: 'proposals', newMembers: 'new_members', reminders: 'reminders',
   };
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);

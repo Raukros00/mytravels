@@ -205,14 +205,12 @@ public class PushService {
     }
 
     /** Aggiorna solo le categorie presenti (null = invariata). */
-    public PushPreferences updatePreferences(String userId, Boolean invites, Boolean proposals, Boolean newMembers, Boolean reminders,
-                                             Boolean liveGuide) {
+    public PushPreferences updatePreferences(String userId, Boolean invites, Boolean proposals, Boolean newMembers, Boolean reminders) {
         PushPreferences prefs = preferencesOf(userId);
         if (invites != null) prefs.setInvites(invites);
         if (proposals != null) prefs.setProposals(proposals);
         if (newMembers != null) prefs.setNewMembers(newMembers);
         if (reminders != null) prefs.setReminders(reminders);
-        if (liveGuide != null) prefs.setLiveGuide(liveGuide);
         prefs.setUpdatedAt(Instant.now());
         return preferencesRepository.save(prefs);
     }

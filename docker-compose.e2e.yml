@@ -60,9 +60,6 @@ services:
       # push-reminders.cy.ts esegue il job a comando simulando la data (endpoint solo e2e).
       PUSH_REMINDERS_ENABLED: "false"
       PUSH_REMINDERS_TEST_ENDPOINT: "true"
-      # Guida durante il viaggio (#110): idem, lo spec push-live-guide.cy.ts esegue il job a comando.
-      PUSH_LIVE_GUIDE_ENABLED: "false"
-      PUSH_LIVE_GUIDE_TEST_ENDPOINT: "true"
     depends_on:
       postgres:
         condition: service_healthy

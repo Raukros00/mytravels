@@ -101,19 +101,19 @@ public class PushController {
         return ResponseEntity.ok(view(pushService.preferencesOf(me.get().getId())));
     }
 
-    /** Aggiorna le categorie presenti nel corpo (`invites`, `proposals`, `newMembers`, `reminders`, `liveGuide`: booleani). */
+    /** Aggiorna le categorie presenti nel corpo (`invites`, `proposals`, `newMembers`, `reminders`: booleani). */
     @PutMapping("/preferences")
     public ResponseEntity<?> updatePreferences(@RequestBody Map<String, Object> body, Authentication auth) {
         Optional<User> me = groupAccess.currentUser(auth);
         if (me.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        for (String key : List.of("invites", "proposals", "newMembers", "reminders", "liveGuide")) {
+        for (String key : List.of("invites", "proposals", "newMembers", "reminders")) {
             if (body.containsKey(key) && !(body.get(key) instanceof Boolean)) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Valore non valido per " + key + "."));
             }
         }
         PushPreferences saved = pushService.updatePreferences(me.get().getId(),
                 (Boolean) body.get("invites"), (Boolean) body.get("proposals"),
-                (Boolean) body.get("newMembers"), (Boolean) body.get("reminders"), (Boolean) body.get("liveGuide"));
+                (Boolean) body.get("newMembers"), (Boolean) body.get("reminders"));
         return ResponseEntity.ok(view(saved));
     }
 
@@ -149,7 +149,6 @@ public class PushController {
         m.put("proposals", p.isProposals());
         m.put("newMembers", p.isNewMembers());
         m.put("reminders", p.isReminders());
-        m.put("liveGuide", p.isLiveGuide());
         return m;
     }
 

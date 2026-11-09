@@ -42,23 +42,21 @@ describe('Notifiche push – preferenze per tipo', () => {
       .its('status').should('be.oneOf', [401, 403]);
   });
 
-  it('Profilo: le cinque categorie sotto l\'interruttore, con i valori predefiniti; la scelta resta dopo il ricaricamento', () => {
+  it('Profilo: le quattro categorie sotto l\'interruttore, con i valori predefiniti; la scelta resta dopo il ricaricamento', () => {
     cy.intercept('PUT', '/api/v1/push/preferences').as('save');
     cy.login('giulia');
     cy.visit('/profile');
 
     section().should('contain.text', t.push_prefs_title).and('contain.text', t.push_prefs_hint);
-    section().find('.push-pref').should('have.length', 5);
+    section().find('.push-pref').should('have.length', 4);
     section().should('contain.text', t.push_pref_invites)
       .and('contain.text', t.push_pref_proposals)
       .and('contain.text', t.push_pref_new_members)
-      .and('contain.text', t.push_pref_reminders)
-      .and('contain.text', t.push_pref_live_guide);
+      .and('contain.text', t.push_pref_reminders);
     prefSwitch('invites').should('have.attr', 'aria-checked', 'true');
     prefSwitch('proposals').should('have.attr', 'aria-checked', 'true');
     prefSwitch('newMembers').should('have.attr', 'aria-checked', 'false');
     prefSwitch('reminders').should('have.attr', 'aria-checked', 'true');
-    prefSwitch('liveGuide').should('have.attr', 'aria-checked', 'true');
 
     prefSwitch('proposals').click();
     cy.wait('@save').its('request.body').should('deep.equal', { proposals: false });

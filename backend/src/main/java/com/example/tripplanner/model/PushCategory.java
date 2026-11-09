@@ -9,7 +9,5 @@ public enum PushCategory {
     /** Nuovi membri nei gruppi dell'utente (disattivata di default). */
     NEW_MEMBERS,
     /** Promemoria prima della partenza. */
-    REMINDERS,
-    /** Guida durante il viaggio (#110): buongiorno, pasti, chiusure imminenti e fine giornata. */
-    LIVE_GUIDE
+    REMINDERS
 }
