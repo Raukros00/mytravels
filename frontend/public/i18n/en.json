@@ -156,7 +156,8 @@
     "share_regenerate_cancel": "Cancel",
     "join_requests_title": "Join requests",
     "join_requests_approve": "Accept",
-    "join_requests_decline": "Decline"
+    "join_requests_decline": "Decline",
+    "deleted_user": "Deleted user"
   },
   "profile": {
     "page_title": "Profile",
@@ -233,7 +234,30 @@
     "edit_error": "Could not save your profile. Please try again.",
     "edit_error_invalid": "Some details are not valid: check the fields.",
     "edit_error_age": "You must be at least 14 years old.",
-    "edit_error_photo": "The photo is not valid: try another image."
+    "edit_error_photo": "The photo is not valid: try another image.",
+    "danger_title": "Danger zone",
+    "danger_desc": "Download a copy of your data or permanently delete your account.",
+    "export_button": "Download my data",
+    "export_error": "Could not download your data. Please try again.",
+    "delete_button": "Delete account",
+    "delete_title": "Delete account",
+    "delete_intro": "Deletion is permanent and cannot be undone.",
+    "delete_summary_account": "Your account, profile photo, received notifications, join requests and notification settings on all devices will be deleted.",
+    "delete_summary_groups": "You will leave all your groups.",
+    "delete_summary_content": "Shared trips, activities and expenses stay with the groups: where you appear as the author they will see \"Deleted user\".",
+    "delete_summary_logout": "You will be signed out on this and every other device.",
+    "delete_groups_deleted": "You are the only member of these groups: they will be deleted together with their trips.",
+    "delete_blocked": "You can't delete your account yet: you are the only admin of these groups with other members.",
+    "delete_blocked_hint": "Open the group and make someone else an admin (then you can leave).",
+    "delete_password": "Enter your password to confirm",
+    "delete_show_password": "Show password",
+    "delete_hide_password": "Hide password",
+    "delete_confirm": "Delete permanently",
+    "delete_pending": "Deleting…",
+    "delete_done": "Your account has been deleted. Thanks for travelling with us!",
+    "delete_wrong_password": "Wrong password.",
+    "delete_too_many": "Too many attempts: try again in a few minutes.",
+    "delete_error": "Could not delete your account. Please try again."
   },
   "live": {
     "suggest": {

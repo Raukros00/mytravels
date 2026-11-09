@@ -156,7 +156,8 @@
     "share_regenerate_cancel": "Annulla",
     "join_requests_title": "Richieste di accesso",
     "join_requests_approve": "Accetta",
-    "join_requests_decline": "Rifiuta"
+    "join_requests_decline": "Rifiuta",
+    "deleted_user": "Utente eliminato"
   },
   "profile": {
     "page_title": "Profilo",
@@ -233,7 +234,30 @@
     "edit_error": "Non è stato possibile salvare il profilo. Riprova.",
     "edit_error_invalid": "Alcuni dati non sono validi: controlla i campi.",
     "edit_error_age": "Devi avere almeno 14 anni.",
-    "edit_error_photo": "La foto non è valida: prova con un'altra immagine."
+    "edit_error_photo": "La foto non è valida: prova con un'altra immagine.",
+    "danger_title": "Zona pericolosa",
+    "danger_desc": "Scarica una copia dei tuoi dati o elimina definitivamente il tuo account.",
+    "export_button": "Scarica i miei dati",
+    "export_error": "Non è stato possibile scaricare i dati. Riprova.",
+    "delete_button": "Elimina account",
+    "delete_title": "Elimina account",
+    "delete_intro": "L'eliminazione è definitiva e non si può annullare.",
+    "delete_summary_account": "Vengono eliminati il tuo account, la foto profilo, le notifiche ricevute, le richieste di accesso e le impostazioni delle notifiche su tutti i dispositivi.",
+    "delete_summary_groups": "Esci da tutti i tuoi gruppi.",
+    "delete_summary_content": "Viaggi, attività e spese condivisi restano ai gruppi: dove compari come autore vedranno \"Utente eliminato\".",
+    "delete_summary_logout": "Verrai disconnesso da questo e da tutti gli altri dispositivi.",
+    "delete_groups_deleted": "Sei l'unico membro di questi gruppi: verranno eliminati insieme ai loro viaggi.",
+    "delete_blocked": "Non puoi ancora eliminare l'account: sei l'unico amministratore di questi gruppi con altri membri.",
+    "delete_blocked_hint": "Apri il gruppo e nomina un altro amministratore (oppure esci dal gruppo dopo averlo fatto).",
+    "delete_password": "Per confermare inserisci la tua password",
+    "delete_show_password": "Mostra password",
+    "delete_hide_password": "Nascondi password",
+    "delete_confirm": "Elimina definitivamente",
+    "delete_pending": "Eliminazione…",
+    "delete_done": "Il tuo account è stato eliminato. Grazie di aver viaggiato con noi!",
+    "delete_wrong_password": "Password non corretta.",
+    "delete_too_many": "Troppi tentativi: riprova tra qualche minuto.",
+    "delete_error": "Non è stato possibile eliminare l'account. Riprova."
   },
   "live": {
     "suggest": {

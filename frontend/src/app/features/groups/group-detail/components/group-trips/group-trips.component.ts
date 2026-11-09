@@ -33,6 +33,8 @@ export class GroupTripsComponent {
 
   readonly groupId = input.required<string>();
   readonly members = input<GroupMember[]>([]);
+  /** Ex membri che hanno eliminato l'account (#121): autore mostrato come "Utente eliminato". */
+  readonly deletedMemberIds = input<string[]>([]);
   /** Confirmed trips, already sorted. */
   readonly trips = input<Trip[]>([]);
   readonly proposals = input<Trip[]>([]);
@@ -65,6 +67,7 @@ export class GroupTripsComponent {
         trip,
         days: tripDays(trip),
         proposer: this.members().find(m => m.id === trip.proposedBy)?.name ?? '',
+        proposerDeleted: !!trip.proposedBy && this.deletedMemberIds().includes(trip.proposedBy),
         votes: validVotes.length,
         needed,
         hasVoted: !!me && validVotes.includes(me.id)

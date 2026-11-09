@@ -15,6 +15,10 @@ public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
 
+    /** Id dell'utente con questa email esatta (controllo leggero del JWT a ogni richiesta, #121). */
+    @Query("select u.id from User u where u.email = :email")
+    Optional<String> findIdByEmail(@Param("email") String email);
+
     /** Esiste un account con questa email, ignorando maiuscole/minuscole e spazi (anche righe non normalizzate). */
     @Query("select count(u) > 0 from User u where lower(trim(u.email)) = lower(trim(:email))")
     boolean existsByEmailIgnoringCase(@Param("email") String email);
