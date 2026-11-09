@@ -3,10 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 
 /** Categorie di notifiche push (#97). */
-export type PushCategory = 'invites' | 'proposals' | 'newMembers' | 'reminders';
+export type PushCategory = 'invites' | 'proposals' | 'newMembers' | 'reminders' | 'liveGuide';
 export type PushPreferences = Record<PushCategory, boolean>;
 
-export const PUSH_CATEGORIES: readonly PushCategory[] = ['invites', 'proposals', 'newMembers', 'reminders'];
+export const PUSH_CATEGORIES: readonly PushCategory[] = ['invites', 'proposals', 'newMembers', 'reminders', 'liveGuide'];
 
 const API = '/api/v1/push/preferences';
 
