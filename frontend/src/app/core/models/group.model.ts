@@ -23,6 +23,8 @@ export interface Group {
   currency?: string; // ISO 4217, default currency for the group's trips
   archived?: boolean;
   mutedBy?: string[]; // ids of members who muted the group
+  /** Ex membri che hanno eliminato l'account (#121): spese e proposte li mostrano come "Utente eliminato". */
+  deletedMemberIds?: string[];
 }
 
 export interface CreateGroupDto {

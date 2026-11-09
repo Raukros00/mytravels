@@ -56,6 +56,18 @@ public class Group implements Persistable<String> {
     @Builder.Default
     private List<String> mutedBy = new ArrayList<>();
 
+    /**
+     * Id degli ex membri che hanno eliminato l'account (#121): spese e proposte che li citano mostrano
+     * "Utente eliminato". Esposto nel JSON come {@code deletedMemberIds}.
+     */
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
+    @CollectionTable(name = "group_deleted_members", joinColumns = @JoinColumn(name = "group_id"))
+    @Column(name = "user_id")
+    @com.fasterxml.jackson.annotation.JsonProperty("deletedMemberIds")
+    @Builder.Default
+    private java.util.Set<String> deletedMemberIds = new java.util.HashSet<>();
+
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Fetch(FetchMode.SUBSELECT)
     @Builder.Default

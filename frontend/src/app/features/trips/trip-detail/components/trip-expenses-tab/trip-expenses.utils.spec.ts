@@ -76,4 +76,14 @@ describe('trip-expenses.utils', () => {
     );
     expect(members.find(m => m.id === 'x')).toEqual(jasmine.objectContaining({ name: 'Ex membro', former: true }));
   });
+
+  it('shows former members who deleted their account as "Utente eliminato" (#121)', () => {
+    const members = buildExpenseMembers(
+      [{ id: 'a', name: 'A', avatar: '🙂', color: '#000' }],
+      [exp({ amount: 3, paidBy: 'x', splitAmong: ['a', 'x', 'y'] })],
+      ['x']
+    );
+    expect(members.find(m => m.id === 'x')).toEqual(jasmine.objectContaining({ name: 'Utente eliminato', former: true }));
+    expect(members.find(m => m.id === 'y')).toEqual(jasmine.objectContaining({ name: 'Ex membro', former: true }));
+  });
 });

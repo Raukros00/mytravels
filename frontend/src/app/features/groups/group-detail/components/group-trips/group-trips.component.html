@@ -111,10 +111,10 @@
                 <span class="trip-meta-sep">·</span>
                 {{ 'groups.trip_days' | translate: { count: p.days } }}
               </p>
-              @if (p.proposer) {
+              @if (p.proposer || p.proposerDeleted) {
                 <p class="trip-meta">
                   <span class="material-symbols-outlined">person</span>
-                  {{ 'groups.proposal_by' | translate: { name: p.proposer } }}
+                  {{ 'groups.proposal_by' | translate: { name: p.proposer || ('groups.deleted_user' | translate) } }}
                 </p>
               }
               <div class="vote-box">

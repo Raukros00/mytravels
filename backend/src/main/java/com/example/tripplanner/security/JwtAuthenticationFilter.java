@@ -1,5 +1,6 @@
 package com.example.tripplanner.security;
 
+import com.example.tripplanner.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,9 +20,23 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, UserRepository userRepository) {
         this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
+    }
+
+    /**
+     * Il token vale solo se l'account esiste ancora (#121: dopo l'eliminazione → 401). Con il claim {@code uid}
+     * l'account deve essere proprio quello per cui è stato emesso: se l'email viene registrata di nuovo,
+     * i token del vecchio account non valgono per il nuovo. I token emessi prima del claim si controllano per email.
+     */
+    private boolean accountStillValid(String email, String userId) {
+        if (email == null) return false;
+        return userRepository.findIdByEmail(email)
+                .map(id -> userId == null || userId.equals(id))
+                .orElse(false);
     }
 
     @Override
@@ -36,6 +51,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Claims claims = jwtUtil.extractClaims(token);
                 String email = claims.getSubject();
                 String role = claims.get("role", String.class);
+                if (!accountStillValid(email, claims.get(JwtUtil.CLAIM_USER_ID, String.class))) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
 
                 List<SimpleGrantedAuthority> authorities = role != null ?
                         List.of(new SimpleGrantedAuthority("ROLE_" + role)) :

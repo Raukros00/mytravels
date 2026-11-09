@@ -1,0 +1,96 @@
+<section class="section-card card danger-zone" aria-labelledby="profile-danger-title">
+  <div class="section-header">
+    <span class="material-symbols-outlined section-icon danger-icon" aria-hidden="true">warning</span>
+    <div>
+      <h2 id="profile-danger-title" class="section-title">{{ 'profile.danger_title' | translate }}</h2>
+      <p class="section-desc">{{ 'profile.danger_desc' | translate }}</p>
+    </div>
+  </div>
+  <div class="danger-actions">
+    <button type="button" class="btn btn-secondary export-btn" (click)="exportData()" [disabled]="exporting()">
+      <span class="material-symbols-outlined" aria-hidden="true">download</span>
+      {{ 'profile.export_button' | translate }}
+    </button>
+    <button type="button" class="btn btn-outline delete-account-btn" (click)="openModal()">
+      <span class="material-symbols-outlined" aria-hidden="true">delete_forever</span>
+      {{ 'profile.delete_button' | translate }}
+    </button>
+  </div>
+</section>
+
+<app-modal
+  [isOpen]="open()"
+  [title]="'profile.delete_title' | translate"
+  icon="delete_forever"
+  maxWidth="500px"
+  (close)="close()">
+
+  <div class="delete-body">
+    @if (blocking().length) {
+      <div class="delete-blocked" role="alert">
+        <p class="delete-blocked-title">
+          <span class="material-symbols-outlined" aria-hidden="true">block</span>
+          {{ 'profile.delete_blocked' | translate }}
+        </p>
+        <ul class="delete-group-list">
+          @for (g of blocking(); track g.id) {
+            <li>
+              <a class="delete-group-link" [routerLink]="['/groups', g.id]" (click)="open.set(false)">{{ g.name }}</a>
+              <span class="delete-group-hint">{{ 'profile.delete_blocked_hint' | translate }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+    } @else {
+      <p class="delete-intro">{{ 'profile.delete_intro' | translate }}</p>
+      <ul class="delete-summary">
+        <li>{{ 'profile.delete_summary_account' | translate }}</li>
+        <li>{{ 'profile.delete_summary_groups' | translate }}</li>
+        <li>{{ 'profile.delete_summary_content' | translate }}</li>
+        <li>{{ 'profile.delete_summary_logout' | translate }}</li>
+      </ul>
+
+      @if (toDelete().length) {
+        <div class="delete-warning">
+          <p class="delete-warning-title">
+            <span class="material-symbols-outlined" aria-hidden="true">group_off</span>
+            {{ 'profile.delete_groups_deleted' | translate }}
+          </p>
+          <ul class="delete-group-list delete-group-list--deleted">
+            @for (g of toDelete(); track g.id) {
+              <li>{{ g.name }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      <div class="form-group">
+        <label class="form-label" for="delete-account-password">{{ 'profile.delete_password' | translate }}</label>
+        <div class="password-field">
+          <input id="delete-account-password" class="form-input" autocomplete="current-password"
+            autocapitalize="off" autocorrect="off" spellcheck="false"
+            [type]="showPassword() ? 'text' : 'password'"
+            [value]="password()" (input)="onPasswordInput($event)" (keydown.enter)="confirm()">
+          <button type="button" class="password-toggle"
+            [attr.aria-label]="(showPassword() ? 'profile.delete_hide_password' : 'profile.delete_show_password') | translate"
+            [attr.aria-pressed]="showPassword()" aria-controls="delete-account-password"
+            (click)="showPassword.set(!showPassword())">
+            <span class="material-symbols-outlined" aria-hidden="true">{{ showPassword() ? 'visibility_off' : 'visibility' }}</span>
+          </button>
+        </div>
+        @if (error(); as message) {
+          <span class="form-error" role="alert">{{ message }}</span>
+        }
+      </div>
+    }
+  </div>
+
+  <div modal-footer class="delete-footer">
+    <button type="button" class="btn btn-secondary" (click)="close()" [disabled]="pending()">{{ 'profile.edit_cancel' | translate }}</button>
+    @if (!blocking().length) {
+      <button type="button" class="btn btn-primary delete-confirm-btn" (click)="confirm()" [disabled]="!password() || pending()">
+        {{ (pending() ? 'profile.delete_pending' : 'profile.delete_confirm') | translate }}
+      </button>
+    }
+  </div>
+</app-modal>

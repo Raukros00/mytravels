@@ -27,6 +27,7 @@
           <app-group-trips
             [groupId]="g.id"
             [members]="g.members"
+            [deletedMemberIds]="g.deletedMemberIds ?? []"
             [trips]="groupTrips()"
             [proposals]="groupProposals()" />
         </div>

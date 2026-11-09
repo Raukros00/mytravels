@@ -133,8 +133,8 @@ export class TripDetailComponent {
   protected readonly expenseMembers = computed(() => {
     const t = this.trip();
     if (!t) return [];
-    const members = this.groupService.getGroupById(t.groupId)?.members ?? [];
-    return buildExpenseMembers(members, t.expenses ?? []);
+    const group = this.groupService.getGroupById(t.groupId);
+    return buildExpenseMembers(group?.members ?? [], t.expenses ?? [], group?.deletedMemberIds ?? []);
   });
   protected readonly expensesCount = computed(() =>
     (this.trip()?.expenses ?? []).filter(e => e.type !== 'settlement').length

@@ -36,6 +36,8 @@ export function getCategoryInfo(key: BudgetCategory): CategoryInfo {
 }
 
 export const FORMER_MEMBER_NAME = 'Ex membro';
+/** Ex membro che ha eliminato l'account (#121). */
+export const DELETED_USER_NAME = 'Utente eliminato';
 
 export function toCents(amount: number): number {
   return Math.round((amount + Number.EPSILON) * 100);
@@ -173,11 +175,16 @@ export function groupExpensesByDate(expenses: TripExpense[]): ExpenseDayGroup[] 
     .map(([date, list]) => ({ date, expenses: list }));
 }
 
-/** Group members plus, as "former" members, anyone still referenced by expenses but no longer in the group. */
+/**
+ * Group members plus, as "former" members, anyone still referenced by expenses but no longer in the group.
+ * Former members listed in `deletedMemberIds` (account deleted, #121) are shown as "Utente eliminato".
+ */
 export function buildExpenseMembers(
   groupMembers: { id: string; name: string; avatar: string; color: string; profileImage?: string | null }[],
-  expenses: TripExpense[]
+  expenses: TripExpense[],
+  deletedMemberIds: readonly string[] = []
 ): ExpenseMember[] {
+  const deleted = new Set(deletedMemberIds);
   const members: ExpenseMember[] = groupMembers.map(m => ({ id: m.id, name: m.name, avatar: m.avatar, color: m.color, profileImage: m.profileImage }));
   const known = new Set(members.map(m => m.id));
   const refs = new Set<string>();
@@ -188,7 +195,7 @@ export function buildExpenseMembers(
   }
   for (const id of refs) {
     if (!known.has(id)) {
-      members.push({ id, name: FORMER_MEMBER_NAME, avatar: '👤', color: '#9CA3AF', former: true });
+      members.push({ id, name: deleted.has(id) ? DELETED_USER_NAME : FORMER_MEMBER_NAME, avatar: '👤', color: '#9CA3AF', former: true });
     }
   }
   return members;

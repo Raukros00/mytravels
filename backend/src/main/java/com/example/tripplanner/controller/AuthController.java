@@ -52,7 +52,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid email or password"));
         }
         rateLimits.loginByEmail.reset(emailKey);
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole(), user.getId());
         return ResponseEntity.ok(Map.of(
                 "token", token,
                 "user", UserResponse.from(user)
@@ -68,7 +68,7 @@ public class AuthController {
         rateLimits.registerByIp.record(ip);
         try {
             User created = authService.register(registerDto);
-            String token = jwtUtil.generateToken(created.getEmail(), created.getRole());
+            String token = jwtUtil.generateToken(created.getEmail(), created.getRole(), created.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                     "token", token,
                     "user", UserResponse.from(created)

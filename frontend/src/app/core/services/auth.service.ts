@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, map, of, tap, throwError } from 'rxjs';
 import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
@@ -25,6 +26,7 @@ export class AuthService {
   private router = inject(Router);
   private apiService = inject(ApiService);
   private networkStatus = inject(NetworkStatusService);
+  private http = inject(HttpClient);
 
   private currentUserSignal = signal<User | null>(this.storageService.getCurrentUser());
   private allUsersSignal = signal<User[]>(this.storageService.getUsers());
@@ -117,12 +119,33 @@ export class AuthService {
   }
 
   public logout(): void {
+    this.endSession();
+    this.toastService.info('Disconnessione effettuata. A presto!');
+    this.router.navigate(['/explore']);
+  }
+
+  /**
+   * Elimina l'account dell'utente corrente (#121), confermato con la password. Se riesce chiude la
+   * sessione e pulisce i dati locali (come il logout); il messaggio e la navigazione li decide il chiamante.
+   * In caso di errore l'Observable fallisce con l'errore HTTP (401 password errata, 409 unico admin…).
+   */
+  public deleteAccount(password: string): Observable<void> {
+    return this.http.delete<void>('/api/v1/users/me', { body: { password } }).pipe(
+      tap(() => this.endSession())
+    );
+  }
+
+  /** "Scarica i miei dati" (#121): JSON con i dati personali dell'utente corrente. */
+  public exportMyData(): Observable<Blob> {
+    return this.http.get('/api/v1/users/me/export', { responseType: 'blob' });
+  }
+
+  /** Chiude la sessione: utente, token, cache locali e risposte salvate per l'uso offline. */
+  private endSession(): void {
     this.currentUserSignal.set(null);
     this.storageService.clearSessionData();
     this.networkStatus.reset();
     clearOfflineApiCache();
-    this.toastService.info('Disconnessione effettuata. A presto!');
-    this.router.navigate(['/explore']);
   }
 }
 

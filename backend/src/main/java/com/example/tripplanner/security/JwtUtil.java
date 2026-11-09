@@ -22,10 +22,14 @@ public class JwtUtil {
         this.expiration = expiration;
     }
 
-    public String generateToken(String email, String role) {
+    /** Claim con l'id dell'utente: il token vale solo finché esiste quell'account (#121). */
+    public static final String CLAIM_USER_ID = "uid";
+
+    public String generateToken(String email, String role, String userId) {
         return Jwts.builder()
                 .subject(email)
                 .claim("role", role)
+                .claim(CLAIM_USER_ID, userId)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key)

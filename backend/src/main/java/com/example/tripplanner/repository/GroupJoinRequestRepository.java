@@ -9,6 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface GroupJoinRequestRepository extends JpaRepository<GroupJoinRequest, String> {
+    List<GroupJoinRequest> findByUserId(String userId);
     List<GroupJoinRequest> findByGroupIdAndStatusOrderByCreatedAtAsc(String groupId, String status);
     Optional<GroupJoinRequest> findFirstByGroupIdAndUserIdAndStatus(String groupId, String userId, String status);
     Optional<GroupJoinRequest> findFirstByGroupIdAndUserIdOrderByCreatedAtDesc(String groupId, String userId);

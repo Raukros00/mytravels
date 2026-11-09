@@ -211,6 +211,11 @@
   text-transform: uppercase;
 }
 
+/* ── Zona pericolosa (#121) ── */
+.profile-danger {
+  margin: 1rem 0;
+}
+
 /* ── Disconnetti: pulsante standard in fondo ── */
 .profile-actions {
   display: flex;
