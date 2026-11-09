@@ -161,7 +161,7 @@ export function expectNoPush(device: PushDevice, waitMs = 1500): void {
 }
 
 /** Preferenze delle push per tipo (#97) ai valori predefiniti: tutto attivo tranne i nuovi membri. */
-export const DEFAULT_PUSH_PREFERENCES = { invites: true, proposals: true, newMembers: false, reminders: true } as const;
+export const DEFAULT_PUSH_PREFERENCES = { invites: true, proposals: true, newMembers: false, reminders: true, liveGuide: true } as const;
 
 export function resetPushPreferences(...users: DemoUser[]): void {
   users.forEach(user => cy.api(user, 'PUT', '/api/v1/push/preferences', DEFAULT_PUSH_PREFERENCES));

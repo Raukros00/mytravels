@@ -110,6 +110,18 @@ push:
     cron: ${PUSH_REMINDERS_CRON:0 */15 9-21 * * *}
     # Solo e2e: POST /api/v1/test/trip-reminders/run?date=yyyy-MM-dd esegue il job subito. Mai true in test/produzione.
     test-endpoint: ${PUSH_REMINDERS_TEST_ENDPOINT:false}
+  # Guida durante il viaggio (#110): buongiorno, pasti, chiusure imminenti e fine giornata, una sola volta per evento.
+  live-guide:
+    enabled: ${PUSH_LIVE_GUIDE_ENABLED:true}
+    # Cron di Spring sul fuso Europe/Rome: ogni 5 minuti dalle 7:00 alle 23:55.
+    cron: ${PUSH_LIVE_GUIDE_CRON:0 */5 7-23 * * *}
+    # Orari (ora italiana) del buongiorno con il programma e del riepilogo di fine giornata.
+    morning-time: ${PUSH_LIVE_GUIDE_MORNING_TIME:08:30}
+    evening-time: ${PUSH_LIVE_GUIDE_EVENING_TIME:21:30}
+    # Una notifica parte entro questi minuti dal suo orario (es. dopo un riavvio), poi non più.
+    grace-minutes: ${PUSH_LIVE_GUIDE_GRACE_MINUTES:60}
+    # Solo e2e: POST /api/v1/test/live-guide/run?at=yyyy-MM-ddTHH:mm esegue il job subito. Mai true in test/produzione.
+    test-endpoint: ${PUSH_LIVE_GUIDE_TEST_ENDPOINT:false}
 
 jwt:
   # Obbligatorio: almeno 32 caratteri, diverso per ogni ambiente (es. `openssl rand -hex 32`).

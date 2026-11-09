@@ -205,6 +205,8 @@
     "push_pref_new_members_desc": "Quando qualcuno entra in uno dei tuoi gruppi.",
     "push_pref_reminders": "Promemoria prima della partenza",
     "push_pref_reminders_desc": "3 giorni prima e il giorno prima di un viaggio confermato.",
+    "push_pref_live_guide": "Guida durante il viaggio",
+    "push_pref_live_guide_desc": "Buongiorno con il programma alle 8:30, pasti, chiusure imminenti e riepilogo di fine giornata.",
     "push_prefs_error": "Non è stato possibile salvare la preferenza. Riprova."
   },
   "live": {
