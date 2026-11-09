@@ -5,13 +5,14 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { networkStatusInterceptor } from './core/interceptors/network-status.interceptor';
 import { I18nService } from './core/services/i18n.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, networkStatusInterceptor])),
     provideTranslateService({
       lang: 'it',
       loader: {

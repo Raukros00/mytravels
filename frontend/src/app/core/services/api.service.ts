@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -19,6 +19,11 @@ export class ApiService {
       });
     }
     return this.http.get<T>(`${this.baseUrl}${path}`, { params: httpParams });
+  }
+
+  /** Come `get`, con la risposta completa (es. per leggere gli header). */
+  public getResponse<T>(path: string): Observable<HttpResponse<T>> {
+    return this.http.get<T>(`${this.baseUrl}${path}`, { observe: 'response' });
   }
 
   public post<T>(path: string, body: any): Observable<T> {

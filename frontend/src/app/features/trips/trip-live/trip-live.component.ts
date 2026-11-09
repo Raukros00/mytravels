@@ -34,6 +34,7 @@ import { TripMovePanelComponent } from '../trip-move/trip-move-panel.component';
 import { MoveUndoBarComponent } from '../trip-move/move-undo-bar.component';
 import { StopRef, recoverStops } from '../trip-move/stop-move.service';
 import { LiveWeatherComponent } from './live-weather.component';
+import { OfflineBannerComponent } from '../../../shared/components/offline-banner/offline-banner.component';
 import { LiveSuggestionsComponent, SuggestionActionEvent, SuggestionPickEvent } from './live-suggestions.component';
 
 const DISMISSED_KEY = 'wb_live_dismissed';
@@ -69,11 +70,13 @@ const STATUS_LABELS: Record<LiveStopStatus, string> = {
  * #105: suggerimenti contestuali (core/utils/live-suggestions.utils.ts) con le loro azioni.
  * #106: indicazioni con i mezzi pubblici nell'app di mappe del dispositivo e stima a piedi tra le tappe.
  * #111: meteo della giornata nell'intestazione (LiveWeatherComponent).
+ * #109: uso offline (dati salvati, banner e modifiche in coda: OfflineBannerComponent, OfflineQueueService).
  */
 @Component({
   selector: 'app-trip-live',
   standalone: true,
-  imports: [RouterLink, TranslatePipe, TripMovePanelComponent, MoveUndoBarComponent, LiveSuggestionsComponent, LiveWeatherComponent],
+  imports: [RouterLink, TranslatePipe, TripMovePanelComponent, MoveUndoBarComponent, LiveSuggestionsComponent, LiveWeatherComponent,
+    OfflineBannerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:visibilitychange)': 'onVisibilityChange()' },
   templateUrl: './trip-live.component.html',
@@ -101,10 +104,13 @@ export class TripLiveComponent {
     return id ? this.tripService.getTripById(id) : undefined;
   });
 
-  /** Sempre la copia del server all'apertura: tappe segnate dagli altri membri comprese. */
+  /**
+   * Sempre la copia del server all'apertura: tappe segnate dagli altri membri comprese.
+   * #109: precaricata anche per l'uso offline (viaggio e membri restano salvati sul dispositivo).
+   */
   private readonly loadTrip = effect(() => {
     const id = this.tripId();
-    if (id) this.tripService.ensureTripLoaded(id);
+    if (id) this.tripService.prefetchForOffline(id);
   });
 
   protected readonly today = computed(() => todayIso(this.clock.now()));

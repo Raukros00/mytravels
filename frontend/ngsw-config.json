@@ -11,7 +11,8 @@
           "/index.html",
           "/manifest.webmanifest",
           "/*.css",
-          "/*.js"
+          "/*.js",
+          "/i18n/*.json"
         ]
       }
     },
@@ -29,6 +30,24 @@
           "https://fonts.gstatic.com/**",
           "https://unpkg.com/leaflet@**"
         ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "trip-api",
+      "urls": [
+        "/api/v1/trips",
+        "/api/v1/trips/**",
+        "/api/v1/groups",
+        "/api/v1/groups/**",
+        "/auth/me"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "timeout": "5s",
+        "maxSize": 100,
+        "maxAge": "14d"
       }
     }
   ]

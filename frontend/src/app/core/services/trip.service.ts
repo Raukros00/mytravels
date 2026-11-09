@@ -20,6 +20,9 @@ import {
   isProposal
 } from '../models/trip.model';
 import { addDaysIso } from '../utils/date.utils';
+import { OfflineQueueService } from './offline-queue.service';
+import { NetworkStatusService } from './network-status.service';
+import { QueueCollection, applyPending, isNetworkError } from '../utils/offline-queue.utils';
 
 @Injectable({
   providedIn: 'root'
@@ -30,6 +33,8 @@ export class TripService {
   private groupService = inject(GroupService);
   private apiService = inject(ApiService);
   private authService = inject(AuthService);
+  private offlineQueue = inject(OfflineQueueService);
+  private network = inject(NetworkStatusService);
   /**
    * Viaggi eliminati in questa sessione: una lista caricata prima dell'eliminazione ma arrivata
    * dopo li conterrebbe ancora e li farebbe ricomparire.
@@ -85,6 +90,17 @@ export class TripService {
   }
 
   constructor() {
+    // #109: un elemento creato offline è arrivato al server: prende l'id definitivo.
+    this.offlineQueue.created$.subscribe(({ action, saved }) => {
+      const key = action.collection as ChildKey;
+      this.savedIds.set(action.itemId, saved.id);
+      this.patchChildren(action.tripId, key, items => items
+        .filter(i => i.id !== saved.id)
+        .map(i => i.id === action.itemId ? { ...saved, ...i, id: saved.id } as ChildOf<typeof key> : i));
+    });
+    // #109: modifiche offline inviate (o rifiutate): vale la copia del server.
+    this.offlineQueue.synced$.subscribe(tripIds => tripIds.forEach(id => this.ensureTripLoaded(id)));
+
     // Logout: niente viaggi dell'utente precedente in memoria.
     effect(() => {
       if (!this.authService.currentUser()) this.tripsSignal.set([]);
@@ -107,9 +123,12 @@ export class TripService {
    */
   public ensureTripLoaded(id: string): void {
     if (USE_MOCK_DATA || id.startsWith('trip_')) return;
-    this.apiService.get<Trip>(`/api/v1/trips/${id}`).subscribe({
-      next: (trip) => {
+    this.apiService.getResponse<Trip>(`/api/v1/trips/${id}`).subscribe({
+      next: (res) => {
+        const trip = res.body;
         if (!trip || this.deletedIds.has(trip.id)) return;
+        // #109: ora dei dati salvati per l'uso offline (header Date: resta quello vero anche dalla cache del service worker).
+        this.network.markSaved(trip.id, res.headers.get('Date'));
         this.addLocalTrip(trip, false);
       },
       error: (err) => {
@@ -118,6 +137,15 @@ export class TripService {
         else console.warn('Could not load trip:', err.status);
       }
     });
+  }
+
+  /**
+   * #109: apertura della guida "In viaggio": scarica il viaggio (attività, ristoranti, spese) e i gruppi con i membri,
+   * così restano salvati sul dispositivo (e nella cache del service worker) per l'uso offline.
+   */
+  public prefetchForOffline(id: string): void {
+    this.ensureTripLoaded(id);
+    if (!this.network.browserOffline) this.groupService.loadGroups();
   }
 
   public loadTripsByGroup(groupId: string): void {
@@ -227,6 +255,11 @@ export class TripService {
 
   /** La copia del server più gli elementi locali non ancora confermati (altrimenti sparirebbero). */
   private withPendingChildren(trip: Trip): Trip {
+    // #109: sopra la copia del server anche le modifiche fatte offline non ancora inviate.
+    return applyPending(this.withUnsavedChildren(trip), this.offlineQueue.pending());
+  }
+
+  private withUnsavedChildren(trip: Trip): Trip {
     const current = this.getTripById(trip.id);
     if (!current || this.pendingCreates.size === 0) return trip;
     const keep = <T extends { id: string }>(local: T[] | undefined, server: T[] | undefined): T[] => [
@@ -514,6 +547,12 @@ export class TripService {
     if (!this.getTripById(tripId)) return;
     this.patchChildren(tripId, key, items => [...items, item]);
 
+    // #109: offline si salva sul dispositivo e si invia al ritorno della connessione.
+    if (this.network.browserOffline) {
+      this.queueOffline(tripId, key, 'create', item.id, item, msg.success);
+      return;
+    }
+
     let settle: (savedId: string | null) => void = () => undefined;
     this.pendingCreates.set(item.id, new Promise<string | null>(resolve => settle = resolve));
     // L'id locale non viene inviato: lo assegna il server.
@@ -533,6 +572,11 @@ export class TripService {
         settle(saved.id);
       },
       error: (err) => {
+        if (isNetworkError(err?.status)) {
+          this.queueOffline(tripId, key, 'create', item.id, item, msg.success);
+          settle(null);
+          return;
+        }
         this.patchChildren(tripId, key, items => items.filter(i => i.id !== item.id));
         this.warnFailure(msg.action, err);
         settle(null);
@@ -546,6 +590,12 @@ export class TripService {
     if (!target) return;
     const merged = { ...target, ...partial } as ChildOf<K>;
     this.patchChildren(tripId, key, items => items.map(i => i.id === knownId ? merged : i));
+
+    // #109: offline (o elemento creato offline e non ancora inviato) la modifica va in coda.
+    if (this.network.browserOffline || this.offlineQueue.hasPendingCreate(tripId, key, knownId)) {
+      this.queueOffline(tripId, key, 'update', knownId, merged, msg.success);
+      return;
+    }
     // Se l'elemento è ancora in creazione, nel frattempo il suo id diventa quello del server.
     const current = () => this.serverId(knownId);
 
@@ -559,6 +609,10 @@ export class TripService {
         if (msg.success) this.toastService.success(msg.success);
       },
       error: (err) => {
+        if (isNetworkError(err?.status)) {
+          this.queueOffline(tripId, key, 'update', current(), { ...merged, id: current() }, msg.success);
+          return;
+        }
         this.patchChildren(tripId, key, items => items.map(i => i.id === current() ? { ...target, id: current() } : i));
         this.warnFailure(msg.action, err);
       }
@@ -573,6 +627,11 @@ export class TripService {
     const target = before[index];
     this.patchChildren(tripId, key, items => items.filter(i => i.id !== knownId));
 
+    if (this.network.browserOffline || this.offlineQueue.hasPendingCreate(tripId, key, knownId)) {
+      this.queueOffline(tripId, key, 'delete', knownId, target, msg.success);
+      return;
+    }
+
     this.afterSaved(knownId, savedId =>
       this.apiService.delete(`/api/v1/trips/${tripId}/${CHILD_PATHS[key]}/${savedId}`)
     ).subscribe({
@@ -580,6 +639,10 @@ export class TripService {
       error: (err) => {
         if (err?.status === 404) return; // già rimosso sul server
         const id = this.serverId(knownId);
+        if (isNetworkError(err?.status)) {
+          this.queueOffline(tripId, key, 'delete', id, target, msg.success);
+          return;
+        }
         this.patchChildren(tripId, key, items => {
           if (items.some(i => i.id === id)) return items;
           const restored = [...items];
@@ -589,6 +652,26 @@ export class TripService {
         this.warnFailure(msg.action, err);
       }
     });
+  }
+
+  /**
+   * #109: modifica salvata sul dispositivo (rete assente): resta visibile e viene inviata al ritorno della
+   * connessione da OfflineQueueService. L'elemento creato offline mantiene l'id locale fino all'invio.
+   */
+  private queueOffline<K extends ChildKey>(tripId: string, key: K, op: 'create' | 'update' | 'delete', itemId: string,
+                                          item: ChildOf<K> | undefined, success: string): void {
+    const source = (item ?? ((this.getTripById(tripId)?.[key] ?? []) as ChildOf<K>[]).find(i => i.id === itemId)) as
+      (ChildOf<K> & { name?: string; title?: string }) | undefined;
+    this.offlineQueue.enqueue({
+      tripId,
+      collection: key as QueueCollection,
+      op,
+      itemId,
+      body: item && op !== 'delete' ? { ...item } as Record<string, unknown> : undefined,
+      label: source?.name ?? source?.title ?? 'elemento'
+    });
+    const note = 'Sei offline: salvato sul telefono, verrà inviato al ritorno della connessione.';
+    this.toastService.info(success ? `${success} ${note}` : note, 5000);
   }
 
   private updateLogistics<K extends 'flights' | 'transfers' | 'accommodation'>(
