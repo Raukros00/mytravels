@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { UserAvatarComponent } from '../../shared/components/user-avatar/user-avatar.component';
 import { ProfilePushComponent } from './profile-push/profile-push.component';
+import { ProfileEditComponent } from './profile-edit/profile-edit.component';
 import { AuthService } from '../../core/services/auth.service';
 import { TripService } from '../../core/services/trip.service';
 import { GroupService } from '../../core/services/group.service';
@@ -20,7 +21,7 @@ interface ProfileStat {
   selector: 'app-profile',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, TranslatePipe, UserAvatarComponent, ProfilePushComponent],
+  imports: [DatePipe, TranslatePipe, UserAvatarComponent, ProfilePushComponent, ProfileEditComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
@@ -60,6 +61,17 @@ export class ProfileComponent {
       { key: 'upcoming', icon: 'flight_takeoff', label: 'profile.stat_upcoming', value: upcoming }
     ];
   });
+
+  /** Modale "Modifica profilo" (#120). */
+  protected readonly editOpen = signal(false);
+
+  /**
+   * Dopo la modifica del profilo si ricaricano i gruppi: i membri contengono una copia di nome,
+   * avatar e foto (aggiornata dal backend), così il nuovo nome compare subito anche negli elenchi.
+   */
+  protected onProfileSaved(): void {
+    this.groupService.loadGroups();
+  }
 
   protected logout(): void {
     this.authService.logout();

@@ -6,7 +6,7 @@ import { ToastService } from './toast.service';
 import { ApiService } from './api.service';
 import { NetworkStatusService } from './network-status.service';
 import { User } from '../models/user.model';
-import { LoginDto, RegisterDto } from '../models/auth.model';
+import { LoginDto, RegisterDto, UpdateProfileDto } from '../models/auth.model';
 import { USE_MOCK_DATA } from '../config/mock.config';
 
 /** Messaggio per la risposta 429 (troppi tentativi), con l'attesa in minuti arrotondata per eccesso. */
@@ -93,6 +93,19 @@ export class AuthService {
           : err.status === 400 && /^password: /.test(err.error?.message ?? '') ? err.error.message.replace(/^password: /, '')
           : (err.error?.message || 'Errore durante la registrazione.')
       )))
+    );
+  }
+
+  /**
+   * Aggiorna i dati personali dell'utente corrente (#120) e la copia salvata in locale.
+   * In caso di errore l'Observable fallisce con l'errore HTTP originale (il chiamante sceglie il messaggio).
+   */
+  public updateProfile(dto: UpdateProfileDto): Observable<User> {
+    return this.apiService.put<User>('/api/v1/users/me', dto).pipe(
+      tap(user => {
+        this.currentUserSignal.set(user);
+        this.storageService.setCurrentUser(user);
+      })
     );
   }
 

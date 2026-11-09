@@ -1,8 +1,12 @@
 package com.example.tripplanner.controller;
 
+import com.example.tripplanner.dto.UpdateProfileDto;
+import com.example.tripplanner.dto.UserResponse;
 import com.example.tripplanner.model.User;
 import com.example.tripplanner.repository.UserRepository;
 import com.example.tripplanner.security.GroupAccess;
+import com.example.tripplanner.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,10 +27,20 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final GroupAccess groupAccess;
+    private final UserService userService;
 
-    public UserController(UserRepository userRepository, GroupAccess groupAccess) {
+    public UserController(UserRepository userRepository, GroupAccess groupAccess, UserService userService) {
         this.userRepository = userRepository;
         this.groupAccess = groupAccess;
+        this.userService = userService;
+    }
+
+    /** Modifica dei dati personali dell'utente corrente (#120): nome, cognome, data di nascita, foto, avatar. */
+    @PutMapping("/me")
+    public ResponseEntity<UserResponse> updateMe(@Valid @RequestBody UpdateProfileDto dto, Authentication authentication) {
+        Optional<User> me = groupAccess.currentUser(authentication);
+        if (me.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.ok(UserResponse.from(userService.updateProfile(me.get(), dto)));
     }
 
     /**
