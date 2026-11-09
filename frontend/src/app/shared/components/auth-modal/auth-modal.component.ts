@@ -9,12 +9,7 @@ import { AuthModalService, AuthTab } from '../../../core/services/auth-modal.ser
 import { ModalComponent } from '../modal/modal.component';
 import { ImageCropperComponent } from '../image-cropper/image-cropper.component';
 import { isoYearsAgo } from '../../../core/utils/date.utils';
-
-/** Almeno `years` anni compiuti oggi (stessa regola del backend). */
-function minAgeValidator(years: number) {
-  return (control: AbstractControl<string>): ValidationErrors | null =>
-    control.value && control.value > isoYearsAgo(years) ? { minAge: { years } } : null;
-}
+import { minAgeValidator } from '../../../core/utils/min-age.validator';
 
 /** Email valida anche con spazi iniziali/finali (vengono tolti all'invio, come fa il backend). */
 function trimmedEmailValidator(control: AbstractControl<string>): ValidationErrors | null {
@@ -54,8 +49,11 @@ export function passwordStrength(password: string): PasswordStrength {
 
 const STRENGTH_LABELS: Record<PasswordStrength, string> = { weak: 'Debole', fair: 'Discreta', good: 'Buona' };
 
-const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
-const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+/** Limiti della foto scelta prima del ritaglio (anche nella modifica del profilo, #120). */
+export const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+export const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+/** Avatar emoji proposti (registrazione e modifica del profilo). */
+export const AVATAR_CHOICES = ['👨‍🍳', '👩‍🎨', '🎒', '🏄‍♂️', '🧘‍♀️', '📸', '🗺️', '☕'];
 
 /** Accesso e registrazione in un'unica modale con due schede (stile Airbnb). */
 @Component({
@@ -70,7 +68,7 @@ export class AuthModalComponent {
   private readonly authService = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
-  protected readonly avatarList = ['👨‍🍳', '👩‍🎨', '🎒', '🏄‍♂️', '🧘‍♀️', '📸', '🗺️', '☕'];
+  protected readonly avatarList = AVATAR_CHOICES;
   protected readonly colorList = ['#4f46e5', '#f97316', '#10b981', '#f43f5e', '#8b5cf6', '#06b6d4'];
 
   protected readonly pending = signal(false);

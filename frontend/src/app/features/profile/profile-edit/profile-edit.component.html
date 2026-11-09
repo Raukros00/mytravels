@@ -1,0 +1,95 @@
+<app-modal
+  [isOpen]="isOpen()"
+  [title]="'profile.edit_title' | translate"
+  icon="edit"
+  maxWidth="480px"
+  (close)="close()">
+
+  <form id="profile-edit-form" class="profile-edit-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+
+    @if (error(); as message) {
+      <p class="edit-error" role="alert">
+        <span class="material-symbols-outlined" aria-hidden="true">error</span>{{ message }}
+      </p>
+    }
+
+    <!-- Foto profilo o avatar -->
+    <div class="form-group">
+      <span class="form-label">{{ 'profile.edit_photo' | translate }} <span class="optional">{{ 'profile.edit_optional' | translate }}</span></span>
+      @if (photoFile(); as file) {
+        @defer (on immediate) {
+          <app-image-cropper [file]="file" [maxLength]="maxPhotoLength" (cropped)="onPhotoCropped($event)" (cancelled)="photoFile.set(null)" />
+        } @loading {
+          <p class="optional">{{ 'profile.edit_photo_loading' | translate }}</p>
+        }
+      } @else {
+        <div class="photo-row">
+          <app-user-avatar class="edit-preview" [user]="preview()" [size]="64" />
+          <div class="photo-actions">
+            <label class="btn btn-secondary btn-sm photo-upload">
+              <input id="profile-edit-photo" type="file" accept="image/jpeg,image/png,image/webp" (change)="onPhotoSelected($event)">
+              {{ (profileImage() ? 'profile.edit_photo_change' : 'profile.edit_photo_upload') | translate }}
+            </label>
+            @if (profileImage()) {
+              <button type="button" class="link-btn link-btn--muted remove-photo-btn" (click)="removePhoto()">{{ 'profile.edit_photo_remove' | translate }}</button>
+            }
+          </div>
+        </div>
+        @if (photoError(); as msg) {
+          <span class="form-error">{{ msg }}</span>
+        }
+      }
+    </div>
+
+    @if (!profileImage() && !photoFile()) {
+      <div class="form-group">
+        <span class="form-label" id="profile-edit-avatar-label">{{ 'profile.edit_avatar' | translate }}</span>
+        <div class="avatar-grid" role="radiogroup" aria-labelledby="profile-edit-avatar-label">
+          @for (av of avatarList; track av) {
+            <button type="button" class="avatar-select-btn" role="radio"
+              [class.selected]="form.controls.avatar.value === av"
+              [attr.aria-checked]="form.controls.avatar.value === av"
+              (click)="form.patchValue({ avatar: av })">{{ av }}</button>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="profile-edit-first-name">{{ 'profile.edit_first_name' | translate }}</label>
+        <input id="profile-edit-first-name" type="text" formControlName="firstName" class="form-input" autocomplete="given-name" maxlength="100">
+        @if (form.controls.firstName.touched && form.controls.firstName.invalid) {
+          <span class="form-error">{{ 'profile.edit_first_name_required' | translate }}</span>
+        }
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="profile-edit-last-name">{{ 'profile.edit_last_name' | translate }}</label>
+        <input id="profile-edit-last-name" type="text" formControlName="lastName" class="form-input" autocomplete="family-name" maxlength="100">
+        @if (form.controls.lastName.touched && form.controls.lastName.invalid) {
+          <span class="form-error">{{ 'profile.edit_last_name_required' | translate }}</span>
+        }
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="profile-edit-birth-date">{{ 'profile.field_birth_date' | translate }}</label>
+      <input id="profile-edit-birth-date" type="date" formControlName="birthDate" class="form-input" autocomplete="bday" min="1900-01-01" [max]="maxBirthDate">
+      @if (form.controls.birthDate.touched && form.controls.birthDate.hasError('required')) {
+        <span class="form-error">{{ 'profile.edit_birth_date_required' | translate }}</span>
+      }
+      @if (form.controls.birthDate.hasError('minAge')) {
+        <span class="form-error">{{ 'profile.edit_min_age' | translate: { years: minAge } }}</span>
+      }
+    </div>
+
+    <p class="edit-hint">{{ 'profile.edit_hint' | translate }}</p>
+  </form>
+
+  <div modal-footer class="edit-footer">
+    <button type="button" class="btn btn-secondary" (click)="close()" [disabled]="pending()">{{ 'profile.edit_cancel' | translate }}</button>
+    <button type="submit" form="profile-edit-form" class="btn btn-primary edit-save-btn" [disabled]="form.invalid || pending() || !!photoFile()">
+      {{ (pending() ? 'profile.edit_saving' : 'profile.edit_save') | translate }}
+    </button>
+  </div>
+</app-modal>

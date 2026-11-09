@@ -1,0 +1,108 @@
+/* Modale "Modifica profilo" (#120): stessi controlli della registrazione. */
+.profile-edit-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.edit-error {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--wb-radius-md);
+  background: var(--wb-error-surface);
+  color: var(--wb-error);
+  font-size: 0.85rem;
+}
+
+.optional {
+  font-weight: 400;
+  color: var(--wb-text-tertiary);
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+@media (max-width: 380px) {
+  .form-grid-2 { grid-template-columns: 1fr; }
+}
+
+.photo-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+.photo-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.photo-upload {
+  position: relative;
+  cursor: pointer;
+}
+/* Input nativo invisibile ma raggiungibile da tastiera e dai test. */
+.photo-upload input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.photo-upload:focus-within {
+  outline: 2px solid var(--wb-primary);
+  outline-offset: 2px;
+}
+
+.link-btn {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--wb-primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+.link-btn--muted {
+  color: var(--wb-text-secondary);
+  font-weight: 500;
+}
+
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 0.4rem;
+}
+@media (max-width: 420px) {
+  .avatar-grid { grid-template-columns: repeat(4, 1fr); }
+}
+.avatar-select-btn {
+  font-size: 1.2rem;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--wb-border);
+  background: var(--wb-surface-1);
+  border-radius: var(--wb-radius-md);
+  cursor: pointer;
+}
+.avatar-select-btn.selected {
+  background: var(--wb-primary-surface);
+  border-color: var(--wb-primary);
+  box-shadow: 0 0 0 2px var(--wb-primary);
+}
+
+.edit-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--wb-text-tertiary);
+}
+
+.edit-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
