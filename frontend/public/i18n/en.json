@@ -258,7 +258,16 @@
     "delete_too_many": "Too many attempts: try again in a few minutes.",
     "delete_error": "Could not delete your account. Please try again.",
     "edit_color": "Avatar background colour",
-    "edit_color_option": "Colour"
+    "edit_color_option": "Colour",
+    "countries_title": "My countries",
+    "countries_desc": "A badge for every country you visited with your groups. Tap a badge to see the trips.",
+    "countries_empty": "Your first badge will arrive with your first trip.",
+    "countries_plan": "Plan a trip",
+    "countries_trips_one": "1 trip",
+    "countries_trips_other": "{{count}} trips",
+    "countries_since": "since {{year}}",
+    "countries_upcoming": "Coming up · in {{when}}",
+    "countries_trip_upcoming": "coming up"
   },
   "live": {
     "suggest": {

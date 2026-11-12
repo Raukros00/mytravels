@@ -34,6 +34,10 @@ public class Trip implements Persistable<String> {
     private String destination;
     private String country;
 
+    /** Nazione in codice ISO 3166-1 alpha-2 (es. "ES"), per i badge delle nazioni (#123). Può mancare. */
+    @Column(name = "country_code", length = 2)
+    private String countryCode;
+
     @Column(name = "start_date") private String startDate;
     @Column(name = "end_date")   private String endDate;
     @Column(name = "cover_url", columnDefinition = "text") private String coverUrl;
@@ -110,4 +114,10 @@ public class Trip implements Persistable<String> {
     @PostLoad
     @PostPersist
     void markNotNew() { this.isNew = false; }
+
+    /** Viaggi creati senza codice (es. dati demo): si ricava dal nome della nazione, se noto (#123). */
+    @PrePersist
+    void fillCountryCode() {
+        if (countryCode == null) countryCode = com.example.tripplanner.util.CountryCodes.fromName(country);
+    }
 }

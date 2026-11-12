@@ -13,6 +13,7 @@ import com.example.tripplanner.validation.TripDates;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.tripplanner.util.CountryCodes;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -59,6 +60,7 @@ public class TripService {
                 .title(request.getTitle().trim())
                 .destination(request.getDestination().trim())
                 .country(request.getCountry() != null ? request.getCountry().trim() : "")
+                .countryCode(CountryCodes.resolve(request.getCountryCode(), request.getCountry()))
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .coverUrl(request.getCoverUrl() != null && !request.getCoverUrl().isBlank()
@@ -118,6 +120,10 @@ public class TripService {
                 existing.setDestinationLng(request.getDestinationLng());
             }
             if (request.getCountry() != null)     existing.setCountry(request.getCountry().trim());
+            // Il codice della nazione segue destinazione e nazione: dal luogo scelto o, per il testo libero, dal nome.
+            if (request.getDestination() != null || request.getCountry() != null || request.getCountryCode() != null) {
+                existing.setCountryCode(CountryCodes.resolve(request.getCountryCode(), existing.getCountry()));
+            }
             if (request.getStartDate() != null)   existing.setStartDate(request.getStartDate());
             if (request.getEndDate() != null)     existing.setEndDate(request.getEndDate());
             if (request.getCoverUrl() != null) {

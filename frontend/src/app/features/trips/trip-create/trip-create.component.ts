@@ -289,6 +289,8 @@ export class TripCreateComponent {
       coverUrl: val.coverUrl || this.coverPresets[0].url,
       coverCreditName: suggestion?.authorName ?? null,
       coverCreditUrl: suggestion?.authorUrl ?? null,
+      // #123: dal luogo scelto nell'elenco città; con il testo libero lo ricava il backend dal nome.
+      countryCode: place?.countryCode || null,
       destinationPlaceId: place?.id ?? null,
       destinationIntlName: place?.intlName ?? null,
       destinationLat: place?.lat ?? null,

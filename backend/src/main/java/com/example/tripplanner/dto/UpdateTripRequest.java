@@ -15,6 +15,8 @@ public class UpdateTripRequest {
     private String title;
     private String destination;
     private String country;
+    /** ISO 3166-1 alpha-2 del luogo scelto dall'elenco città (GeoNames), facoltativo (#123). */
+    private String countryCode;
     private String startDate;
     private String endDate;
     private String coverUrl;

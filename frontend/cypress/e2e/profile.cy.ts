@@ -47,9 +47,9 @@ describe('Profilo', () => {
         // #122: il colore non è più un dato dell'account.
         cy.get('.profile-account').should('not.contain.text', 'Colore profilo');
         cy.get('.account-swatch').should('not.exist');
-        // Statistiche, Account, Notifiche sul telefono (#95) e Zona pericolosa (#121):
+        // Statistiche, Le mie nazioni (#123), Account, Notifiche sul telefono (#95) e Zona pericolosa (#121):
         // nessuna sezione finta delle funzioni future.
-        cy.get('.section-card').should('have.length', 4);
+        cy.get('.section-card').should('have.length', 5);
       });
     });
 
@@ -109,7 +109,8 @@ describe('Profilo', () => {
         cy.visit('/profile');
         stat('trips').should('have.text', '4');
         stat('groups').should('have.text', '2');
-        stat('countries').should('have.text', '3');
+        // #123: nazioni con almeno un viaggio concluso (Spagna 2024, Giappone 2025); il Portogallo è "in arrivo".
+        stat('countries').should('have.text', '2');
         stat('upcoming').should('have.text', '2');
 
         // Gli stessi numeri restano aprendo il profilo dopo un'altra pagina (cache dei viaggi).

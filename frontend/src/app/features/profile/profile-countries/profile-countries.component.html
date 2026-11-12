@@ -1,0 +1,61 @@
+<section id="profile-countries" class="section-card card profile-countries" aria-labelledby="profile-countries-title" tabindex="-1">
+  <div class="section-header">
+    <span class="material-symbols-outlined section-icon" aria-hidden="true">public</span>
+    <div>
+      <h2 id="profile-countries-title" class="section-title">{{ 'profile.countries_title' | translate }}</h2>
+      <p class="section-desc">{{ 'profile.countries_desc' | translate }}</p>
+    </div>
+  </div>
+
+  @if (badges().length === 0) {
+    <div class="countries-empty">
+      <span class="countries-empty-icon" aria-hidden="true">🛂</span>
+      <p class="countries-empty-text">{{ 'profile.countries_empty' | translate }}</p>
+      <a class="btn btn-secondary btn-sm" routerLink="/trips/new">{{ 'profile.countries_plan' | translate }}</a>
+    </div>
+  } @else {
+    <ul class="badge-grid" role="list">
+      @for (b of badges(); track b.code) {
+        <li>
+          <button type="button" class="country-badge" [class.country-badge--upcoming]="b.state === 'upcoming'"
+            [class.country-badge--selected]="selected() === b.code"
+            [attr.data-country]="b.code" [attr.data-state]="b.state"
+            [attr.aria-expanded]="selected() === b.code" aria-controls="profile-country-trips"
+            (click)="toggle(b.code)">
+            <span class="badge-flag" aria-hidden="true">{{ b.flag }}</span>
+            <span class="badge-name">{{ b.name }}</span>
+            @if (b.state === 'visited') {
+              <span class="badge-meta">
+                {{ (b.visitedCount === 1 ? 'profile.countries_trips_one' : 'profile.countries_trips_other') | translate: { count: b.visitedCount } }}
+                · {{ 'profile.countries_since' | translate: { year: b.firstYear } }}
+              </span>
+            } @else {
+              <span class="badge-meta badge-meta--upcoming">
+                {{ 'profile.countries_upcoming' | translate: { when: (b.nextStart | date:b.nextFormat:'':lang()) } }}
+              </span>
+            }
+          </button>
+        </li>
+      }
+    </ul>
+
+    @if (selectedBadge(); as b) {
+      <div id="profile-country-trips" class="country-trips" role="region" [attr.aria-label]="b.flag + ' ' + b.name">
+        <p class="country-trips-title">{{ b.flag }} {{ b.name }}</p>
+        <ul class="country-trips-list">
+          @for (t of b.trips; track t.id) {
+            <li>
+              <a class="country-trip-link" [routerLink]="['/trips', t.id]">
+                <span class="country-trip-title">{{ t.title }}</span>
+                <span class="country-trip-dates">
+                  {{ t.startDate | date:'d MMM y':'':lang() }}
+                  @if (!isPast(t)) { · {{ 'profile.countries_trip_upcoming' | translate }} }
+                </span>
+              </a>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  }
+</section>

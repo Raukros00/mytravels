@@ -258,7 +258,16 @@
     "delete_too_many": "Troppi tentativi: riprova tra qualche minuto.",
     "delete_error": "Non è stato possibile eliminare l'account. Riprova.",
     "edit_color": "Colore di sfondo dell'avatar",
-    "edit_color_option": "Colore"
+    "edit_color_option": "Colore",
+    "countries_title": "Le mie nazioni",
+    "countries_desc": "Un badge per ogni nazione visitata con i tuoi gruppi. Tocca un badge per vedere i viaggi.",
+    "countries_empty": "Il tuo primo badge arriverà con il primo viaggio.",
+    "countries_plan": "Pianifica un viaggio",
+    "countries_trips_one": "1 viaggio",
+    "countries_trips_other": "{{count}} viaggi",
+    "countries_since": "dal {{year}}",
+    "countries_upcoming": "In arrivo · a {{when}}",
+    "countries_trip_upcoming": "in arrivo"
   },
   "live": {
     "suggest": {

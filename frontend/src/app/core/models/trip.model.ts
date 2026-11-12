@@ -137,6 +137,8 @@ export interface Trip {
   title: string;
   destination: string;
   country: string;
+  /** Nazione ISO 3166-1 alpha-2 (es. "ES"), per i badge del Profilo (#123); può mancare. */
+  countryCode?: string | null;
   startDate: string; // YYYY-MM-DD
   endDate: string;   // YYYY-MM-DD
   coverUrl: string;
@@ -172,6 +174,8 @@ export interface CreateTripDto {
   title: string;
   destination: string;
   country: string;
+  /** Nazione ISO 3166-1 alpha-2 (es. "ES"), per i badge del Profilo (#123); può mancare. */
+  countryCode?: string | null;
   startDate: string;
   endDate: string;
   coverUrl: string;
