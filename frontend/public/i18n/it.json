@@ -173,7 +173,6 @@
     "field_name": "Nome",
     "field_email": "Email",
     "field_birth_date": "Data di nascita",
-    "field_color": "Colore profilo",
     "logout": "Disconnetti",
     "push_title": "Notifiche sul telefono",
     "push_desc": "Ricevi le novità dei tuoi gruppi e viaggi anche ad app chiusa.",
@@ -257,7 +256,9 @@
     "delete_done": "Il tuo account è stato eliminato. Grazie di aver viaggiato con noi!",
     "delete_wrong_password": "Password non corretta.",
     "delete_too_many": "Troppi tentativi: riprova tra qualche minuto.",
-    "delete_error": "Non è stato possibile eliminare l'account. Riprova."
+    "delete_error": "Non è stato possibile eliminare l'account. Riprova.",
+    "edit_color": "Colore di sfondo dell'avatar",
+    "edit_color_option": "Colore"
   },
   "live": {
     "suggest": {

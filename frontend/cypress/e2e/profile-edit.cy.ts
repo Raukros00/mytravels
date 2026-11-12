@@ -1,6 +1,7 @@
 import itJson from '../../public/i18n/it.json';
 import { uniq } from '../support/e2e';
 import { isoYearsAgo } from '../../src/app/core/utils/date.utils';
+import { USER_COLOR_PALETTE } from '../../src/app/core/utils/user-color.utils';
 
 /** #120: modifica dei dati personali, della foto e dell'avatar dal Profilo. */
 const t = itJson.profile;
@@ -111,6 +112,30 @@ describe('Profilo: modifica dei dati personali (#120)', () => {
       cy.toast(t.edit_saved).should('be.visible');
       cy.get('.profile-hero app-user-avatar img').should('not.exist');
       cy.me(user).its('profileImage').should('be.null');
+    });
+  });
+
+  it('colore (#122): si sceglie solo come sfondo dell\'avatar emoji ed è nascosto con la foto', () => {
+    registerUser('color').then(user => {
+      cy.login(user);
+      cy.visit('/profile');
+      openEdit().within(() => {
+        cy.contains('.form-label', t.edit_color).should('be.visible');
+        cy.get('.color-btn').should('have.length', USER_COLOR_PALETTE.length);
+        cy.get('.color-btn').eq(3).click().should('have.class', 'selected').and('have.attr', 'aria-checked', 'true');
+        cy.get('.edit-preview .ua').should('have.css', 'background-color', 'rgb(190, 18, 60)');
+
+        // Con la foto il colore non si vede e non si sceglie.
+        cy.get('#profile-edit-photo').selectFile('cypress/fixtures/profile-photo.png', { force: true });
+        cy.contains('button', 'Usa questa foto').click();
+        cy.get('.color-grid').should('not.exist');
+        cy.contains('button', t.edit_photo_remove).click();
+        cy.get('.color-grid').should('be.visible');
+        cy.contains('button', t.edit_save).click();
+      });
+      cy.toast(t.edit_saved).should('be.visible');
+      cy.me(user).its('color').should('eq', USER_COLOR_PALETTE[3]);
+      cy.get('.profile-hero .ua').should('have.css', 'background-color', 'rgb(190, 18, 60)');
     });
   });
 

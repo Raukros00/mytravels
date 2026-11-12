@@ -173,7 +173,6 @@
     "field_name": "Name",
     "field_email": "Email",
     "field_birth_date": "Date of birth",
-    "field_color": "Profile colour",
     "logout": "Log out",
     "push_title": "Phone notifications",
     "push_desc": "Get news from your groups and trips even when the app is closed.",
@@ -257,7 +256,9 @@
     "delete_done": "Your account has been deleted. Thanks for travelling with us!",
     "delete_wrong_password": "Wrong password.",
     "delete_too_many": "Too many attempts: try again in a few minutes.",
-    "delete_error": "Could not delete your account. Please try again."
+    "delete_error": "Could not delete your account. Please try again.",
+    "edit_color": "Avatar background colour",
+    "edit_color_option": "Colour"
   },
   "live": {
     "suggest": {

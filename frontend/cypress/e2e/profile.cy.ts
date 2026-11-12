@@ -43,8 +43,10 @@ describe('Profilo', () => {
         cy.contains('.section-card .section-title', t.account_title).closest('.section-card').within(() => {
           cy.contains('.account-label', t.field_name).next().should('have.text', USERS.admin.name);
           cy.contains('.account-label', t.field_email).next().should('have.text', USERS.admin.email);
-          cy.contains('.account-label', t.field_color).next().invoke('text').should('match', /^#[0-9a-f]{6}$/i);
         });
+        // #122: il colore non è più un dato dell'account.
+        cy.get('.profile-account').should('not.contain.text', 'Colore profilo');
+        cy.get('.account-swatch').should('not.exist');
         // Statistiche, Account, Notifiche sul telefono (#95) e Zona pericolosa (#121):
         // nessuna sezione finta delle funzioni future.
         cy.get('.section-card').should('have.length', 4);
@@ -54,9 +56,10 @@ describe('Profilo', () => {
     it('nessun colore scritto nel template: solo variabili del tema', () => {
       cy.visit('/profile');
       cy.get('.profile-hero').should('be.visible');
-      // L'unico stile inline ammesso è il colore scelto dall'utente (pallino del colore profilo).
+      // L'unico stile inline ammesso è il colore dell'utente: sfondo dell'avatar emoji e, nella modale
+      // "Modifica profilo", i pallini della tavolozza (#122).
       cy.get('app-profile [style*="color"]').each($el => {
-        expect($el.is('.account-swatch, .ua'), $el[0].className).to.eq(true);
+        expect($el.is('.ua, .color-btn'), $el[0].className).to.eq(true);
       });
     });
 

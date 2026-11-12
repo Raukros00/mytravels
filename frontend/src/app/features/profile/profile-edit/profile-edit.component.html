@@ -53,6 +53,20 @@
           }
         </div>
       </div>
+      <div class="form-group">
+        <span class="form-label" id="profile-edit-color-label">{{ 'profile.edit_color' | translate }}</span>
+        <div class="color-grid" role="radiogroup" aria-labelledby="profile-edit-color-label">
+          @for (col of colorList; track col) {
+            <button type="button" class="color-btn" role="radio" [style.background-color]="col"
+              [attr.aria-label]="('profile.edit_color_option' | translate) + ' ' + ($index + 1)"
+              [attr.aria-checked]="form.controls.color.value === col"
+              [class.selected]="form.controls.color.value === col"
+              (click)="form.patchValue({ color: col })">
+              @if (form.controls.color.value === col) { <span aria-hidden="true">✓</span> }
+            </button>
+          }
+        </div>
+      </div>
     }
 
     <div class="form-grid-2">

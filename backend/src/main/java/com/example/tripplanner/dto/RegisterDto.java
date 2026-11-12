@@ -47,7 +47,7 @@ public class RegisterDto {
     private String password;
 
     private String avatar;
-    private String color;
+    // #122: niente più "color": è assegnato in automatico (UserColors). Se un client vecchio lo invia, viene ignorato.
 
     /**
      * Foto profilo opzionale, già ritagliata dal client: data URL JPEG/PNG/WebP.

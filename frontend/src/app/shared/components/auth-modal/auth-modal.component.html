@@ -163,19 +163,6 @@
         </div>
       }
 
-      <div class="form-group">
-        <span class="form-label">Colore del profilo</span>
-        <div class="color-grid">
-          @for (col of colorList; track col) {
-            <button type="button" class="color-btn" [style.background-color]="col"
-              [attr.aria-label]="'Colore ' + col"
-              [class.selected]="registerForm.controls.color.value === col"
-              (click)="registerForm.patchValue({ color: col })">
-              @if (registerForm.controls.color.value === col) { <span>✓</span> }
-            </button>
-          }
-        </div>
-      </div>
       <button type="submit" class="btn btn-primary w-full auth-submit" [disabled]="registerForm.invalid || pending() || !!photoFile()">
         {{ pending() ? 'Creazione account…' : 'Crea account' }}
       </button>

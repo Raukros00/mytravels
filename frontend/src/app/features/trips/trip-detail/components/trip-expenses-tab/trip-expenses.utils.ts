@@ -1,4 +1,5 @@
 import { BudgetCategory, TripExpense } from '../../../../../core/models/trip.model';
+import { distinctMemberColors } from '../../../../../core/utils/user-color.utils';
 
 /** Member as seen by the expenses UI: `former` = no longer in the group but still referenced by expenses. */
 export interface ExpenseMember {
@@ -185,7 +186,11 @@ export function buildExpenseMembers(
   deletedMemberIds: readonly string[] = []
 ): ExpenseMember[] {
   const deleted = new Set(deletedMemberIds);
-  const members: ExpenseMember[] = groupMembers.map(m => ({ id: m.id, name: m.name, avatar: m.avatar, color: m.color, profileImage: m.profileImage }));
+  // #122: colori distinti all'interno del gruppo (correzione solo in visualizzazione).
+  const colors = distinctMemberColors(groupMembers);
+  const members: ExpenseMember[] = groupMembers.map(m => ({
+    id: m.id, name: m.name, avatar: m.avatar, color: colors.get(m.id) ?? m.color, profileImage: m.profileImage
+  }));
   const known = new Set(members.map(m => m.id));
   const refs = new Set<string>();
   for (const e of expenses) {
