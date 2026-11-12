@@ -47,7 +47,7 @@
           </div>
           <div class="metrics-grid">
             @for (stat of stats(); track stat.key) {
-              <div class="metric-card" [attr.data-stat]="stat.key">
+              <ng-template #statBody>
                 <div [class]="'metric-icon-bubble metric-icon-bubble--' + stat.key">
                   <span class="material-symbols-outlined" aria-hidden="true">{{ stat.icon }}</span>
                 </div>
@@ -55,10 +55,23 @@
                   <span class="metric-label">{{ stat.label | translate }}</span>
                   <strong class="metric-value">{{ stat.value }}</strong>
                 </div>
-              </div>
+              </ng-template>
+              @if (stat.key === 'countries') {
+                <!-- #123: "Nazioni esplorate" porta alla sezione dei badge. -->
+                <a class="metric-card metric-card--link" [attr.data-stat]="stat.key" href="#profile-countries"
+                  (click)="goToCountries($event)">
+                  <ng-container [ngTemplateOutlet]="statBody" />
+                </a>
+              } @else {
+                <div class="metric-card" [attr.data-stat]="stat.key">
+                  <ng-container [ngTemplateOutlet]="statBody" />
+                </div>
+              }
             }
           </div>
         </section>
+
+        <app-profile-countries [trips]="userTrips()" />
 
       </div>
 
