@@ -95,6 +95,31 @@
   box-shadow: 0 0 0 2px var(--wb-primary);
 }
 
+.color-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.color-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--wb-radius-full);
+  border: 2px solid var(--wb-surface-0, #fff);
+  box-shadow: var(--wb-shadow-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: bold;
+  transition: transform 150ms var(--wb-ease);
+}
+.color-btn.selected {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2.5px var(--wb-text-primary);
+}
+
 .edit-hint {
   margin: 0;
   font-size: 0.8rem;

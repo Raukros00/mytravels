@@ -183,13 +183,6 @@
   text-align: center;
   flex-shrink: 0;
 }
-.account-swatch {
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: var(--wb-radius-full);
-  border: 1px solid var(--wb-border);
-  flex-shrink: 0;
-}
 .account-info {
   display: flex;
   flex-direction: column;
@@ -204,11 +197,6 @@
   font-size: 0.9rem;
   color: var(--wb-text-primary);
   overflow-wrap: anywhere;
-}
-.account-value--mono {
-  font-family: var(--wb-font-mono);
-  font-size: 0.825rem;
-  text-transform: uppercase;
 }
 
 /* ── Zona pericolosa (#121) ── */

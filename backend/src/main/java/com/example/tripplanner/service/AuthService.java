@@ -2,6 +2,7 @@ package com.example.tripplanner.service;
 
 import com.example.tripplanner.util.AppDates;
 import com.example.tripplanner.util.Emails;
+import com.example.tripplanner.util.UserColors;
 import com.example.tripplanner.dto.RegisterDto;
 import com.example.tripplanner.model.User;
 import com.example.tripplanner.repository.UserRepository;
@@ -37,8 +38,9 @@ public class AuthService {
         if (userRepository.existsByEmailIgnoringCase(email)) {
             throw new IllegalArgumentException("Email already exists: " + email);
         }
+        String id = UUID.randomUUID().toString();
         User user = User.builder()
-                .id(UUID.randomUUID().toString())
+                .id(id)
                 .name(dto.getFirstName().trim() + " " + dto.getLastName().trim())
                 .firstName(dto.getFirstName().trim())
                 .lastName(dto.getLastName().trim())
@@ -47,7 +49,8 @@ public class AuthService {
                 .email(email)
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .avatar(dto.getAvatar() != null ? dto.getAvatar() : "🚀")
-                .color(dto.getColor() != null ? dto.getColor() : "#6366f1")
+                // #122: il colore non si sceglie in registrazione, si assegna dall'id.
+                .color(UserColors.forId(id))
                 .role("USER")
                 .joinedDate(AppDates.todayIso())
                 .build();

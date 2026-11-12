@@ -1,6 +1,7 @@
 import { uniq } from '../support/e2e';
 import { USERS } from '../support/users';
 import { toIsoDate } from '../../src/app/core/utils/date.utils';
+import { USER_COLOR_PALETTE } from '../../src/app/core/utils/user-color.utils';
 
 const authModal = () => cy.dialog('Accedi o registrati');
 
@@ -244,7 +245,9 @@ describe('Autenticazione (modale)', () => {
         cy.contains('button', 'Crea account').should('be.disabled');
         fillRegistration(first, 'Rossi', email);
         cy.get('.avatar-select-btn').eq(2).click().should('have.class', 'selected');
-        cy.get('.color-btn').eq(1).click().should('have.class', 'selected');
+        // #122: il colore non si sceglie più in registrazione.
+        cy.get('.color-btn').should('not.exist');
+        cy.contains('Colore del profilo').should('not.exist');
         cy.contains('button', 'Crea account').click();
       });
 
@@ -252,7 +255,10 @@ describe('Autenticazione (modale)', () => {
         expect(response?.statusCode).to.eq(201);
         expect(request.body).to.include({ firstName: first, lastName: 'Rossi', birthDate: '1990-05-17', email });
         expect(request.body.profileImage).to.be.null;
+        expect(request.body).not.to.have.property('color');
         expect(response?.body.user).to.include({ firstName: first, lastName: 'Rossi', name: `${first} Rossi`, birthDate: '1990-05-17' });
+        // Colore assegnato in automatico dalla tavolozza (#122).
+        expect([...USER_COLOR_PALETTE] as string[]).to.include(response?.body.user.color);
       });
       cy.get('[role="dialog"]').should('not.exist');
       cy.toast(`Benvenuto su WanderBite, ${first} Rossi!`).should('be.visible');

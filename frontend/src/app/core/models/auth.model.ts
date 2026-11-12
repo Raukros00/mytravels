@@ -13,7 +13,6 @@ export interface RegisterDto {
   email: string;
   password: string;
   avatar?: string;
-  color?: string;
   /** Data URL JPEG della foto ritagliata (opzionale). */
   profileImage?: string | null;
 }
@@ -25,6 +24,7 @@ export interface UpdateProfileDto {
   /** ISO yyyy-mm-dd; almeno MIN_REGISTRATION_AGE anni. */
   birthDate: string;
   avatar?: string;
+  /** Sfondo dell'avatar emoji (#122), uno di USER_COLOR_PALETTE. */
   color?: string;
   profileImage: string | null;
 }

@@ -69,7 +69,6 @@ export class AuthModalComponent {
   private readonly fb = inject(FormBuilder);
 
   protected readonly avatarList = AVATAR_CHOICES;
-  protected readonly colorList = ['#4f46e5', '#f97316', '#10b981', '#f43f5e', '#8b5cf6', '#06b6d4'];
 
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -89,8 +88,8 @@ export class AuthModalComponent {
     birthDate: ['', [Validators.required, minAgeValidator(MIN_REGISTRATION_AGE)]],
     email: ['', [Validators.required, trimmedEmailValidator]],
     password: ['', [Validators.required, Validators.minLength(MIN_PASSWORD_LENGTH), Validators.maxLength(128)]],
-    avatar: [this.avatarList[0]],
-    color: [this.colorList[0]]
+    // #122: il colore non si sceglie più: lo assegna il backend.
+    avatar: [this.avatarList[0]]
   }, { validators: passwordNotEmailValidator });
 
   protected readonly minPasswordLength = MIN_PASSWORD_LENGTH;

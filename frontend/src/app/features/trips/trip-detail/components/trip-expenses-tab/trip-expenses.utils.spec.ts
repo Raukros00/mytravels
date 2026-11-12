@@ -86,4 +86,13 @@ describe('trip-expenses.utils', () => {
     expect(members.find(m => m.id === 'x')).toEqual(jasmine.objectContaining({ name: 'Utente eliminato', former: true }));
     expect(members.find(m => m.id === 'y')).toEqual(jasmine.objectContaining({ name: 'Ex membro', former: true }));
   });
+
+  it('gives members of the same group distinguishable colors (#122)', () => {
+    const members = buildExpenseMembers(
+      [{ id: 'a', name: 'A', avatar: '🙂', color: '#10b981' }, { id: 'b', name: 'B', avatar: '🙂', color: '#10b981' }],
+      []
+    );
+    expect(members[0].color).toBe('#10b981');
+    expect(members[1].color).not.toBe('#10b981');
+  });
 });

@@ -11,6 +11,7 @@ import { MIN_REGISTRATION_AGE } from '../../../core/models/auth.model';
 import { User } from '../../../core/models/user.model';
 import { isoYearsAgo } from '../../../core/utils/date.utils';
 import { minAgeValidator } from '../../../core/utils/min-age.validator';
+import { USER_COLOR_PALETTE } from '../../../core/utils/user-color.utils';
 
 /** Limite del data URL accettato dal backend (stesso della registrazione). */
 const MAX_PHOTO_DATA_URL = 400_000;
@@ -38,6 +39,8 @@ export class ProfileEditComponent {
   readonly saved = output<User>();
 
   protected readonly avatarList = AVATAR_CHOICES;
+  /** #122: il colore si sceglie solo come sfondo dell'avatar emoji. */
+  protected readonly colorList = USER_COLOR_PALETTE;
   protected readonly minAge = MIN_REGISTRATION_AGE;
   protected readonly maxBirthDate = isoYearsAgo(MIN_REGISTRATION_AGE);
   protected readonly maxPhotoLength = MAX_PHOTO_DATA_URL;
@@ -46,7 +49,8 @@ export class ProfileEditComponent {
     firstName: ['', [Validators.required, Validators.maxLength(100)]],
     lastName: ['', [Validators.required, Validators.maxLength(100)]],
     birthDate: ['', [Validators.required, minAgeValidator(MIN_REGISTRATION_AGE)]],
-    avatar: [AVATAR_CHOICES[0]]
+    avatar: [AVATAR_CHOICES[0]],
+    color: ['']
   });
 
   protected readonly photoFile = signal<File | null>(null);
@@ -64,7 +68,8 @@ export class ProfileEditComponent {
         firstName: user?.firstName ?? user?.name?.split(' ')[0] ?? '',
         lastName: user?.lastName ?? '',
         birthDate: user?.birthDate ?? '',
-        avatar: user?.avatar || AVATAR_CHOICES[0]
+        avatar: user?.avatar || AVATAR_CHOICES[0],
+        color: user?.color ?? ''
       });
       this.profileImage.set(user?.profileImage ?? null);
       this.photoFile.set(null);
@@ -76,11 +81,10 @@ export class ProfileEditComponent {
 
   /** Anteprima con i valori del modulo (foto, avatar e colore attuali). */
   protected preview(): { name: string; avatar: string; color?: string; profileImage: string | null } {
-    const user = this.authService.currentUser();
     return {
       name: this.form.controls.firstName.value,
       avatar: this.form.controls.avatar.value,
-      color: user?.color,
+      color: this.form.controls.color.value || undefined,
       profileImage: this.profileImage()
     };
   }
@@ -129,6 +133,8 @@ export class ProfileEditComponent {
       lastName: value.lastName.trim(),
       birthDate: value.birthDate,
       avatar: value.avatar,
+      // Con la foto il colore non si vede e non si cambia (#122).
+      color: !this.profileImage() && value.color ? value.color : undefined,
       profileImage: this.profileImage()
     }).subscribe({
       next: user => {
