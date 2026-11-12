@@ -94,7 +94,8 @@ function visitWithPush(url: string, opts: FakeOptions = {}): Cypress.Chainable<F
 }
 
 const section = () => cy.contains('.section-card .section-title', t.push_title).closest('.section-card');
-const toggle = () => section().find('button[role="switch"]');
+// L'interruttore del dispositivo: con le notifiche attive compaiono anche quelli delle preferenze (#97).
+const toggle = () => section().find('button.push-switch[role="switch"]');
 const endpoints = (list: any[]) => list.map(s => s.endpoint);
 
 describe('Notifiche push – attivazione dall\'app', () => {

@@ -23,12 +23,16 @@ function place(name: string, extra: Record<string, unknown> = {}) {
 }
 
 /** Nomi delle tappe nell'ordine mostrato dall'itinerario. */
+/** Con `invoke` (non `then`) l'asserzione successiva ritenta finché l'elenco si aggiorna (es. dopo un reload). */
 function stopNames() {
-  return cy.get('.timeline-entry .timeline-name').then($els => [...$els].map(el => el.textContent!.trim()));
+  return cy.get('.timeline-entry .timeline-name')
+    .invoke('toArray')
+    .invoke('map', (el: HTMLElement) => el.textContent!.trim());
 }
 
+/** Tappa per nome (nel titolo: l'avviso di sovrapposizione cita anche il nome delle altre tappe). */
 function stop(name: string) {
-  return cy.contains('.timeline-entry', name);
+  return cy.contains('.timeline-entry .timeline-name', name).closest('.timeline-entry');
 }
 
 /**

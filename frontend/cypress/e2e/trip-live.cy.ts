@@ -112,14 +112,17 @@ describe('In viaggio – guida della giornata', () => {
     nowCard().find('.live-now-label').should('have.text', 'Adesso · senza orario');
   });
 
-  it('prima e dopo il viaggio: messaggio e link al pianificatore', () => {
+  it('prima del viaggio: messaggio e link al pianificatore', () => {
     openAt(trip, '2030-06-30T10:00');
     cy.get('[data-cy="live-not-started"]').within(() => {
       cy.contains('Il viaggio non è ancora iniziato');
       cy.contains('Mancano 2 giorni alla partenza');
       cy.contains('a', 'Apri il pianificatore').should('have.attr', 'href', `/trips/${trip.id}`);
     });
+  });
 
+  // Test separato: `cy.clock` si installa una sola volta per test, un secondo `openAt` non sposterebbe l'ora.
+  it('dopo il viaggio: messaggio e link al pianificatore', () => {
     openAt(trip, '2030-07-06T10:00');
     cy.get('[data-cy="live-ended"]').should('contain.text', 'Il viaggio è finito')
       .find('a').should('have.attr', 'href', `/trips/${trip.id}`);

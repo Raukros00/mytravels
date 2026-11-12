@@ -26,7 +26,7 @@
             Oggi
           </a>
         }
-        <a routerLink="/trips" [routerLinkActive]="isLivePage() ? '' : 'desktop-nav-active'" [routerLinkActiveOptions]="{exact: false}" class="desktop-nav-link no-underline">
+        <a routerLink="/trips" routerLinkActive #tripsDesktopLink="routerLinkActive" [routerLinkActiveOptions]="{exact: false}" [class.desktop-nav-active]="tripsDesktopLink.isActive && !isLivePage()" class="desktop-nav-link no-underline">
           Viaggi
         </a>
         <a routerLink="/groups" routerLinkActive="desktop-nav-active" class="desktop-nav-link no-underline">
@@ -140,7 +140,9 @@
         </a>
       }
 
-      <a routerLink="/trips" [routerLinkActive]="isLivePage() ? '' : 'active-nav'" [routerLinkActiveOptions]="{exact: false}" class="wb-nav-item" #tripsLink="routerLinkActive">
+      <!-- Sulla guida (/trips/:id/live) è attiva "Oggi", non "Viaggi": classe calcolata qui perché
+           cambiare l'input di routerLinkActive non toglie la classe già messa. -->
+      <a routerLink="/trips" routerLinkActive #tripsLink="routerLinkActive" [routerLinkActiveOptions]="{exact: false}" [class.active-nav]="tripsLink.isActive && !isLivePage()" class="wb-nav-item">
         <span class="material-symbols-outlined text-[24px]" [style.font-variation-settings]="tripsLink.isActive && !isLivePage() ? '\'FILL\' 1' : '\'FILL\' 0'">luggage</span>
         <span>Viaggi</span>
       </a>

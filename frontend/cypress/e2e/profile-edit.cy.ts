@@ -11,7 +11,7 @@ function registerUser(prefix: string) {
   const first = uniq('Edo');
   return cy.request('POST', '/auth/register', {
     firstName: first, lastName: 'Prima', birthDate: '1991-02-03', ...user, avatar: '🎒', color: '#10b981',
-  }).then(() => ({ ...user, name: `${first} Prima` }));
+  }).then(() => ({ ...user, first, name: `${first} Prima` }));
 }
 
 const openEdit = () => {
@@ -32,7 +32,7 @@ describe('Profilo: modifica dei dati personali (#120)', () => {
       cy.contains('.profile-hero h2', user.name).should('be.visible');
 
       openEdit().within(() => {
-        cy.get('#profile-edit-first-name').should('have.value', user.name.split(' ')[0]);
+        cy.get('#profile-edit-first-name').should('have.value', user.first);
         cy.get('#profile-edit-last-name').should('have.value', 'Prima');
         cy.get('#profile-edit-birth-date').should('have.value', '1991-02-03');
         cy.get('#profile-edit-first-name').clear().type(newFirst);
