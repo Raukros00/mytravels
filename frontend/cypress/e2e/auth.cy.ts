@@ -341,7 +341,9 @@ describe('Autenticazione (modale)', () => {
     it('rifiuta un file che non è un\'immagine', () => {
       authModal().within(() => {
         cy.get('#auth-register-photo').selectFile('cypress/fixtures/not-an-image.txt', { force: true });
-        cy.contains('.form-error', 'Formato non supportato').should('be.visible');
+        // L'input è attivato con `force` (come il tocco sul pulsante): il messaggio compare sotto,
+        // nella parte della modale che l'utente sta guardando dopo aver toccato "Carica una foto".
+        cy.contains('.form-error', 'Formato non supportato').scrollIntoView().should('be.visible');
         cy.get('.cropper-stage').should('not.exist');
       });
     });

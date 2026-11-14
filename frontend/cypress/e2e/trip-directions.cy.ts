@@ -36,7 +36,7 @@ function createDirTrip(): Cypress.Chainable<DirTrip> {
     cy.api('admin', 'POST', `${base}/activities`, activity('Duomo', { startTime: '09:00', endTime: '10:30', address: 'Piazza del Duomo', coordinates: DUOMO }));
     cy.api('admin', 'POST', `${base}/activities`, activity('Uffizi', { startTime: '11:00', endTime: '13:00', address: 'Piazzale degli Uffizi 6', coordinates: UFFIZI }));
     cy.api('admin', 'POST', `${base}/activities`, activity('Ponte Vecchio', { startTime: '15:00', endTime: '16:00', coordinates: PONTE }));
-    cy.api('admin', 'POST', `${base}/activities`, activity('Mercato Centrale', { startTime: '17:00', endTime: '18:00', address: 'Piazza del Mercato Centrale' }));
+    cy.api('admin', 'POST', `${base}/activities`, activity('Mercato Centrale', { startTime: '17:00', endTime: '18:00', address: 'Via dell Ariento 10' }));
     cy.api('admin', 'PUT', `${base}/accommodation`, { name: 'Hotel Firenze', address: 'Via Nazionale 10', coordinates: HOTEL });
     return cy.wrap({ id: trip.id as string, title });
   });
@@ -102,7 +102,7 @@ describe('In viaggio – indicazioni per la prossima tappa', () => {
     // Indicazioni su ogni tappa: senza coordinate si usa nome e indirizzo.
     dayItem('Mercato Centrale').find('[data-cy="live-stop-directions"]').should('have.attr', 'href',
       `https://www.google.com/maps/dir/?api=1&origin=${coord(PONTE)}`
-      + '&destination=Mercato%20Centrale,%20Piazza%20del%20Mercato%20Centrale&travelmode=transit');
+      + '&destination=Mercato%20Centrale,%20Via%20dell%20Ariento%2010&travelmode=transit');
 
     // Su desktop: Google Maps (predefinita) o Citymapper.
     cy.get('[data-cy="live-maps"] .live-maps-app').then($b =>
@@ -155,7 +155,7 @@ describe('In viaggio – indicazioni per la prossima tappa', () => {
   it('fine giornata: indicazioni per l\'alloggio dall\'ultima tappa', () => {
     openAt(trip, '21:00');
     cy.get('[data-cy="live-home-directions"]').should('have.attr', 'href',
-      'https://www.google.com/maps/dir/?api=1&origin=Mercato%20Centrale,%20Piazza%20del%20Mercato%20Centrale'
+      'https://www.google.com/maps/dir/?api=1&origin=Mercato%20Centrale,%20Via%20dell%20Ariento%2010'
       + `&destination=${coord(HOTEL)}&travelmode=transit`);
   });
 });

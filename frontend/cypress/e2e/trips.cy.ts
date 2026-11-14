@@ -33,8 +33,16 @@ describe('Viaggi – lista', () => {
   });
 
   it('la ricerca filtra per titolo, destinazione e tag', () => {
-    cy.get('.search-input').type('lisbona');
+    // Titolo: "Sintra" c'è solo nel titolo del viaggio demo.
+    cy.get('.search-input').type('sintra');
     cy.get('.trip-card').should('have.length', 1).first().should('contain.text', TRIPS.lisbona);
+
+    // Destinazione: altri spec creano per admin viaggi verso Lisbona (es. promemoria push), quindi
+    // si verifica che ci sia il viaggio demo e che ogni risultato sia davvero a Lisbona.
+    cy.get('.search-input').clear().type('lisbona');
+    cy.contains('.trip-card', TRIPS.lisbona).should('be.visible');
+    cy.get('.trip-card').each($card => expect($card.text().toLowerCase()).to.contain('lisbona'));
+    cy.contains('.trip-card', TRIPS.barcellona).should('not.exist');
 
     cy.get('.search-input').clear().type('tulipani'); // tag di Amsterdam
     cy.get('.trip-card').should('have.length', 1).first().should('contain.text', TRIPS.amsterdam);

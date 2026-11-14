@@ -111,7 +111,8 @@ describe('In viaggio – guida offline', () => {
 
       // Sul server non è ancora arrivata (cy.request non passa dalle intercettazioni).
       cy.api('admin', 'GET', `/api/v1/trips/${trip.id}`).then(t => {
-        expect(t.activities.find((a: { name: string }) => a.name === 'Duomo').isCompleted).to.eq(false);
+        // Tappa creata senza stato: il backend la restituisce con `isCompleted` null (= non fatta).
+        expect(t.activities.find((a: { name: string }) => a.name === 'Duomo').isCompleted).not.to.eq(true);
       });
 
       // Di nuovo online: la coda viene inviata.
