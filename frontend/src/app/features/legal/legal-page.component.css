@@ -1,0 +1,22 @@
+.legal-tab {
+  background: var(--wb-surface-1);
+  color: var(--wb-text-secondary);
+  border: 1.5px solid var(--wb-border);
+  transition: background 150ms, color 150ms;
+}
+
+.legal-tab-active {
+  background: var(--wb-primary);
+  color: #fff;
+  border-color: transparent;
+}
+
+.legal-num {
+  background: var(--wb-surface-2);
+  color: var(--wb-text-secondary);
+}
+
+.legal-num-open {
+  background: var(--wb-primary);
+  color: #fff;
+}
