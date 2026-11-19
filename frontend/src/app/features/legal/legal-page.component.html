@@ -1,0 +1,133 @@
+<div class="min-h-dvh bg-background pb-24 md:pb-12">
+  <div class="mx-auto w-full max-w-[1200px] px-gutter md:px-margin-desktop pt-space-lg">
+
+    <!-- Header -->
+    <header class="mb-space-lg">
+      <p class="text-label-md text-on-surface-variant mb-space-sm hidden md:block">
+        <a routerLink="/" class="hover:underline">Home</a> / {{ doc().title }}
+      </p>
+      <h1 class="text-headline-lg-mobile md:text-headline-xl text-on-surface tracking-tight">{{ doc().headline }}</h1>
+      <p class="mt-space-sm text-body-lg text-on-surface-variant max-w-2xl">{{ doc().lead }}</p>
+
+      <div class="mt-space-md flex flex-wrap items-center gap-space-sm">
+        <span class="inline-flex items-center gap-1 rounded-full bg-surface-container px-3 py-1 text-label-md text-on-surface-variant">
+          <span class="material-symbols-outlined" style="font-size:16px">calendar_today</span>
+          Ultimo aggiornamento: {{ updated }}
+        </span>
+        <span class="inline-flex items-center rounded-full bg-secondary-container px-3 py-1 text-label-md text-on-secondary-container">
+          Versione {{ version }}
+        </span>
+      </div>
+
+      <!-- Switcher tra le pagine legali -->
+      <nav class="mt-space-lg flex gap-space-sm overflow-x-auto" aria-label="Pagine legali">
+        @for (tab of tabs; track tab.key) {
+          <a [routerLink]="tab.path" routerLinkActive="legal-tab-active"
+            class="legal-tab shrink-0 rounded-full px-4 py-2 text-label-lg no-underline">
+            {{ tab.label }}
+          </a>
+        }
+      </nav>
+    </header>
+
+    <div class="md:grid md:grid-cols-[260px_1fr] md:gap-gutter-desktop lg:gap-space-xl items-start">
+
+      <!-- Indice (desktop) -->
+      <aside class="hidden md:block sticky top-24">
+        <nav class="rounded-xl bg-surface-container-low p-space-md" aria-label="Indice">
+          <p class="text-label-sm uppercase tracking-wider text-on-surface-variant mb-space-sm">Indice dei contenuti</p>
+          <ol class="flex flex-col gap-1">
+            @for (s of doc().sections; track s.id; let i = $index) {
+              <li>
+                <button type="button" (click)="goTo(s.id)"
+                  class="w-full text-left rounded-lg px-3 py-2 text-body-md text-on-surface hover:bg-surface-container transition-colors">
+                  {{ i + 1 }}. {{ s.title }}
+                </button>
+              </li>
+            }
+          </ol>
+        </nav>
+      </aside>
+
+      <div>
+        <!-- In breve -->
+        <section class="rounded-xl bg-surface-container-low p-space-md mb-space-lg">
+          <h2 class="text-headline-sm text-on-surface mb-space-md">In breve</h2>
+          <ul class="flex flex-col gap-space-md">
+            @for (h of doc().highlights; track h.label) {
+              <li class="flex items-start gap-space-sm">
+                <span class="material-symbols-outlined text-secondary mt-0.5" style="font-size:20px">check_circle</span>
+                <span class="text-body-md text-on-surface-variant">
+                  <strong class="text-on-surface">{{ h.label }}:</strong> {{ h.text }}
+                </span>
+              </li>
+            }
+          </ul>
+        </section>
+
+        <!-- Sezioni: fisarmonica su mobile, sempre aperte su desktop -->
+        <div class="flex items-baseline justify-between mb-space-md md:hidden">
+          <h2 class="text-headline-md text-on-surface">Dettaglio completo</h2>
+          <span class="text-label-sm uppercase tracking-wider text-on-surface-variant">{{ doc().sections.length }} capitoli</span>
+        </div>
+
+        <div class="flex flex-col gap-space-sm md:gap-space-xl">
+          @for (s of doc().sections; track s.id; let i = $index) {
+            <section [id]="s.id" class="rounded-xl bg-surface-container-lowest shadow-sm md:bg-transparent md:shadow-none scroll-mt-24">
+              <button type="button"
+                class="w-full flex items-center gap-space-md p-space-md text-left md:p-0 md:cursor-default"
+                [attr.aria-expanded]="isOpen(s.id)" [attr.aria-controls]="s.id + '-body'"
+                (click)="toggle(s.id)">
+                <span class="legal-num flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-label-lg md:hidden"
+                  [class.legal-num-open]="isOpen(s.id)">{{ i + 1 }}</span>
+                <h3 class="flex-1 text-headline-sm md:text-headline-md text-on-surface">
+                  <span class="hidden md:inline">{{ i + 1 }}. </span>{{ s.title }}
+                </h3>
+                <span class="material-symbols-outlined text-on-surface-variant md:hidden transition-transform"
+                  [class.rotate-180]="isOpen(s.id)">expand_more</span>
+              </button>
+
+              <div [id]="s.id + '-body'" class="px-space-md pb-space-md md:px-0 md:pb-0 md:mt-space-sm md:!block"
+                [class.hidden]="!isOpen(s.id)">
+                @for (p of s.paragraphs; track $index) {
+                  <p class="text-body-md md:text-body-lg text-on-surface-variant mb-space-sm">{{ p }}</p>
+                }
+                @if (s.bullets) {
+                  <ul class="mt-space-sm flex flex-col gap-space-sm">
+                    @for (b of s.bullets; track b.label) {
+                      <li class="flex gap-space-sm text-body-md md:text-body-lg text-on-surface-variant">
+                        <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"></span>
+                        <span><strong class="text-on-surface">{{ b.label }}:</strong> {{ b.text }}</span>
+                      </li>
+                    }
+                  </ul>
+                }
+              </div>
+            </section>
+          }
+        </div>
+
+        @if (doc().key === 'privacy') {
+          <section class="mt-space-xl rounded-xl bg-surface-container-low p-space-md md:p-space-lg">
+            <h2 class="text-headline-sm text-on-surface">I tuoi strumenti</h2>
+            <p class="mt-space-sm text-body-md text-on-surface-variant">
+              Dal tuo Profilo puoi modificare i tuoi dati, scaricarli ed eliminare l'account in qualsiasi momento.
+            </p>
+            <a routerLink="/profile" class="btn btn-secondary no-underline mt-space-md">Vai al Profilo</a>
+          </section>
+        }
+
+        <!-- Rimandi tra le pagine legali -->
+        <p class="mt-space-xl text-body-md text-on-surface-variant">
+          Leggi anche:
+          @for (tab of tabs; track tab.key) {
+            @if (tab.key !== doc().key) {
+              <a [routerLink]="tab.path" class="mr-space-md font-semibold">{{ tab.label }}</a>
+            }
+          }
+          <a routerLink="/impatto-green" class="font-semibold">Il nostro impatto green</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
