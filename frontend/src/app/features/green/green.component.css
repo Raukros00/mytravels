@@ -1,0 +1,23 @@
+.green-timeline {
+  position: relative;
+}
+
+/* Linea verticale che collega i nodi della timeline */
+.green-timeline::before {
+  content: '';
+  position: absolute;
+  left: 1.25rem;
+  top: 1rem;
+  bottom: 1rem;
+  width: 2px;
+  background: var(--wb-secondary-border);
+}
+
+.green-check {
+  border: 2px solid var(--wb-secondary);
+  color: #fff;
+}
+
+.green-check-on {
+  background: var(--wb-secondary);
+}

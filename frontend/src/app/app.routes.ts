@@ -107,6 +107,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/legal/legal-page.component').then(m => m.LegalPageComponent)
   },
   {
+    // Pagina pubblica «Il nostro impatto green» (epica #168).
+    path: 'impatto-green',
+    loadComponent: () => import('./features/green/green.component').then(m => m.GreenComponent)
+  },
+  {
     path: '**',
     redirectTo: homeRedirect
   }
