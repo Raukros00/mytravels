@@ -1,0 +1,82 @@
+<div class="page-wrapper">
+  <div class="app-container">
+
+    <!-- Hero: testo + mascotte -->
+    <section class="hello-hero">
+      <div class="hello-hero-text">
+        <span class="hello-tag">{{ 'hello.tag' | translate }}</span>
+        <h1 class="hello-title">{{ 'hello.title' | translate }}</h1>
+        <p class="hello-subtitle">{{ 'hello.subtitle' | translate }}</p>
+        <p class="hello-lead">{{ 'hello.lead' | translate }}</p>
+
+        <div class="hello-reactions" role="group" [attr.aria-label]="'hello.reactions_title' | translate">
+          <span class="hello-label">{{ 'hello.reactions_title' | translate }}</span>
+          <div class="hello-reaction-list">
+            @for (r of reactions; track r.pose) {
+              <button type="button" class="hello-reaction" (click)="play(r.pose)">
+                <span class="hello-reaction-icon" aria-hidden="true">{{ r.icon }}</span>
+                <span class="hello-reaction-text">
+                  <strong>{{ 'hello.reaction_' + r.key | translate }}</strong>
+                  <small>{{ 'hello.reaction_' + r.key + '_hint' | translate }}</small>
+                </span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="hello-actions">
+          <a routerLink="/trips" class="btn btn-primary">
+            {{ 'hello.back_to_trips' | translate }}
+            <span class="material-symbols-outlined" aria-hidden="true" style="font-size:1.1rem">arrow_forward</span>
+          </a>
+          <a routerLink="/explore" class="hello-link">
+            <span class="material-symbols-outlined" aria-hidden="true" style="font-size:1.1rem">menu_book</span>
+            {{ 'hello.discover' | translate }}
+          </a>
+        </div>
+      </div>
+
+      <div class="hello-stage">
+        <p class="hello-bubble" aria-hidden="true">{{ 'hello.bubble_' + pose() | translate }}</p>
+        <!-- L'elemento viene ricreato a ogni reazione così l'animazione riparte da capo -->
+        @for (n of [pulse()]; track n) {
+          <button type="button" class="hello-mascot" [class]="'hello-mascot pose-' + pose()"
+            [attr.aria-label]="'hello.mascot_label' | translate" (click)="tapMascot()">
+            <img src="images/mascot-bao.png" alt="" width="562" height="440" />
+          </button>
+        }
+        <p class="hello-hint">
+          <span class="material-symbols-outlined" aria-hidden="true" style="font-size:1rem">touch_app</span>
+          {{ 'hello.hint' | translate }}
+        </p>
+        <!-- Annuncio per gli screen reader -->
+        <p class="sr-only" aria-live="polite">{{ 'hello.bubble_' + pose() | translate }}</p>
+      </div>
+    </section>
+
+    <!-- Pose -->
+    <section class="hello-poses">
+      <span class="hello-label">{{ 'hello.poses_kicker' | translate }}</span>
+      <h2 class="hello-poses-title">{{ 'hello.poses_title' | translate }}</h2>
+      <p class="hello-poses-desc">{{ 'hello.poses_desc' | translate }}</p>
+
+      <div class="hello-pose-grid">
+        @for (c of poses; track c.key) {
+          <article class="hello-pose-card" [class.is-active]="activeCard() === c.key">
+            <div class="hello-pose-top">
+              <span class="hello-pose-badge">{{ 'hello.pose_' + c.key + '_badge' | translate }}</span>
+              <span class="hello-pose-index">{{ 'hello.pose_label' | translate }} #{{ c.index }}</span>
+            </div>
+            <h3>{{ 'hello.pose_' + c.key + '_title' | translate }}</h3>
+            <p class="hello-pose-line">{{ 'hello.pose_' + c.key + '_line' | translate }}</p>
+            <p class="hello-pose-text">{{ 'hello.pose_' + c.key + '_text' | translate }}</p>
+            <button type="button" class="btn btn-secondary hello-pose-btn" (click)="showPose(c)">
+              {{ 'hello.show_pose' | translate }}
+            </button>
+          </article>
+        }
+      </div>
+    </section>
+
+  </div>
+</div>

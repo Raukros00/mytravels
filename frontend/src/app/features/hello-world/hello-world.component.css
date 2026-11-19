@@ -1,0 +1,282 @@
+:host { display: block; }
+
+.hello-hero {
+  display: grid;
+  gap: 1.5rem;
+  align-items: center;
+  padding-top: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .hello-hero {
+    grid-template-columns: 1.1fr 1fr;
+    gap: 2.5rem;
+    padding-top: 1.5rem;
+  }
+}
+
+/* Su mobile la mascotte sta sopra il testo, come nel design */
+.hello-stage { order: -1; }
+@media (min-width: 768px) { .hello-stage { order: 0; } }
+
+.hello-tag {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--wb-radius-full);
+  background: var(--wb-primary-surface);
+  color: var(--wb-primary-dark);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hello-title {
+  margin: 0.75rem 0 0.25rem;
+  font-size: 2.25rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--wb-text-primary);
+}
+
+@media (min-width: 768px) { .hello-title { font-size: 3rem; } }
+
+.hello-subtitle {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--wb-primary);
+}
+
+.hello-lead {
+  margin: 0.75rem 0 1.25rem;
+  color: var(--wb-text-secondary);
+  line-height: 1.6;
+}
+
+.hello-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--wb-text-tertiary);
+}
+
+.hello-reaction-list {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.hello-reaction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 0.5rem;
+  border: 1.5px solid var(--wb-border);
+  border-radius: var(--wb-radius-lg);
+  background: var(--wb-surface-1);
+  color: var(--wb-text-primary);
+  cursor: pointer;
+  transition: background 150ms, transform 150ms;
+}
+
+.hello-reaction:hover { background: var(--wb-surface-2); }
+.hello-reaction:active { transform: scale(0.97); }
+
+.hello-reaction-icon { font-size: 1.5rem; line-height: 1; }
+
+.hello-reaction-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+/* L'indicazione estesa si vede solo dove c'è spazio */
+.hello-reaction-text small { display: none; color: var(--wb-text-tertiary); font-size: 0.7rem; }
+@media (min-width: 768px) {
+  .hello-reaction-list { grid-template-columns: repeat(3, auto); justify-content: start; }
+  .hello-reaction { flex-direction: row; gap: 0.6rem; padding: 0.6rem 1rem; border-radius: var(--wb-radius-full); }
+  .hello-reaction-text { align-items: flex-start; text-align: left; }
+  .hello-reaction-text small { display: block; }
+}
+
+.hello-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.hello-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--wb-secondary);
+}
+
+/* Palco della mascotte */
+.hello-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 1rem;
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(circle at 85% 10%, var(--wb-primary-surface), transparent 55%),
+    radial-gradient(circle at 10% 100%, var(--wb-secondary-surface), transparent 55%),
+    var(--wb-surface-0);
+  box-shadow: var(--wb-shadow-md);
+}
+
+.hello-bubble {
+  position: relative;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  border-radius: var(--wb-radius-full);
+  background: var(--wb-secondary-surface);
+  color: var(--wb-secondary-dark);
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.hello-bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  background: inherit;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.hello-mascot {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 1.5rem;
+  transform-origin: 50% 90%;
+  animation: hello-float 3.2s ease-in-out infinite;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hello-mascot img {
+  display: block;
+  width: min(300px, 70vw);
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+}
+
+.hello-mascot:focus-visible {
+  outline: 3px solid var(--wb-accent-light);
+  outline-offset: 4px;
+}
+
+.hello-mascot.pose-poke { animation: hello-poke 0.55s ease-out; }
+.hello-mascot.pose-wave { animation: hello-wave 1s ease-in-out; }
+.hello-mascot.pose-jump { animation: hello-jump 0.9s cubic-bezier(0.3, 0.7, 0.4, 1); }
+
+@keyframes hello-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes hello-poke {
+  0% { transform: scale(1, 1); }
+  30% { transform: scale(1.1, 0.88); }
+  60% { transform: scale(0.96, 1.06); }
+  100% { transform: scale(1, 1); }
+}
+
+@keyframes hello-wave {
+  0%, 100% { transform: rotate(0); }
+  15% { transform: rotate(-9deg); }
+  35% { transform: rotate(8deg); }
+  55% { transform: rotate(-7deg); }
+  75% { transform: rotate(5deg); }
+}
+
+@keyframes hello-jump {
+  0% { transform: translateY(0) scale(1.08, 0.9); }
+  25% { transform: translateY(-46px) scale(0.95, 1.06); }
+  50% { transform: translateY(-58px) rotate(-4deg); }
+  75% { transform: translateY(-8px) scale(1, 1); }
+  90% { transform: translateY(0) scale(1.06, 0.92); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+
+/* Chi preferisce meno movimento non vede animazioni: il fumetto e le card danno comunque il riscontro */
+@media (prefers-reduced-motion: reduce) {
+  .hello-mascot,
+  .hello-mascot.pose-poke,
+  .hello-mascot.pose-wave,
+  .hello-mascot.pose-jump { animation: none; }
+  .hello-reaction, .hello-reaction:active { transition: none; transform: none; }
+}
+
+.hello-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--wb-radius-full);
+  background: var(--wb-surface-1);
+  color: var(--wb-text-tertiary);
+  font-size: 0.75rem;
+}
+
+/* Pose */
+.hello-poses { margin-top: 2.5rem; }
+.hello-poses-title { margin: 0; font-size: 1.6rem; color: var(--wb-text-primary); }
+.hello-poses-desc { margin: 0.35rem 0 1.25rem; color: var(--wb-text-secondary); }
+
+.hello-pose-grid { display: grid; gap: 0.75rem; }
+@media (min-width: 768px) { .hello-pose-grid { grid-template-columns: repeat(3, 1fr); gap: 1rem; } }
+
+.hello-pose-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.1rem;
+  border: 1.5px solid transparent;
+  border-radius: 1rem;
+  background: var(--wb-surface-1);
+  transition: border-color 150ms, background 150ms;
+}
+
+.hello-pose-card.is-active {
+  border-color: var(--wb-secondary);
+  background: var(--wb-surface-0);
+}
+
+.hello-pose-card h3 { margin: 0.25rem 0 0; font-size: 1.15rem; }
+
+.hello-pose-top { display: flex; justify-content: space-between; align-items: center; }
+
+.hello-pose-badge {
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--wb-radius-full);
+  background: var(--wb-secondary-surface);
+  color: var(--wb-secondary-dark);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.hello-pose-index { font-size: 0.7rem; font-weight: 700; color: var(--wb-text-tertiary); letter-spacing: 0.05em; text-transform: uppercase; }
+.hello-pose-line { margin: 0; font-size: 0.8rem; font-weight: 700; color: var(--wb-primary); }
+.hello-pose-text { margin: 0 0 0.5rem; font-size: 0.9rem; color: var(--wb-text-secondary); line-height: 1.5; flex: 1; }
+.hello-pose-btn { width: 100%; }

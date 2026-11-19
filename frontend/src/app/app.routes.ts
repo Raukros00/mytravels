@@ -91,6 +91,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent)
   },
   {
+    // Pagina pubblica "Hello world" con la mascotte interattiva (epica #169).
+    path: 'hello-world',
+    loadComponent: () => import('./features/hello-world/hello-world.component').then(m => m.HelloWorldComponent)
+  },
+  {
     path: '**',
     redirectTo: homeRedirect
   }
