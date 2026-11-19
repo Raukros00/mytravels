@@ -90,6 +90,22 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent)
   },
+  // Pagine informative pubbliche (epica #167)
+  {
+    path: 'privacy',
+    data: { doc: 'privacy' },
+    loadComponent: () => import('./features/legal/legal-page.component').then(m => m.LegalPageComponent)
+  },
+  {
+    path: 'termini',
+    data: { doc: 'termini' },
+    loadComponent: () => import('./features/legal/legal-page.component').then(m => m.LegalPageComponent)
+  },
+  {
+    path: 'cookie',
+    data: { doc: 'cookie' },
+    loadComponent: () => import('./features/legal/legal-page.component').then(m => m.LegalPageComponent)
+  },
   {
     path: '**',
     redirectTo: homeRedirect

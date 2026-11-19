@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterLink, RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { ToastComponent } from './shared/components/toast/toast.component';
 import { AuthModalComponent } from './shared/components/auth-modal/auth-modal.component';
@@ -8,7 +8,7 @@ import { PushNotificationService } from './core/services/push-notification.servi
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, ToastComponent, AuthModalComponent],
+  imports: [RouterOutlet, RouterLink, NavbarComponent, ToastComponent, AuthModalComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
